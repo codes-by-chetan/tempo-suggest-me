@@ -79,16 +79,16 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Welcome to Suggest.me
+          <h1 className="text-3xl font-bold text-foreground mb-8">
+            Welcome to <span className="text-primary">Suggest.me</span>
           </h1>
 
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-card rounded-lg shadow-social dark:shadow-social-dark overflow-hidden transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover">
             <SuggestorsList
               suggestors={suggestors}
               onSuggestorClick={handleSuggestorClick}
@@ -96,13 +96,16 @@ const Home = () => {
             />
           </div>
 
-          <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold mb-4">Recent Suggestions</h2>
-            <div className="p-8 text-center text-gray-500">
+          <div className="mt-8 bg-card rounded-lg shadow-social dark:shadow-social-dark p-6 transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover">
+            <h2 className="text-2xl font-bold mb-4 text-foreground">
+              Recent Suggestions
+            </h2>
+            <div className="p-8 text-center text-muted-foreground bg-accent/30 rounded-lg">
               <p>Your recent suggestions will appear here.</p>
               <p className="mt-2">
-                Use the Suggest button to start recommending content to your
-                friends!
+                Use the{" "}
+                <span className="text-primary font-medium">Suggest</span> button
+                to start recommending content to your friends!
               </p>
             </div>
           </div>

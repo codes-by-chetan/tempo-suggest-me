@@ -2,10 +2,10 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -26,6 +26,17 @@ module.exports = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          50: "hsl(214, 89%, 95%)",
+          100: "hsl(214, 89%, 90%)",
+          200: "hsl(214, 89%, 80%)",
+          300: "hsl(214, 89%, 70%)",
+          400: "hsl(214, 89%, 60%)",
+          500: "hsl(214, 89%, 52%)" /* Main primary color */,
+          600: "hsl(214, 89%, 45%)",
+          700: "hsl(214, 89%, 40%)",
+          800: "hsl(214, 89%, 35%)",
+          900: "hsl(214, 89%, 30%)",
+          950: "hsl(214, 89%, 25%)",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -51,6 +62,13 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        social: {
+          facebook: "#1877F2",
+          twitter: "#1DA1F2",
+          instagram: "#E4405F",
+          linkedin: "#0A66C2",
+          youtube: "#FF0000",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -71,7 +89,13 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      boxShadow: {
+        social: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        "social-hover": "0 4px 12px rgba(0, 0, 0, 0.15)",
+        "social-dark": "0 2px 8px rgba(0, 0, 0, 0.3)",
+        "social-dark-hover": "0 4px 12px rgba(0, 0, 0, 0.4)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};

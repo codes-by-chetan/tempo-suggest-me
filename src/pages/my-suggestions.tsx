@@ -10,6 +10,10 @@ import {
   Youtube,
   Instagram,
   User,
+  Plus,
+  Share2,
+  Heart,
+  MessageCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -163,9 +167,13 @@ const MySuggestions = () => {
         <div className="py-6">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-foreground">
-              My Suggestions
+              My <span className="text-primary">Suggestions</span>
             </h1>
-            <Button onClick={() => setIsSuggestionFlowOpen(true)}>
+            <Button
+              onClick={() => setIsSuggestionFlowOpen(true)}
+              className="rounded-full gap-2"
+            >
+              <Plus className="h-4 w-4" />
               New Suggestion
             </Button>
           </div>
@@ -176,27 +184,42 @@ const MySuggestions = () => {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid grid-cols-6 mb-8">
-              <TabsTrigger value="all" className="flex items-center gap-2">
+            <TabsList className="grid grid-cols-6 mb-8 p-1 bg-muted/50">
+              <TabsTrigger value="all" className="rounded-full">
                 All
               </TabsTrigger>
-              <TabsTrigger value="movie" className="flex items-center gap-2">
+              <TabsTrigger
+                value="movie"
+                className="flex items-center gap-2 rounded-full"
+              >
                 <Film className="h-4 w-4" />
                 Movies
               </TabsTrigger>
-              <TabsTrigger value="book" className="flex items-center gap-2">
+              <TabsTrigger
+                value="book"
+                className="flex items-center gap-2 rounded-full"
+              >
                 <BookOpen className="h-4 w-4" />
                 Books
               </TabsTrigger>
-              <TabsTrigger value="anime" className="flex items-center gap-2">
+              <TabsTrigger
+                value="anime"
+                className="flex items-center gap-2 rounded-full"
+              >
                 <Tv className="h-4 w-4" />
                 Anime
               </TabsTrigger>
-              <TabsTrigger value="song" className="flex items-center gap-2">
+              <TabsTrigger
+                value="song"
+                className="flex items-center gap-2 rounded-full"
+              >
                 <Music className="h-4 w-4" />
                 Songs
               </TabsTrigger>
-              <TabsTrigger value="youtube" className="flex items-center gap-2">
+              <TabsTrigger
+                value="youtube"
+                className="flex items-center gap-2 rounded-full"
+              >
                 <Youtube className="h-4 w-4" />
                 Videos
               </TabsTrigger>
@@ -208,11 +231,11 @@ const MySuggestions = () => {
                   filteredSuggestions.map((item) => (
                     <Card
                       key={item.id}
-                      className="overflow-hidden hover:shadow-md transition-shadow duration-300"
+                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0"
                     >
-                      <div className="flex h-full">
+                      <div className="flex flex-col h-full">
                         {item.imageUrl && (
-                          <div className="w-1/3 bg-muted">
+                          <div className="w-full h-40 bg-muted">
                             <img
                               src={item.imageUrl}
                               alt={item.title}
@@ -220,13 +243,13 @@ const MySuggestions = () => {
                             />
                           </div>
                         )}
-                        <CardContent
-                          className={`flex-1 p-4 ${!item.imageUrl ? "w-full" : ""}`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
+                        <CardContent className="flex-1 p-5">
+                          <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                              {getIconForType(item.type)}
-                              <span className="text-xs text-muted-foreground capitalize">
+                              <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
+                                {getIconForType(item.type)}
+                              </div>
+                              <span className="text-xs font-medium text-primary capitalize">
                                 {item.type}
                               </span>
                             </div>
@@ -240,29 +263,55 @@ const MySuggestions = () => {
                           <p className="text-sm text-muted-foreground mb-2">
                             {item.creator} • {item.year}
                           </p>
-                          <p className="text-sm line-clamp-2 mb-3">
+                          <p className="text-sm line-clamp-2 mb-4">
                             {item.description}
                           </p>
-                          <div className="flex flex-col mt-auto pt-2 border-t border-border">
-                            <span className="text-xs text-muted-foreground mb-1">
+
+                          {/* Social media style interaction buttons */}
+                          <div className="flex items-center justify-between mb-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                            >
+                              <Heart className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                            >
+                              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                            >
+                              <Share2 className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </div>
+
+                          <div className="flex flex-col pt-3 border-t border-border">
+                            <span className="text-xs font-medium text-foreground mb-2">
                               Suggested to:
                             </span>
                             <div className="flex flex-wrap gap-1">
                               {item.suggestedTo.map((recipient) => (
                                 <div
                                   key={recipient.id}
-                                  className="flex items-center bg-muted rounded-full py-1 px-2"
+                                  className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-2 transition-colors"
                                 >
-                                  <Avatar className="h-4 w-4 mr-1">
+                                  <Avatar className="h-5 w-5 mr-1 ring-1 ring-primary/20">
                                     <AvatarImage
                                       src={recipient.avatar}
                                       alt={recipient.name}
                                     />
-                                    <AvatarFallback>
+                                    <AvatarFallback className="bg-primary-100 text-primary-800">
                                       {recipient.name.charAt(0)}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <span className="text-xs">
+                                  <span className="text-xs font-medium">
                                     {recipient.name}
                                   </span>
                                 </div>
@@ -274,10 +323,24 @@ const MySuggestions = () => {
                     </Card>
                   ))
                 ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground">
-                      No suggestions found for this category.
+                  <div className="col-span-full text-center py-12 bg-card rounded-lg shadow-social dark:shadow-social-dark p-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                      <Film className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      No suggestions yet
+                    </h3>
+                    <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                      You haven't made any suggestions in this category yet.
+                      Start sharing your favorite content with friends!
                     </p>
+                    <Button
+                      onClick={() => setIsSuggestionFlowOpen(true)}
+                      className="rounded-full gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Create Suggestion
+                    </Button>
                   </div>
                 )}
               </div>
