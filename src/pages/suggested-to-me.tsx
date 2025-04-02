@@ -1,210 +1,308 @@
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Film,
+  BookOpen,
+  Tv,
+  Music,
+  Youtube,
+  Instagram,
+  Heart,
+  MessageCircle,
+  Share2,
+  Plus,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
-interface Suggestion {
+interface ContentItem {
   id: string;
-  type: string;
   title: string;
-  suggestedBy: string;
-  date: string;
-  details?: {
-    author?: string;
-    director?: string;
-    artist?: string;
-    creator?: string;
-    releaseDate?: string;
-    platform?: string;
+  type: string;
+  imageUrl?: string;
+  year?: string;
+  creator?: string;
+  description?: string;
+  suggestedBy: {
+    id: string;
+    name: string;
+    avatar?: string;
   };
+  suggestedAt: string;
 }
 
-const SuggestedToMe: React.FC = () => {
-  // Mock data - replace with actual API calls later
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([
+const SuggestedToMe = () => {
+  const [activeTab, setActiveTab] = useState("all");
+
+  // Mock data - in a real app, this would come from an API
+  const mockSuggestions: ContentItem[] = [
     {
       id: "1",
+      title: "The Shawshank Redemption",
       type: "movie",
-      title: "Inception",
-      suggestedBy: "Alex Chen",
-      date: "2023-06-15",
-      details: {
-        director: "Christopher Nolan",
-        releaseDate: "2010",
+      imageUrl:
+        "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
+      year: "1994",
+      creator: "Frank Darabont",
+      description:
+        "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+      suggestedBy: {
+        id: "1",
+        name: "Emma Watson",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
       },
+      suggestedAt: "2023-06-15T14:30:00Z",
     },
     {
       id: "2",
+      title: "To Kill a Mockingbird",
       type: "book",
-      title: "Dune",
-      suggestedBy: "Jamie Smith",
-      date: "2023-06-10",
-      details: {
-        author: "Frank Herbert",
-        releaseDate: "1965",
+      imageUrl:
+        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      year: "1960",
+      creator: "Harper Lee",
+      description:
+        "The story of racial injustice and the loss of innocence in the American South during the Great Depression.",
+      suggestedBy: {
+        id: "2",
+        name: "John Smith",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
       },
+      suggestedAt: "2023-06-10T09:15:00Z",
     },
     {
       id: "3",
-      type: "anime",
       title: "Attack on Titan",
-      suggestedBy: "Robin Lee",
-      date: "2023-06-05",
-      details: {
-        creator: "Hajime Isayama",
-        platform: "Crunchyroll",
+      type: "anime",
+      imageUrl:
+        "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
+      year: "2013",
+      creator: "Hajime Isayama",
+      description:
+        "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, gigantic humanoid creatures who devour humans seemingly without reason.",
+      suggestedBy: {
+        id: "3",
+        name: "Sophia Chen",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
       },
+      suggestedAt: "2023-06-05T16:45:00Z",
     },
     {
       id: "4",
+      title: "Bohemian Rhapsody",
       type: "song",
-      title: "Blinding Lights",
-      suggestedBy: "Taylor Wong",
-      date: "2023-06-01",
-      details: {
-        artist: "The Weeknd",
-        releaseDate: "2019",
+      imageUrl:
+        "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
+      year: "1975",
+      creator: "Queen",
+      description:
+        "A six-minute suite, consisting of several sections without a chorus: an intro, a ballad segment, an operatic passage, a hard rock part and a reflective coda.",
+      suggestedBy: {
+        id: "4",
+        name: "Michael Johnson",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
       },
+      suggestedAt: "2023-06-01T11:20:00Z",
     },
-  ]);
+  ];
+
+  const filteredSuggestions =
+    activeTab === "all"
+      ? mockSuggestions
+      : mockSuggestions.filter((item) => item.type === activeTab);
+
+  const getIconForType = (type: string) => {
+    switch (type) {
+      case "movie":
+        return <Film className="h-5 w-5" />;
+      case "book":
+        return <BookOpen className="h-5 w-5" />;
+      case "anime":
+        return <Tv className="h-5 w-5" />;
+      case "song":
+        return <Music className="h-5 w-5" />;
+      case "youtube":
+        return <Youtube className="h-5 w-5" />;
+      case "reels":
+        return <Instagram className="h-5 w-5" />;
+      default:
+        return <Film className="h-5 w-5" />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto py-6 px-4">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">
-          Suggested to Me
-        </h1>
 
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="movies">Movies</TabsTrigger>
-            <TabsTrigger value="books">Books</TabsTrigger>
-            <TabsTrigger value="anime">Anime</TabsTrigger>
-            <TabsTrigger value="songs">Songs</TabsTrigger>
-          </TabsList>
+      <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+        <div className="py-6">
+          <h1 className="text-3xl font-bold text-foreground mb-8">
+            <span className="text-primary">Suggested</span> to Me
+          </h1>
 
-          <TabsContent value="all" className="space-y-4">
-            {suggestions.map((suggestion) => (
-              <SuggestionCard key={suggestion.id} suggestion={suggestion} />
-            ))}
-          </TabsContent>
+          <Tabs
+            defaultValue="all"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid grid-cols-6 mb-8 p-1 bg-muted/50">
+              <TabsTrigger value="all" className="rounded-full">
+                All
+              </TabsTrigger>
+              <TabsTrigger
+                value="movie"
+                className="flex items-center gap-2 rounded-full"
+              >
+                <Film className="h-4 w-4" />
+                Movies
+              </TabsTrigger>
+              <TabsTrigger
+                value="book"
+                className="flex items-center gap-2 rounded-full"
+              >
+                <BookOpen className="h-4 w-4" />
+                Books
+              </TabsTrigger>
+              <TabsTrigger
+                value="anime"
+                className="flex items-center gap-2 rounded-full"
+              >
+                <Tv className="h-4 w-4" />
+                Anime
+              </TabsTrigger>
+              <TabsTrigger
+                value="song"
+                className="flex items-center gap-2 rounded-full"
+              >
+                <Music className="h-4 w-4" />
+                Songs
+              </TabsTrigger>
+              <TabsTrigger
+                value="youtube"
+                className="flex items-center gap-2 rounded-full"
+              >
+                <Youtube className="h-4 w-4" />
+                Videos
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="movies" className="space-y-4">
-            {suggestions
-              .filter((s) => s.type === "movie")
-              .map((suggestion) => (
-                <SuggestionCard key={suggestion.id} suggestion={suggestion} />
-              ))}
-          </TabsContent>
+            <TabsContent value={activeTab} className="mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredSuggestions.length > 0 ? (
+                  filteredSuggestions.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0"
+                    >
+                      <div className="flex flex-col h-full">
+                        {item.imageUrl && (
+                          <div className="w-full h-40 bg-muted">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <CardContent className="flex-1 p-5">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
+                                {getIconForType(item.type)}
+                              </div>
+                              <span className="text-xs font-medium text-primary capitalize">
+                                {item.type}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(item.suggestedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h3 className="font-semibold text-lg mb-1 line-clamp-1 text-foreground">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {item.creator} • {item.year}
+                          </p>
+                          <p className="text-sm line-clamp-2 mb-4 text-foreground">
+                            {item.description}
+                          </p>
 
-          <TabsContent value="books" className="space-y-4">
-            {suggestions
-              .filter((s) => s.type === "book")
-              .map((suggestion) => (
-                <SuggestionCard key={suggestion.id} suggestion={suggestion} />
-              ))}
-          </TabsContent>
+                          {/* Social media style interaction buttons */}
+                          <div className="flex items-center justify-between mb-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                            >
+                              <Heart className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                            >
+                              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                            >
+                              <Share2 className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </div>
 
-          <TabsContent value="anime" className="space-y-4">
-            {suggestions
-              .filter((s) => s.type === "anime")
-              .map((suggestion) => (
-                <SuggestionCard key={suggestion.id} suggestion={suggestion} />
-              ))}
-          </TabsContent>
-
-          <TabsContent value="songs" className="space-y-4">
-            {suggestions
-              .filter((s) => s.type === "song")
-              .map((suggestion) => (
-                <SuggestionCard key={suggestion.id} suggestion={suggestion} />
-              ))}
-          </TabsContent>
-        </Tabs>
+                          <div className="flex items-center pt-3 border-t border-border">
+                            <span className="text-xs font-medium text-foreground mr-2">
+                              Suggested by:
+                            </span>
+                            <div className="flex items-center">
+                              <Avatar className="h-5 w-5 mr-1 ring-1 ring-primary/20">
+                                <AvatarImage
+                                  src={item.suggestedBy.avatar}
+                                  alt={item.suggestedBy.name}
+                                />
+                                <AvatarFallback className="bg-primary-100 text-primary-800">
+                                  {item.suggestedBy.name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs font-medium text-foreground">
+                                {item.suggestedBy.name}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12 bg-card rounded-lg shadow-social dark:shadow-social-dark p-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                      <Film className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2 text-foreground">
+                      No suggestions yet
+                    </h3>
+                    <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                      You don't have any suggestions in this category yet. Ask
+                      your friends to recommend something!
+                    </p>
+                    <Button className="rounded-full gap-2">
+                      <Plus className="h-4 w-4" />
+                      Ask for Recommendations
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
     </div>
-  );
-};
-
-interface SuggestionCardProps {
-  suggestion: Suggestion;
-}
-
-const SuggestionCard: React.FC<SuggestionCardProps> = ({ suggestion }) => {
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-foreground">{suggestion.title}</CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Suggested by {suggestion.suggestedBy} on {suggestion.date}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="text-foreground">
-          <p className="font-medium">
-            Type:{" "}
-            <span className="font-normal">
-              {suggestion.type.charAt(0).toUpperCase() +
-                suggestion.type.slice(1)}
-            </span>
-          </p>
-          {suggestion.details?.director && (
-            <p className="font-medium">
-              Director:{" "}
-              <span className="font-normal">{suggestion.details.director}</span>
-            </p>
-          )}
-          {suggestion.details?.author && (
-            <p className="font-medium">
-              Author:{" "}
-              <span className="font-normal">{suggestion.details.author}</span>
-            </p>
-          )}
-          {suggestion.details?.artist && (
-            <p className="font-medium">
-              Artist:{" "}
-              <span className="font-normal">{suggestion.details.artist}</span>
-            </p>
-          )}
-          {suggestion.details?.creator && (
-            <p className="font-medium">
-              Creator:{" "}
-              <span className="font-normal">{suggestion.details.creator}</span>
-            </p>
-          )}
-          {suggestion.details?.releaseDate && (
-            <p className="font-medium">
-              Released:{" "}
-              <span className="font-normal">
-                {suggestion.details.releaseDate}
-              </span>
-            </p>
-          )}
-          {suggestion.details?.platform && (
-            <p className="font-medium">
-              Available on:{" "}
-              <span className="font-normal">{suggestion.details.platform}</span>
-            </p>
-          )}
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button variant="default">Mark as Watched</Button>
-        <Button variant="outline" className="ml-2">
-          Thank {suggestion.suggestedBy.split(" ")[0]}
-        </Button>
-      </CardFooter>
-    </Card>
   );
 };
 

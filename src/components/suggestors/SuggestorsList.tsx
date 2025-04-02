@@ -68,10 +68,12 @@ const SuggestorsList = ({
 }: SuggestorsListProps) => {
   if (suggestors.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-sm">
-        <Users className="w-16 h-16 text-gray-300 mb-4" />
-        <h3 className="text-xl font-medium text-gray-700">No suggestors yet</h3>
-        <p className="text-gray-500 mt-2 text-center">
+      <div className="flex flex-col items-center justify-center p-8 bg-card rounded-lg shadow-sm">
+        <Users className="w-16 h-16 text-muted-foreground mb-4" />
+        <h3 className="text-xl font-medium text-foreground">
+          No suggestors yet
+        </h3>
+        <p className="text-muted-foreground mt-2 text-center">
           When people suggest content to you, they'll appear here.
         </p>
       </div>
@@ -79,8 +81,10 @@ const SuggestorsList = ({
   }
 
   return (
-    <div className={cn("w-full bg-white p-4", className)}>
-      <h2 className="text-2xl font-bold mb-6">People who suggested to you</h2>
+    <div className={cn("w-full bg-card p-4", className)}>
+      <h2 className="text-2xl font-bold mb-6 text-foreground">
+        People who suggested to you
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {suggestors.map((suggestor) => (
           <motion.div
@@ -100,18 +104,20 @@ const SuggestorsList = ({
                       {suggestor.name.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <CardTitle className="text-lg">{suggestor.name}</CardTitle>
+                  <CardTitle className="text-lg text-foreground">
+                    {suggestor.name}
+                  </CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="pt-2 pb-0">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Has suggested {suggestor.suggestionCount}{" "}
                   {suggestor.suggestionCount === 1 ? "item" : "items"} to you
                 </p>
               </CardContent>
               <CardFooter className="pt-4">
                 <button
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  className="text-sm text-primary hover:text-primary/80 font-medium"
                   onClick={(e) => {
                     e.stopPropagation();
                     onSuggestorClick(suggestor);
