@@ -6,6 +6,7 @@ import routes from "tempo-routes";
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
 const MySuggestions = lazy(() => import("./pages/my-suggestions"));
+const MyWatchlist = lazy(() => import("./pages/my-watchlist"));
 const Profile = lazy(() => import("./pages/profile"));
 const Login = lazy(() => import("./pages/auth/login"));
 const Signup = lazy(() => import("./pages/auth/signup"));
@@ -24,6 +25,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/suggested-to-me" element={<SuggestedToMe />} />
           <Route path="/my-suggestions" element={<MySuggestions />} />
+          <Route path="/my-watchlist" element={<MyWatchlist />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

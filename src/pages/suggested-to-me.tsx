@@ -13,6 +13,9 @@ import {
   MessageCircle,
   Share2,
   Plus,
+  CheckCircle,
+  Clock,
+  Bookmark,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,12 +34,18 @@ interface ContentItem {
     avatar?: string;
   };
   suggestedAt: string;
+  status?: "watched" | "watching" | "watchlist" | null;
 }
 
 const SuggestedToMe = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const [suggestions, setSuggestions] = useState<ContentItem[]>([]);
 
   // Mock data - in a real app, this would come from an API
+  React.useEffect(() => {
+    setSuggestions(mockSuggestions);
+  }, []);
+
   const mockSuggestions: ContentItem[] = [
     {
       id: "1",
@@ -110,8 +119,32 @@ const SuggestedToMe = () => {
 
   const filteredSuggestions =
     activeTab === "all"
-      ? mockSuggestions
-      : mockSuggestions.filter((item) => item.type === activeTab);
+      ? suggestions
+      : suggestions.filter((item) => item.type === activeTab);
+
+  const handleMarkAsWatched = (id: string) => {
+    setSuggestions((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, status: "watched" } : item,
+      ),
+    );
+  };
+
+  const handleMarkAsWatching = (id: string) => {
+    setSuggestions((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, status: "watching" } : item,
+      ),
+    );
+  };
+
+  const handleAddToWatchlist = (id: string) => {
+    setSuggestions((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, status: "watchlist" } : item,
+      ),
+    );
+  };
 
   const getIconForType = (type: string) => {
     switch (type) {
@@ -230,6 +263,63 @@ const SuggestedToMe = () => {
                           <p className="text-sm line-clamp-2 mb-4 text-foreground">
                             {item.description}
                           </p>
+
+                          {/* Status indicator */}
+                          {item.status && (
+                            <div className="mb-3">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "watched" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : item.status === "watching" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"}`}
+                              >
+                                {item.status === "watched" ? (
+                                  <>
+                                    <CheckCircle className="mr-1 h-3 w-3" />
+                                    Watched
+                                  </>
+                                ) : item.status === "watching" ? (
+                                  <>
+                                    <Clock className="mr-1 h-3 w-3" />
+                                    Currently Watching
+                                  </>
+                                ) : (
+                                  <>
+                                    <Bookmark className="mr-1 h-3 w-3" />
+                                    In Watchlist
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Action buttons */}
+                          <div className="flex items-center justify-between mb-4 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full text-xs flex-1"
+                              onClick={() => handleMarkAsWatched(item.id)}
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Watched
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full text-xs flex-1"
+                              onClick={() => handleMarkAsWatching(item.id)}
+                            >
+                              <Clock className="h-3 w-3 mr-1" />
+                              Watching
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full text-xs flex-1"
+                              onClick={() => handleAddToWatchlist(item.id)}
+                            >
+                              <Bookmark className="h-3 w-3 mr-1" />
+                              Watchlist
+                            </Button>
+                          </div>
 
                           {/* Social media style interaction buttons */}
                           <div className="flex items-center justify-between mb-4">
