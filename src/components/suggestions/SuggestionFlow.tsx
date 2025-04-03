@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,6 +13,7 @@ import ContentTypeSelector from "./ContentTypeSelector";
 import ContentSearch from "./ContentSearch";
 import ContentDetailsForm from "./ContentDetailsForm";
 import RecipientSelector from "./RecipientSelector";
+import { useTheme } from "@/lib/theme-context";
 
 interface ContentItem {
   id: string;
@@ -47,6 +48,7 @@ const SuggestionFlow = ({
   onOpenChange = () => {},
   onComplete = () => {},
 }: SuggestionFlowProps) => {
+  const { theme } = useTheme();
   const [step, setStep] = useState(1);
   const [contentType, setContentType] = useState("");
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
@@ -124,13 +126,15 @@ const SuggestionFlow = ({
           {[1, 2, 3, 4].map((i) => (
             <React.Fragment key={i}>
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${step === i ? "bg-primary text-primary-foreground" : step > i ? "bg-primary/20 text-primary" : "bg-gray-200 text-gray-500"}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${step === i ? "bg-primary text-primary-foreground" : step > i ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+                onClick={() => i < step && setStep(i)}
+                title={i < step ? `Go back to step ${i}` : ""}
               >
                 {step > i ? <Check className="h-4 w-4" /> : i}
               </div>
               {i < 4 && (
                 <div
-                  className={`w-10 h-1 ${step > i ? "bg-primary/20" : "bg-gray-200"}`}
+                  className={`w-10 h-1 ${step > i ? "bg-primary/20" : "bg-muted"}`}
                 />
               )}
             </React.Fragment>
@@ -183,24 +187,31 @@ const SuggestionFlow = ({
   const renderConfirmation = () => {
     return (
       <div className="p-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-          <Check className="h-8 w-8 text-green-600" />
+        <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
+          <Check className="h-8 w-8 text-green-600 dark:text-green-300" />
         </div>
-        <h3 className="text-xl font-semibold mb-2">Suggestion Sent!</h3>
-        <p className="text-gray-500 mb-6">
+        <h3 className="text-xl font-semibold mb-2 text-foreground">
+          Suggestion Sent!
+        </h3>
+        <p className="text-muted-foreground mb-6">
           Your suggestion has been sent to {recipients.length}{" "}
           {recipients.length === 1 ? "person" : "people"}.
         </p>
-        <Button onClick={() => onOpenChange(false)}>Close</Button>
+        <div className="flex justify-center gap-4">
+          <Button variant="outline" onClick={() => setStep(1)}>
+            New Suggestion
+          </Button>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
+        </div>
       </div>
     );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] md:max-w-[800px] p-0 overflow-hidden bg-white">
+      <DialogContent className="sm:max-w-[600px] md:max-w-[800px] p-0 overflow-hidden bg-background border-border">
         <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="text-2xl font-bold text-center">
+          <DialogTitle className="text-2xl font-bold text-center text-foreground">
             {getStepTitle()}
           </DialogTitle>
         </DialogHeader>
@@ -220,6 +231,30 @@ const SuggestionFlow = ({
             </motion.div>
           </AnimatePresence>
         </div>
+
+        {step > 1 && step < 5 && (
+          <DialogFooter className="p-6 pt-0 flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" /> Back
+            </Button>
+            {step < 4 && (
+              <Button
+                onClick={() => setStep(step + 1)}
+                className="flex items-center gap-1"
+                disabled={
+                  (step === 2 && !selectedContent) ||
+                  (step === 3 && !contentDetails)
+                }
+              >
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+          </DialogFooter>
+        )}
 
         {step === 1 && (
           <DialogFooter className="p-6 pt-0 flex justify-end">
