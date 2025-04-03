@@ -25,6 +25,7 @@ export interface ContentItem {
     avatar?: string;
   }[];
   suggestedAt: string;
+  status?: 'unwatched' | 'watching' | 'watched';
 }
 
 export interface Suggestor {

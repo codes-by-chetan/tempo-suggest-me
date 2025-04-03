@@ -61,7 +61,7 @@ const Navbar = () => {
               <Link
                 to="/"
                 className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors",
+                  "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/")
                     ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
                     : "text-foreground/70 hover:bg-accent hover:text-foreground",
@@ -73,7 +73,7 @@ const Navbar = () => {
               <Link
                 to="/suggested-to-me"
                 className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors",
+                  "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/suggested-to-me")
                     ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
                     : "text-foreground/70 hover:bg-accent hover:text-foreground",
@@ -85,7 +85,7 @@ const Navbar = () => {
               <Link
                 to="/my-suggestions"
                 className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors",
+                  "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/my-suggestions")
                     ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
                     : "text-foreground/70 hover:bg-accent hover:text-foreground",
@@ -93,6 +93,18 @@ const Navbar = () => {
               >
                 <User className="mr-2 h-4 w-4" />
                 My Suggestions
+              </Link>
+              <Link
+                to="/my-watchlist"
+                className={cn(
+                  "px-3 py-2 text-sm font-medium flex items-center transition-colors",
+                  isActive("/my-watchlist")
+                    ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
+                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                )}
+              >
+                <BookMarked className="mr-2 h-4 w-4" />
+                My Watchlist
               </Link>
             </div>
           </div>
@@ -221,7 +233,7 @@ const Navbar = () => {
           <Link
             to="/"
             className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium",
+              "block px-3 py-2 text-base font-medium",
               isActive("/")
                 ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
                 : "text-foreground/70 hover:bg-accent hover:text-foreground",
@@ -233,7 +245,7 @@ const Navbar = () => {
           <Link
             to="/suggested-to-me"
             className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium",
+              "block px-3 py-2 text-base font-medium",
               isActive("/suggested-to-me")
                 ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
                 : "text-foreground/70 hover:bg-accent hover:text-foreground",
@@ -245,7 +257,7 @@ const Navbar = () => {
           <Link
             to="/my-suggestions"
             className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium",
+              "block px-3 py-2 text-base font-medium",
               isActive("/my-suggestions")
                 ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
                 : "text-foreground/70 hover:bg-accent hover:text-foreground",
@@ -253,6 +265,18 @@ const Navbar = () => {
           >
             <User className="inline-block mr-2 h-5 w-5" />
             My Suggestions
+          </Link>
+          <Link
+            to="/my-watchlist"
+            className={cn(
+              "block px-3 py-2 text-base font-medium",
+              isActive("/my-watchlist")
+                ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
+                : "text-foreground/70 hover:bg-accent hover:text-foreground",
+            )}
+          >
+            <BookMarked className="inline-block mr-2 h-5 w-5" />
+            My Watchlist
           </Link>
         </div>
 
