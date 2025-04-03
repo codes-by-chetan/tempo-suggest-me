@@ -21,13 +21,13 @@ const ContentTypeSelector = ({
 }: ContentTypeSelectorProps) => {
   const contentTypes: ContentType[] = [
     {
-      id: "movies",
+      id: "movie",
       name: "Movies",
       icon: <Film className="h-8 w-8" />,
       description: "Suggest a film to watch",
     },
     {
-      id: "books",
+      id: "book",
       name: "Books",
       icon: <BookOpen className="h-8 w-8" />,
       description: "Recommend a good read",
@@ -59,7 +59,7 @@ const ContentTypeSelector = ({
   ];
 
   return (
-    <div className="w-full bg-white p-4 rounded-lg">
+    <div className="w-full bg-white dark:bg-muted p-4 rounded-lg">
       <h2 className="text-2xl font-bold mb-4 text-center">
         What would you like to suggest?
       </h2>
@@ -71,7 +71,7 @@ const ContentTypeSelector = ({
               "cursor-pointer transition-all hover:scale-105 border-2",
               selectedType === type.id
                 ? "border-primary bg-primary/10"
-                : "border-gray-200",
+                : "border-gray-600",
             )}
             onClick={() => onSelect(type.id)}
           >

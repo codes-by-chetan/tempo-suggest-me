@@ -103,7 +103,7 @@ const RecipientSelector = ({
   };
 
   return (
-    <div className="w-full bg-white p-6 rounded-lg shadow-sm flex flex-col gap-4">
+    <div className="w-full bg-white dark:bg-muted p-6 rounded-lg shadow-sm flex flex-col gap-4">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-semibold">Select Recipients</h2>
       </div>
@@ -127,7 +127,7 @@ const RecipientSelector = ({
           {selectedRecipients.map((recipient) => (
             <div
               key={recipient.id}
-              className="flex items-center gap-2 bg-gray-100 rounded-full py-1 px-3"
+              className="flex items-center gap-2 bg-gray-100 dark:bg-muted-foreground rounded-full py-1 px-3"
             >
               <Avatar className="h-6 w-6">
                 <AvatarImage src={recipient.avatar} alt={recipient.name} />
@@ -152,7 +152,7 @@ const RecipientSelector = ({
             {searchResults.map((user) => (
               <li
                 key={user.id}
-                className="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between"
+                className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between"
                 onClick={() => handleSelectRecipient(user)}
               >
                 <div className="flex items-center gap-3">
@@ -187,8 +187,8 @@ const RecipientSelector = ({
               className={cn(
                 "p-3 rounded-md flex items-center justify-between",
                 selectedRecipients.some((r) => r.id === user.id)
-                  ? "bg-gray-100"
-                  : "hover:bg-gray-50 cursor-pointer",
+                  ? "bg-gray-100 dark:bg-gray-700"
+                  : "hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700",
               )}
               onClick={() => {
                 if (!selectedRecipients.some((r) => r.id === user.id)) {

@@ -1070,7 +1070,7 @@ const ContentDetailsForm = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-4xl mx-auto">
+    <div className="bg-white dark:bg-muted p-6 rounded-lg shadow-md w-full max-w-4xl mx-auto">
       <div className="flex items-center mb-6">
         <h2 className="text-2xl font-bold">
           {contentType.charAt(0).toUpperCase() + contentType.slice(1)} Details

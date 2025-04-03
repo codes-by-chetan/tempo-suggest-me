@@ -209,7 +209,7 @@ const SuggestionFlow = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] md:max-w-[800px] p-0 overflow-hidden bg-background border-border">
+      <DialogContent aria-describedby={"new-suggestion-dialogue-box-content"} aria-description={"new-suggestion-dialogue-box-content"} className="sm:max-w-[600px] md:max-w-[800px] p-0 overflow-auto max-h-[90vh] bg-background border-border">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-2xl font-bold text-center text-foreground">
             {getStepTitle()}

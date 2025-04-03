@@ -1,8 +1,5 @@
 // This is a mock API service that simulates backend calls
 // In a real application, this would make actual HTTP requests to your backend
-
-import { User } from "./types";
-
 // Simulate network delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

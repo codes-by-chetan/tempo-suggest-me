@@ -3,6 +3,7 @@ import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { log } from "console";
 
 interface ContentSearchProps {
   contentType?: string;
@@ -146,10 +147,11 @@ const ContentSearch = ({
       // Simulate network delay
       const timer = setTimeout(() => {
         const filteredResults =
-          mockData[contentType]?.filter((item) =>
-            item.title.toLowerCase().includes(searchQuery.toLowerCase()),
-          ) || [];
-
+          mockData[contentType]?.filter((item) =>{
+            console.log(item.title.toLowerCase(), searchQuery.toLowerCase(), "includes =>", item.title.toLowerCase().includes(searchQuery.toLowerCase()))
+            return item.title.toLowerCase().includes(searchQuery.toLowerCase())
+      }) || [];
+        console.log(filteredResults, contentType);
         setSearchResults(filteredResults);
         setIsLoading(false);
       }, 500);
@@ -172,7 +174,7 @@ const ContentSearch = ({
   };
 
   return (
-    <div className="w-full bg-white p-6 rounded-lg shadow-sm">
+    <div className="w-full bg-white dark:bg-muted p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Search for {contentType}</h2>
 
       <div className="relative">
@@ -205,7 +207,7 @@ const ContentSearch = ({
             {searchResults.map((result) => (
               <div
                 key={result.id}
-                className="flex items-start p-3 hover:bg-slate-50 cursor-pointer border-b last:border-b-0"
+                className="flex items-start p-3 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b last:border-b-0"
                 onClick={() => handleSelectContent(result)}
               >
                 {result.imageUrl && (
