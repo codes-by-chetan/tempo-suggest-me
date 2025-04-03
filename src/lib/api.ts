@@ -4,7 +4,7 @@
 import { User } from "./types";
 
 // Simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface ContentItem {
   id: string;
@@ -25,7 +25,7 @@ export interface ContentItem {
     avatar?: string;
   }[];
   suggestedAt: string;
-  status?: 'unwatched' | 'watching' | 'watched';
+  status?: "unwatched" | "watching" | "watched";
 }
 
 export interface Suggestor {
@@ -88,37 +88,45 @@ const mockSuggestionsToMe: ContentItem[] = [
     id: "1",
     title: "The Shawshank Redemption",
     type: "movie",
-    imageUrl: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
     year: "1994",
     creator: "Frank Darabont",
-    description: "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+    description:
+      "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
     suggestedBy: {
       id: "1",
       name: "Emma Watson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
     },
-    suggestedAt: "2023-06-15T14:30:00Z"
+    suggestedAt: "2023-06-15T14:30:00Z",
   },
   {
     id: "2",
     title: "To Kill a Mockingbird",
     type: "book",
-    imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
     year: "1960",
     creator: "Harper Lee",
-    description: "The story of racial injustice and the loss of innocence in the American South during the Great Depression.",
+    description:
+      "The story of racial injustice and the loss of innocence in the American South during the Great Depression.",
     suggestedBy: {
       id: "2",
       name: "John Smith",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
     },
-    suggestedAt: "2023-06-10T09:15:00Z"
+    suggestedAt: "2023-06-10T09:15:00Z",
   },
   {
     id: "3",
     title: "Attack on Titan",
     type: "anime",
-    imageUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
     year: "2013",
     creator: "Hajime Isayama",
-    description: "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, gigantic humanoid creatures who devour humans seemingly without reason.",
+    description:
+      "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, gigantic humanoid creatures who devour humans seemingly without reason.",
+  },
+];
