@@ -128,5 +128,6 @@ const mockSuggestionsToMe: ContentItem[] = [
     creator: "Hajime Isayama",
     description:
       "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, gigantic humanoid creatures who devour humans seemingly without reason.",
+    suggestedAt: "2023-06-10T09:15:00Z",
   },
 ];

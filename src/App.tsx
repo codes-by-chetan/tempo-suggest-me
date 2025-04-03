@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
+import ErrorPage from "./components/errorPage";
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
@@ -29,7 +30,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="*" element={<ErrorPage />} />
 
           {/* Allow Tempo routes */}
           {import.meta.env.VITE_TEMPO === "true" && (
