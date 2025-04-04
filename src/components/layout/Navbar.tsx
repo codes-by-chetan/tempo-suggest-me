@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -20,15 +20,114 @@ import {
   X,
   Bell,
   Search,
+  Check,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/lib/auth-context";
+import NotificationItem, { Notification } from "./NotificationItem";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Mock notifications data
+  useEffect(() => {
+    // In a real app, this would be fetched from an API
+    const mockNotifications: Notification[] = [
+      {
+        id: "1",
+        type: "suggestion",
+        title: "New Suggestion",
+        message: "Emma Watson suggested 'Inception' to you",
+        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+        read: false,
+        contentType: "movie",
+        user: {
+          id: "1",
+          name: "Emma Watson",
+          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
+        },
+      },
+      {
+        id: "2",
+        type: "suggestion",
+        title: "New Suggestion",
+        message: "John Smith suggested 'To Kill a Mockingbird' to you",
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+        read: false,
+        contentType: "book",
+        user: {
+          id: "2",
+          name: "John Smith",
+          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
+        },
+      },
+      {
+        id: "3",
+        type: "like",
+        title: "New Like",
+        message: "Sophia Chen liked your suggestion 'Attack on Titan'",
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+        read: true,
+        contentType: "anime",
+        user: {
+          id: "3",
+          name: "Sophia Chen",
+          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
+        },
+      },
+      {
+        id: "4",
+        type: "comment",
+        title: "New Comment",
+        message:
+          "Michael Johnson commented on your suggestion 'Bohemian Rhapsody': 'Great song! I love Queen.'",
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+        read: true,
+        contentType: "song",
+        user: {
+          id: "4",
+          name: "Michael Johnson",
+          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
+        },
+      },
+      {
+        id: "5",
+        type: "system",
+        title: "Welcome to Suggest.me",
+        message:
+          "Thanks for joining! Start by suggesting content to your friends or exploring suggestions made to you.",
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
+        read: true,
+      },
+    ];
+
+    setNotifications(mockNotifications);
+    setUnreadCount(mockNotifications.filter((n) => !n.read).length);
+  }, []);
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true })),
+    );
+    setUnreadCount(0);
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -126,14 +225,58 @@ const Navbar = () => {
           {/* User profile dropdown and suggest button */}
           <div className="hidden sm:flex sm:items-center sm:space-x-3">
             {/* Notification bell */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full relative"
+            <DropdownMenu
+              open={notificationsOpen}
+              onOpenChange={setNotificationsOpen}
             >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-primary ring-2 ring-card"></span>
-            </Button>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full relative"
+                >
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 p-0">
+                <div className="flex items-center justify-between p-3">
+                  <DropdownMenuLabel className="p-0">
+                    Notifications
+                  </DropdownMenuLabel>
+                  {unreadCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs flex items-center gap-1"
+                      onClick={handleMarkAllAsRead}
+                    >
+                      <Check className="h-3 w-3" /> Mark all as read
+                    </Button>
+                  )}
+                </div>
+                <Separator />
+                <ScrollArea className="h-[300px]">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <NotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        onMarkAsRead={handleMarkAsRead}
+                      />
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-muted-foreground text-sm">
+                      No notifications yet
+                    </div>
+                  )}
+                </ScrollArea>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <ThemeToggle />
 
@@ -299,8 +442,18 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="ml-auto">
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full relative"
+                  onClick={() => setNotificationsOpen(true)}
+                >
                   <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
                 </Button>
               </div>
             </div>
