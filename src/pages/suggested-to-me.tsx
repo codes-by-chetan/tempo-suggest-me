@@ -42,6 +42,8 @@ interface ContentItem {
     | "reading"
     | "listened"
     | "listening"
+    | "readlist"
+    | "listenlist"
     | null;
 }
 
@@ -156,10 +158,25 @@ const SuggestedToMe = () => {
 
   const handleAddToWatchlist = (id: string) => {
     setSuggestions((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "watchlist" } : item,
-      ),
+      prev.map((item) => {
+        if (item.id === id) {
+          const status = getContentSpecificListStatus(item.type);
+          return { ...item, status };
+        }
+        return item;
+      }),
     );
+  };
+
+  const getContentSpecificListStatus = (type: string): string => {
+    switch (type) {
+      case "book":
+        return "readlist";
+      case "song":
+        return "listenlist";
+      default:
+        return "watchlist";
+    }
   };
 
   const getContentSpecificWatchedStatus = (type: string): string => {
@@ -189,6 +206,8 @@ const SuggestedToMe = () => {
     type: string,
   ): string => {
     if (status === "watchlist") return "In Watchlist";
+    if (status === "readlist") return "In Reading List";
+    if (status === "listenlist") return "In Listening List";
 
     switch (type) {
       case "book":
@@ -344,10 +363,20 @@ const SuggestedToMe = () => {
                                       item.type,
                                     )}
                                   </>
-                                ) : (
+                                ) : item.status === "watchlist" ? (
                                   <>
                                     <Bookmark className="mr-1 h-3 w-3" />
                                     In Watchlist
+                                  </>
+                                ) : item.status === "readlist" ? (
+                                  <>
+                                    <Bookmark className="mr-1 h-3 w-3" />
+                                    In Reading List
+                                  </>
+                                ) : (
+                                  <>
+                                    <Bookmark className="mr-1 h-3 w-3" />
+                                    In Listening List
                                   </>
                                 )}
                               </span>
@@ -389,7 +418,11 @@ const SuggestedToMe = () => {
                               onClick={() => handleAddToWatchlist(item.id)}
                             >
                               <Bookmark className="h-3 w-3 mr-1" />
-                              Watchlist
+                              {item.type === "book"
+                                ? "Reading List"
+                                : item.type === "song"
+                                  ? "Listening List"
+                                  : "Watchlist"}
                             </Button>
                           </div>
 

@@ -44,6 +44,8 @@ interface ContentItem {
     | "reading"
     | "listened"
     | "listening"
+    | "readlist"
+    | "listenlist"
     | null;
 }
 
@@ -57,6 +59,8 @@ const MySuggestions = () => {
     type: string,
   ): string => {
     if (status === "watchlist") return "In Watchlist";
+    if (status === "readlist") return "In Reading List";
+    if (status === "listenlist") return "In Listening List";
 
     switch (type) {
       case "book":
@@ -303,10 +307,20 @@ const MySuggestions = () => {
                                       item.type,
                                     )}
                                   </>
-                                ) : (
+                                ) : item.status === "watchlist" ? (
                                   <>
                                     <Bookmark className="mr-1 h-3 w-3" />
                                     In Watchlist
+                                  </>
+                                ) : item.status === "readlist" ? (
+                                  <>
+                                    <Bookmark className="mr-1 h-3 w-3" />
+                                    In Reading List
+                                  </>
+                                ) : (
+                                  <>
+                                    <Bookmark className="mr-1 h-3 w-3" />
+                                    In Listening List
                                   </>
                                 )}
                               </span>

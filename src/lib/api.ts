@@ -29,7 +29,10 @@ export interface ContentItem {
     | "finished"
     | "reading"
     | "listened"
-    | "listening";
+    | "listening"
+    | "watchlist"
+    | "readlist"
+    | "listenlist";
 }
 
 export interface Suggestor {
