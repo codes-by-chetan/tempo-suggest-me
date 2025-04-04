@@ -42,7 +42,17 @@ interface ContentItem {
     avatar?: string;
   };
   addedAt: string;
-  status: "watched" | "watching" | "watchlist" | null;
+  status:
+    | "watched"
+    | "watching"
+    | "watchlist"
+    | "finished"
+    | "reading"
+    | "readlist"
+    | "listened"
+    | "listening"
+    | "listenlist"
+    | null;
 }
 
 const MyWatchlist = () => {
@@ -85,7 +95,7 @@ const MyWatchlist = () => {
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
       },
       addedAt: "2023-06-10T09:15:00Z",
-      status: "watching",
+      status: "reading",
     },
     {
       id: "3",
@@ -121,7 +131,7 @@ const MyWatchlist = () => {
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david",
       },
       addedAt: "2023-06-01T11:20:00Z",
-      status: "watched",
+      status: "listened",
     },
   ];
 
@@ -150,49 +160,101 @@ const MyWatchlist = () => {
   };
 
   const getStatusIcon = (status: string | null) => {
-    switch (status) {
-      case "watched":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "watching":
-        return <Clock className="h-4 w-4 text-amber-500" />;
-      case "watchlist":
-        return <Bookmark className="h-4 w-4 text-blue-500" />;
-      default:
-        return null;
+    if (!status) return null;
+
+    // Completed statuses
+    if (["watched", "finished", "listened"].includes(status)) {
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
     }
+
+    // In progress statuses
+    if (["watching", "reading", "listening"].includes(status)) {
+      return <Clock className="h-4 w-4 text-amber-500" />;
+    }
+
+    // List statuses
+    if (["watchlist", "readlist", "listenlist"].includes(status)) {
+      return <Bookmark className="h-4 w-4 text-blue-500" />;
+    }
+
+    return null;
   };
 
-  const getStatusText = (status: string | null) => {
-    switch (status) {
-      case "watched":
-        return "Watched";
-      case "watching":
-        return "Currently Watching";
-      case "watchlist":
-        return "In Watchlist";
+  const getStatusText = (status: string | null, type: string = "") => {
+    if (!status) return "";
+
+    // For filter dropdown where we don't have the type
+    if (!type) {
+      switch (status) {
+        case "watched":
+        case "finished":
+        case "listened":
+          return "Completed";
+        case "watching":
+        case "reading":
+        case "listening":
+          return "In Progress";
+        case "watchlist":
+        case "readlist":
+        case "listenlist":
+          return "In List";
+        default:
+          return "";
+      }
+    }
+
+    // When we have the content type
+    switch (type) {
+      case "book":
+        return status === "finished"
+          ? "Finished"
+          : status === "reading"
+            ? "Currently Reading"
+            : status === "readlist"
+              ? "In Reading List"
+              : "";
+      case "song":
+        return status === "listened"
+          ? "Listened"
+          : status === "listening"
+            ? "Currently Listening"
+            : status === "listenlist"
+              ? "In Listening List"
+              : "";
       default:
-        return "";
+        return status === "watched"
+          ? "Watched"
+          : status === "watching"
+            ? "Currently Watching"
+            : status === "watchlist"
+              ? "In Watchlist"
+              : "";
     }
   };
 
   const getStatusColor = (status: string | null) => {
-    switch (status) {
-      case "watched":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "watching":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300";
-      case "watchlist":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      default:
-        return "";
+    if (!status) return "";
+
+    // Completed statuses
+    if (["watched", "finished", "listened"].includes(status)) {
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
     }
+
+    // In progress statuses
+    if (["watching", "reading", "listening"].includes(status)) {
+      return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300";
+    }
+
+    // List statuses
+    if (["watchlist", "readlist", "listenlist"].includes(status)) {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    }
+
+    return "";
   };
 
   // Update status handler
-  const handleUpdateStatus = (
-    id: string,
-    newStatus: "watched" | "watching" | "watchlist" | null,
-  ) => {
+  const handleUpdateStatus = (id: string, newStatus: string | null) => {
     console.log(`Updating item ${id} to status: ${newStatus}`);
     // In a real app, this would update the backend
   };
@@ -205,7 +267,7 @@ const MyWatchlist = () => {
         <div className="py-6">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-foreground">
-              My <span className="text-primary">Watchlist</span>
+              My <span className="text-primary">Collections</span>
             </h1>
             <div className="flex gap-2">
               <DropdownMenu>
@@ -223,17 +285,17 @@ const MyWatchlist = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setStatusFilter("watched")}>
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Watched
+                    Completed
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setStatusFilter("watching")}>
                     <Clock className="h-4 w-4 text-amber-500 mr-2" />
-                    Currently Watching
+                    In Progress
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setStatusFilter("watchlist")}
                   >
                     <Bookmark className="h-4 w-4 text-blue-500 mr-2" />
-                    In Watchlist
+                    In List
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -308,7 +370,7 @@ const MyWatchlist = () => {
                                 className={`absolute top-2 right-2 flex items-center gap-1 ${getStatusColor(item.status)}`}
                               >
                                 {getStatusIcon(item.status)}
-                                {getStatusText(item.status)}
+                                {getStatusText(item.status, item.type)}
                               </Badge>
                             )}
                           </div>
@@ -341,46 +403,76 @@ const MyWatchlist = () => {
                           <div className="flex items-center justify-between mb-4">
                             <Button
                               variant={
-                                item.status === "watched" ? "default" : "ghost"
-                              }
-                              size="sm"
-                              className="rounded-full p-2 h-auto"
-                              onClick={() =>
-                                handleUpdateStatus(item.id, "watched")
-                              }
-                            >
-                              <CheckCircle
-                                className={`h-4 w-4 ${item.status === "watched" ? "text-white" : "text-muted-foreground"}`}
-                              />
-                            </Button>
-                            <Button
-                              variant={
-                                item.status === "watching" ? "default" : "ghost"
-                              }
-                              size="sm"
-                              className="rounded-full p-2 h-auto"
-                              onClick={() =>
-                                handleUpdateStatus(item.id, "watching")
-                              }
-                            >
-                              <Clock
-                                className={`h-4 w-4 ${item.status === "watching" ? "text-white" : "text-muted-foreground"}`}
-                              />
-                            </Button>
-                            <Button
-                              variant={
-                                item.status === "watchlist"
+                                ["watched", "finished", "listened"].includes(
+                                  item.status || "",
+                                )
                                   ? "default"
                                   : "ghost"
                               }
                               size="sm"
                               className="rounded-full p-2 h-auto"
-                              onClick={() =>
-                                handleUpdateStatus(item.id, "watchlist")
+                              onClick={() => {
+                                const completedStatus =
+                                  item.type === "book"
+                                    ? "finished"
+                                    : item.type === "song"
+                                      ? "listened"
+                                      : "watched";
+                                handleUpdateStatus(item.id, completedStatus);
+                              }}
+                            >
+                              <CheckCircle
+                                className={`h-4 w-4 ${["watched", "finished", "listened"].includes(item.status || "") ? "text-white" : "text-muted-foreground"}`}
+                              />
+                            </Button>
+                            <Button
+                              variant={
+                                ["watching", "reading", "listening"].includes(
+                                  item.status || "",
+                                )
+                                  ? "default"
+                                  : "ghost"
                               }
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                              onClick={() => {
+                                const inProgressStatus =
+                                  item.type === "book"
+                                    ? "reading"
+                                    : item.type === "song"
+                                      ? "listening"
+                                      : "watching";
+                                handleUpdateStatus(item.id, inProgressStatus);
+                              }}
+                            >
+                              <Clock
+                                className={`h-4 w-4 ${["watching", "reading", "listening"].includes(item.status || "") ? "text-white" : "text-muted-foreground"}`}
+                              />
+                            </Button>
+                            <Button
+                              variant={
+                                [
+                                  "watchlist",
+                                  "readlist",
+                                  "listenlist",
+                                ].includes(item.status || "")
+                                  ? "default"
+                                  : "ghost"
+                              }
+                              size="sm"
+                              className="rounded-full p-2 h-auto"
+                              onClick={() => {
+                                const listStatus =
+                                  item.type === "book"
+                                    ? "readlist"
+                                    : item.type === "song"
+                                      ? "listenlist"
+                                      : "watchlist";
+                                handleUpdateStatus(item.id, listStatus);
+                              }}
                             >
                               <Bookmark
-                                className={`h-4 w-4 ${item.status === "watchlist" ? "text-white" : "text-muted-foreground"}`}
+                                className={`h-4 w-4 ${["watchlist", "readlist", "listenlist"].includes(item.status || "") ? "text-white" : "text-muted-foreground"}`}
                               />
                             </Button>
                           </div>
@@ -414,12 +506,12 @@ const MyWatchlist = () => {
                       <Bookmark className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="text-xl font-semibold mb-2">
-                      No items in your watchlist
+                      No items in your collection
                     </h3>
                     <p className="text-muted-foreground max-w-md mx-auto mb-6">
                       {statusFilter
                         ? `You don't have any ${getStatusText(statusFilter).toLowerCase()} items in this category.`
-                        : "Your watchlist is empty. Add items from the 'Suggested to Me' page!"}
+                        : "Your collection is empty. Add items from the 'Suggested to Me' page!"}
                     </p>
                   </div>
                 )}

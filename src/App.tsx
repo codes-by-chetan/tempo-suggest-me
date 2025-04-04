@@ -11,6 +11,7 @@ const MyWatchlist = lazy(() => import("./pages/my-watchlist"));
 const Profile = lazy(() => import("./pages/profile"));
 const Login = lazy(() => import("./pages/auth/login"));
 const Signup = lazy(() => import("./pages/auth/signup"));
+const ContentDetailsPage = lazy(() => import("./pages/ContentDetailsPage"));
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/content/:id" element={<ContentDetailsPage />} />
           <Route path="*" element={<ErrorPage />} />
 
           {/* Allow Tempo routes */}
