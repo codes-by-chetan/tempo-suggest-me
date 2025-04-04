@@ -14,6 +14,9 @@ import {
   Share2,
   Heart,
   MessageCircle,
+  CheckCircle,
+  Clock,
+  Bookmark,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -33,11 +36,37 @@ interface ContentItem {
     avatar?: string;
   }[];
   suggestedAt: string;
+  status?:
+    | "watched"
+    | "watching"
+    | "watchlist"
+    | "finished"
+    | "reading"
+    | "listened"
+    | "listening"
+    | null;
 }
 
 const MySuggestions = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [isSuggestionFlowOpen, setIsSuggestionFlowOpen] = useState(false);
+
+  // Helper functions for content-specific status labels
+  const getContentSpecificStatusLabel = (
+    status: string,
+    type: string,
+  ): string => {
+    if (status === "watchlist") return "In Watchlist";
+
+    switch (type) {
+      case "book":
+        return status === "finished" ? "Finished" : "Reading";
+      case "song":
+        return status === "listened" ? "Listened" : "Listening";
+      default:
+        return status === "watched" ? "Watched" : "Watching";
+    }
+  };
 
   // Mock data - in a real app, this would come from an API
   const mockSuggestions: ContentItem[] = [
@@ -64,6 +93,7 @@ const MySuggestions = () => {
         },
       ],
       suggestedAt: "2023-06-15T14:30:00Z",
+      status: "watched",
     },
     {
       id: "2",
@@ -83,6 +113,7 @@ const MySuggestions = () => {
         },
       ],
       suggestedAt: "2023-06-10T09:15:00Z",
+      status: "finished",
     },
     {
       id: "3",
@@ -107,6 +138,7 @@ const MySuggestions = () => {
         },
       ],
       suggestedAt: "2023-06-05T16:45:00Z",
+      status: "watching",
     },
     {
       id: "4",
@@ -126,6 +158,7 @@ const MySuggestions = () => {
         },
       ],
       suggestedAt: "2023-06-01T11:20:00Z",
+      status: "listened",
     },
   ];
 
@@ -233,7 +266,7 @@ const MySuggestions = () => {
                       key={item.id}
                       className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0"
                     >
-                      <div className="flex flex-col h-full">
+                      <div className="flex flex-col h-full relative">
                         {item.imageUrl && (
                           <div className="w-full h-40 bg-muted">
                             <img
@@ -244,6 +277,41 @@ const MySuggestions = () => {
                           </div>
                         )}
                         <CardContent className="flex-1 p-5">
+                          {/* Status indicator */}
+                          {item.status && (
+                            <div className="absolute top-2 right-2 z-10">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "watched" || item.status === "finished" || item.status === "listened" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : item.status === "watching" || item.status === "reading" || item.status === "listening" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"}`}
+                              >
+                                {item.status === "watched" ||
+                                item.status === "finished" ||
+                                item.status === "listened" ? (
+                                  <>
+                                    <CheckCircle className="mr-1 h-3 w-3" />
+                                    {getContentSpecificStatusLabel(
+                                      item.status,
+                                      item.type,
+                                    )}
+                                  </>
+                                ) : item.status === "watching" ||
+                                  item.status === "reading" ||
+                                  item.status === "listening" ? (
+                                  <>
+                                    <Clock className="mr-1 h-3 w-3" />
+                                    {getContentSpecificStatusLabel(
+                                      item.status,
+                                      item.type,
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Bookmark className="mr-1 h-3 w-3" />
+                                    In Watchlist
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                               <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">

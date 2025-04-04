@@ -22,7 +22,14 @@ export interface ContentItem {
     avatar?: string;
   }[];
   suggestedAt: string;
-  status?: "unwatched" | "watching" | "watched";
+  status?:
+    | "unwatched"
+    | "watching"
+    | "watched"
+    | "finished"
+    | "reading"
+    | "listened"
+    | "listening";
 }
 
 export interface Suggestor {

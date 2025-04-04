@@ -34,7 +34,15 @@ interface ContentItem {
     avatar?: string;
   };
   suggestedAt: string;
-  status?: "watched" | "watching" | "watchlist" | null;
+  status?:
+    | "watched"
+    | "watching"
+    | "watchlist"
+    | "finished"
+    | "reading"
+    | "listened"
+    | "listening"
+    | null;
 }
 
 const SuggestedToMe = () => {
@@ -124,17 +132,25 @@ const SuggestedToMe = () => {
 
   const handleMarkAsWatched = (id: string) => {
     setSuggestions((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "watched" } : item,
-      ),
+      prev.map((item) => {
+        if (item.id === id) {
+          const status = getContentSpecificWatchedStatus(item.type);
+          return { ...item, status };
+        }
+        return item;
+      }),
     );
   };
 
   const handleMarkAsWatching = (id: string) => {
     setSuggestions((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "watching" } : item,
-      ),
+      prev.map((item) => {
+        if (item.id === id) {
+          const status = getContentSpecificWatchingStatus(item.type);
+          return { ...item, status };
+        }
+        return item;
+      }),
     );
   };
 
@@ -144,6 +160,44 @@ const SuggestedToMe = () => {
         item.id === id ? { ...item, status: "watchlist" } : item,
       ),
     );
+  };
+
+  const getContentSpecificWatchedStatus = (type: string): string => {
+    switch (type) {
+      case "book":
+        return "finished";
+      case "song":
+        return "listened";
+      default:
+        return "watched";
+    }
+  };
+
+  const getContentSpecificWatchingStatus = (type: string): string => {
+    switch (type) {
+      case "book":
+        return "reading";
+      case "song":
+        return "listening";
+      default:
+        return "watching";
+    }
+  };
+
+  const getContentSpecificStatusLabel = (
+    status: string,
+    type: string,
+  ): string => {
+    if (status === "watchlist") return "In Watchlist";
+
+    switch (type) {
+      case "book":
+        return status === "finished" ? "Finished" : "Reading";
+      case "song":
+        return status === "listened" ? "Listened" : "Listening";
+      default:
+        return status === "watched" ? "Watched" : "Watching";
+    }
   };
 
   const getIconForType = (type: string) => {
@@ -230,7 +284,7 @@ const SuggestedToMe = () => {
                       key={item.id}
                       className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0"
                     >
-                      <div className="flex flex-col h-full">
+                      <div className="flex flex-col h-full relative">
                         {item.imageUrl && (
                           <div className="w-full h-40 bg-muted">
                             <img
@@ -266,19 +320,29 @@ const SuggestedToMe = () => {
 
                           {/* Status indicator */}
                           {item.status && (
-                            <div className="mb-3">
+                            <div className="absolute top-2 right-2 z-10">
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "watched" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : item.status === "watching" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"}`}
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "watched" || item.status === "finished" || item.status === "listened" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : item.status === "watching" || item.status === "reading" || item.status === "listening" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"}`}
                               >
-                                {item.status === "watched" ? (
+                                {item.status === "watched" ||
+                                item.status === "finished" ||
+                                item.status === "listened" ? (
                                   <>
                                     <CheckCircle className="mr-1 h-3 w-3" />
-                                    Watched
+                                    {getContentSpecificStatusLabel(
+                                      item.status,
+                                      item.type,
+                                    )}
                                   </>
-                                ) : item.status === "watching" ? (
+                                ) : item.status === "watching" ||
+                                  item.status === "reading" ||
+                                  item.status === "listening" ? (
                                   <>
                                     <Clock className="mr-1 h-3 w-3" />
-                                    Currently Watching
+                                    {getContentSpecificStatusLabel(
+                                      item.status,
+                                      item.type,
+                                    )}
                                   </>
                                 ) : (
                                   <>
@@ -299,7 +363,11 @@ const SuggestedToMe = () => {
                               onClick={() => handleMarkAsWatched(item.id)}
                             >
                               <CheckCircle className="h-3 w-3 mr-1" />
-                              Watched
+                              {item.type === "book"
+                                ? "Finished"
+                                : item.type === "song"
+                                  ? "Listened"
+                                  : "Watched"}
                             </Button>
                             <Button
                               variant="outline"
@@ -308,7 +376,11 @@ const SuggestedToMe = () => {
                               onClick={() => handleMarkAsWatching(item.id)}
                             >
                               <Clock className="h-3 w-3 mr-1" />
-                              Watching
+                              {item.type === "book"
+                                ? "Reading"
+                                : item.type === "song"
+                                  ? "Listening"
+                                  : "Watching"}
                             </Button>
                             <Button
                               variant="outline"
