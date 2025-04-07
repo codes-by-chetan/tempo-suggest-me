@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Navbar from "@/components/layout/Navbar";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ContentItem {
   id: string;
@@ -21,23 +24,11 @@ interface ContentItem {
   whereToListen?: string[];
 }
 
-interface ExploreSectionProps {
-  className?: string;
-}
-
-const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
+const Trending = () => {
   const navigate = useNavigate();
-  const [exploreContent, setExploreContent] = useState<{
-    trending: ContentItem[];
-    friendActivity: ContentItem[];
-    recommended: ContentItem[];
-  }>({
-    trending: [],
-    friendActivity: [],
-    recommended: [],
-  });
+  const [trendingContent, setTrendingContent] = useState<ContentItem[]>([]);
 
-  // Mock function to fetch explore content
+  // Mock function to fetch trending content
   useEffect(() => {
     // In a real app, this would be an API call
     const mockTrending: ContentItem[] = [
@@ -67,64 +58,35 @@ const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
         suggestedAt: new Date().toISOString(),
         whereToRead: ["Amazon", "Barnes & Noble", "Local Bookstore"],
       },
-    ];
-
-    const mockFriendActivity: ContentItem[] = [
       {
-        id: "f1",
-        title: "Jujutsu Kaisen",
+        id: "t3",
+        title: "Oppenheimer",
+        type: "movie",
+        imageUrl:
+          "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=300&q=80",
+        year: "2023",
+        creator: "Christopher Nolan",
+        description:
+          "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
+        suggestedAt: new Date().toISOString(),
+        whereToWatch: ["Apple TV+", "Amazon Prime"],
+      },
+      {
+        id: "t4",
+        title: "Demon Slayer",
         type: "anime",
         imageUrl:
-          "https://images.unsplash.com/photo-1541562232579-512a21360020?w=300&q=80",
-        year: "2020",
-        creator: "Gege Akutami",
+          "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
+        year: "2019",
+        creator: "Koyoharu Gotouge",
         description:
-          "A boy swallows a cursed talisman - the finger of a demon - and becomes cursed himself. He enters a shaman school to be able to locate the demon's other body parts and thus exorcise himself.",
-        suggestedBy: {
-          id: "3",
-          name: "Sophia Chen",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
-        },
+          "A young man named Tanjiro joins the Demon Slayer Corps to find a cure for his sister, who has been turned into a demon.",
         suggestedAt: new Date().toISOString(),
-        status: "watching",
         whereToWatch: ["Crunchyroll", "Netflix"],
       },
     ];
 
-    const mockRecommended: ContentItem[] = [
-      {
-        id: "r1",
-        title: "Pachinko",
-        type: "book",
-        imageUrl:
-          "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
-        year: "2017",
-        creator: "Min Jin Lee",
-        description:
-          "Following a Korean family who eventually migrates to Japan, the novel is a tale of love, sacrifice, ambition, and loyalty.",
-        suggestedAt: new Date().toISOString(),
-        whereToRead: ["Amazon", "Apple Books", "Local Bookstore"],
-      },
-      {
-        id: "r2",
-        title: "Killers of the Flower Moon",
-        type: "movie",
-        imageUrl:
-          "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
-        year: "2023",
-        creator: "Martin Scorsese",
-        description:
-          "Members of the Osage tribe in the United States are murdered under mysterious circumstances in the 1920s, sparking a major F.B.I. investigation.",
-        suggestedAt: new Date().toISOString(),
-        whereToWatch: ["Apple TV+", "Amazon Prime"],
-      },
-    ];
-
-    setExploreContent({
-      trending: mockTrending,
-      friendActivity: mockFriendActivity,
-      recommended: mockRecommended,
-    });
+    setTrendingContent(mockTrending);
   }, []);
 
   const renderContentCard = (item: ContentItem) => (
@@ -188,57 +150,26 @@ const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
   );
 
   return (
-    <div className={`${className}`}>
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-foreground">Trending Now</h2>
-          <Link
-            to="/explore/trending"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exploreContent.trending.map(renderContentCard)}
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Navbar />
 
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-foreground">
-            Friend Activity
-          </h2>
-          <Link
-            to="/explore/friends"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exploreContent.friendActivity.map(renderContentCard)}
-        </div>
-      </div>
+      <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+        <div className="py-6">
+          <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
 
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-foreground">
-            Recommended For You
-          </h2>
-          <Link
-            to="/explore/recommended"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            View all
-          </Link>
+          <h1 className="text-3xl font-bold text-foreground mb-8">
+            Trending Now
+          </h1>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {trendingContent.map(renderContentCard)}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exploreContent.recommended.map(renderContentCard)}
-        </div>
-      </div>
+      </main>
     </div>
   );
 };
 
-export default ExploreSection;
+export default Trending;

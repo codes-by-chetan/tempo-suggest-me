@@ -13,6 +13,11 @@ const Login = lazy(() => import("./pages/auth/login"));
 const Signup = lazy(() => import("./pages/auth/signup"));
 const ContentDetailsPage = lazy(() => import("./pages/ContentDetailsPage"));
 
+// Explore pages
+const ExploreTrending = lazy(() => import("./pages/explore/Trending"));
+const ExploreFriends = lazy(() => import("./pages/explore/FriendActivity"));
+const ExploreRecommended = lazy(() => import("./pages/explore/Recommended"));
+
 function App() {
   return (
     <Suspense
@@ -32,6 +37,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/content/:id" element={<ContentDetailsPage />} />
+          <Route path="/explore/trending" element={<ExploreTrending />} />
+          <Route path="/explore/friends" element={<ExploreFriends />} />
+          <Route path="/explore/recommended" element={<ExploreRecommended />} />
           <Route path="*" element={<ErrorPage />} />
 
           {/* Allow Tempo routes */}
