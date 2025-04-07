@@ -53,6 +53,9 @@ interface ContentItem {
     | "listening"
     | "listenlist"
     | null;
+  whereToWatch?: string[];
+  whereToRead?: string[];
+  whereToListen?: string[];
 }
 
 const MyWatchlist = () => {
@@ -355,7 +358,12 @@ const MyWatchlist = () => {
                   filteredItems.map((item) => (
                     <Card
                       key={item.id}
-                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0"
+                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
+                      onClick={() =>
+                        navigate(`/content/${item.id}`, {
+                          state: { contentDetails: item },
+                        })
+                      }
                     >
                       <div className="flex flex-col h-full">
                         {item.imageUrl && (

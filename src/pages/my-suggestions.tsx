@@ -48,6 +48,9 @@ interface ContentItem {
     | "readlist"
     | "listenlist"
     | null;
+  whereToWatch?: string[];
+  whereToRead?: string[];
+  whereToListen?: string[];
 }
 
 const MySuggestions = () => {

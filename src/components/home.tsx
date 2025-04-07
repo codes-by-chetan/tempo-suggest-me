@@ -4,6 +4,7 @@ import Navbar from "./layout/Navbar";
 import SuggestorsList from "./suggestors/SuggestorsList";
 import SuggestionButton from "./suggestions/SuggestionButton";
 import SuggestionFlow from "./suggestions/SuggestionFlow";
+import ExploreSection from "./explore/ExploreSection";
 
 interface Suggestor {
   id: string;
@@ -27,6 +28,9 @@ interface ContentItem {
   };
   suggestedAt: string;
   status?: "watched" | "watching" | "watchlist" | null;
+  whereToWatch?: string[];
+  whereToRead?: string[];
+  whereToListen?: string[];
 }
 
 const Home = () => {
@@ -50,6 +54,7 @@ const Home = () => {
       },
       suggestedAt: "2023-06-15T14:30:00Z",
       status: "watching",
+      whereToWatch: ["Netflix", "Amazon Prime", "HBO Max"],
     },
     {
       id: "2",
@@ -68,6 +73,7 @@ const Home = () => {
       },
       suggestedAt: "2023-06-10T09:15:00Z",
       status: "watched",
+      whereToRead: ["Amazon Kindle", "Barnes & Noble", "Local Library"],
     },
     {
       id: "3",
@@ -86,6 +92,7 @@ const Home = () => {
       },
       suggestedAt: "2023-06-05T16:45:00Z",
       status: "watchlist",
+      whereToWatch: ["Crunchyroll", "Funimation", "Netflix"],
     },
   ]);
   const [suggestors, setSuggestors] = useState<Suggestor[]>([
@@ -161,6 +168,13 @@ const Home = () => {
           <h1 className="text-3xl font-bold text-foreground mb-8">
             Welcome to <span className="text-primary">Suggest.me</span>
           </h1>
+
+          <div className="mb-8 bg-card rounded-lg shadow-social dark:shadow-social-dark p-6 transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover">
+            <h2 className="text-2xl font-bold mb-4 text-foreground">
+              Explore Content
+            </h2>
+            <ExploreSection />
+          </div>
 
           <div className="bg-card rounded-lg shadow-social dark:shadow-social-dark overflow-hidden transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover">
             <SuggestorsList
