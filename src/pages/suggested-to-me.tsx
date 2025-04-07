@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,9 +46,13 @@ interface ContentItem {
     | "readlist"
     | "listenlist"
     | null;
+  whereToWatch?: string[];
+  whereToRead?: string[];
+  whereToListen?: string[];
 }
 
 const SuggestedToMe = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [suggestions, setSuggestions] = useState<ContentItem[]>([]);
 
@@ -73,6 +78,7 @@ const SuggestedToMe = () => {
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
       },
       suggestedAt: "2023-06-15T14:30:00Z",
+      whereToWatch: ["Netflix", "Amazon Prime", "HBO Max"],
     },
     {
       id: "2",
@@ -90,6 +96,7 @@ const SuggestedToMe = () => {
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
       },
       suggestedAt: "2023-06-10T09:15:00Z",
+      whereToRead: ["Amazon", "Barnes & Noble", "Local Library"],
     },
     {
       id: "3",
@@ -107,6 +114,7 @@ const SuggestedToMe = () => {
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
       },
       suggestedAt: "2023-06-05T16:45:00Z",
+      whereToWatch: ["Crunchyroll", "Funimation", "Netflix"],
     },
     {
       id: "4",
@@ -124,6 +132,7 @@ const SuggestedToMe = () => {
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
       },
       suggestedAt: "2023-06-01T11:20:00Z",
+      whereToListen: ["Spotify", "Apple Music", "YouTube Music"],
     },
   ];
 
@@ -301,7 +310,12 @@ const SuggestedToMe = () => {
                   filteredSuggestions.map((item) => (
                     <Card
                       key={item.id}
-                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0"
+                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
+                      onClick={() =>
+                        navigate(`/content/${item.id}`, {
+                          state: { contentDetails: item },
+                        })
+                      }
                     >
                       <div className="flex flex-col h-full relative">
                         {item.imageUrl && (

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,6 +51,7 @@ interface ContentItem {
 }
 
 const MySuggestions = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [isSuggestionFlowOpen, setIsSuggestionFlowOpen] = useState(false);
 
@@ -268,7 +270,12 @@ const MySuggestions = () => {
                   filteredSuggestions.map((item) => (
                     <Card
                       key={item.id}
-                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0"
+                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
+                      onClick={() =>
+                        navigate(`/content/${item.id}`, {
+                          state: { contentDetails: item },
+                        })
+                      }
                     >
                       <div className="flex flex-col h-full relative">
                         {item.imageUrl && (
