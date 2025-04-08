@@ -9,6 +9,7 @@ const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
 const MySuggestions = lazy(() => import("./pages/my-suggestions"));
 const MyWatchlist = lazy(() => import("./pages/my-watchlist"));
 const Profile = lazy(() => import("./pages/profile"));
+const EditProfile = lazy(() => import("./pages/edit-profile"));
 const Login = lazy(() => import("./pages/auth/login"));
 const Signup = lazy(() => import("./pages/auth/signup"));
 const ContentDetailsPage = lazy(() => import("./pages/ContentDetailsPage"));
@@ -34,6 +35,7 @@ function App() {
           <Route path="/my-suggestions" element={<MySuggestions />} />
           <Route path="/my-watchlist" element={<MyWatchlist />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/content/:id" element={<ContentDetailsPage />} />
