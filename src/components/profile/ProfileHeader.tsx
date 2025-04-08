@@ -16,6 +16,7 @@ interface ProfileHeaderProps {
   postsCount?: number;
   followingCount?: number;
   onEditProfile: () => void;
+  onOpenSettings?: () => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -24,6 +25,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   postsCount = 12,
   followingCount = 24,
   onEditProfile,
+  onOpenSettings,
 }) => {
   return (
     <div className="py-8 border-b border-border">
@@ -58,7 +60,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9"
-                onClick={onEditProfile}
+                onClick={onOpenSettings || onEditProfile}
               >
                 <Settings className="h-5 w-5" />
               </Button>

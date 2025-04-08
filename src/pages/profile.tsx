@@ -62,6 +62,7 @@ interface SavedItem {
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   // Mock user data - in a real app, this would come from an API
@@ -244,6 +245,7 @@ const Profile = () => {
           userData={userData}
           friendsCount={friends.length}
           onEditProfile={() => setActiveTab("edit-profile")}
+          onOpenSettings={() => setShowSettingsDialog(true)}
         />
 
         {/* Instagram-like tabs */}
@@ -405,6 +407,53 @@ const Profile = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Settings Dialog */}
+      {showSettingsDialog && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setShowSettingsDialog(false)}
+        >
+          <div
+            className="bg-background rounded-lg shadow-lg p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Settings className="h-5 w-5 mr-2" /> Profile Settings
+            </h2>
+            <div className="space-y-4">
+              <div className="p-3 hover:bg-accent rounded-md cursor-pointer flex items-center justify-between">
+                <span>Privacy</span>
+                <span className="text-muted-foreground">→</span>
+              </div>
+              <div className="p-3 hover:bg-accent rounded-md cursor-pointer flex items-center justify-between">
+                <span>Notifications</span>
+                <span className="text-muted-foreground">→</span>
+              </div>
+              <div className="p-3 hover:bg-accent rounded-md cursor-pointer flex items-center justify-between">
+                <span>Account Security</span>
+                <span className="text-muted-foreground">→</span>
+              </div>
+              <div className="p-3 hover:bg-accent rounded-md cursor-pointer flex items-center justify-between">
+                <span>Theme</span>
+                <span className="text-muted-foreground">→</span>
+              </div>
+              <div className="p-3 hover:bg-accent rounded-md cursor-pointer flex items-center justify-between text-destructive">
+                <span>Logout</span>
+                <span className="text-muted-foreground">→</span>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowSettingsDialog(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
