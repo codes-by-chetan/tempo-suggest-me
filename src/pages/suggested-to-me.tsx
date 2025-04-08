@@ -142,40 +142,40 @@ const SuggestedToMe = () => {
       : suggestions.filter((item) => item.type === activeTab);
 
   const handleMarkAsWatched = (id: string) => {
-    setSuggestions((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const status = getContentSpecificWatchedStatus(item.type);
-          return { ...item, status };
-        }
-        return item;
-      }),
-    );
-  };
+      setSuggestions((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            const status = getContentSpecificWatchedStatus(item.type) as ContentItem["status"];
+            return { ...item, status };
+          }
+          return item;
+        })
+      );
+    };
 
   const handleMarkAsWatching = (id: string) => {
-    setSuggestions((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const status = getContentSpecificWatchingStatus(item.type);
-          return { ...item, status };
-        }
-        return item;
-      }),
-    );
-  };
+      setSuggestions((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            const status = getContentSpecificWatchingStatus(item.type) as ContentItem["status"];
+            return { ...item, status };
+          }
+          return item;
+        })
+      );
+    };
 
   const handleAddToWatchlist = (id: string) => {
-    setSuggestions((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const status = getContentSpecificListStatus(item.type);
-          return { ...item, status };
-        }
-        return item;
-      }),
-    );
-  };
+      setSuggestions((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            const status = getContentSpecificListStatus(item.type) as ContentItem["status"];
+            return { ...item, status };
+          }
+          return item;
+        })
+      );
+    };
 
   const getContentSpecificListStatus = (type: string): string => {
     switch (type) {
@@ -212,7 +212,7 @@ const SuggestedToMe = () => {
 
   const getContentSpecificStatusLabel = (
     status: string,
-    type: string,
+    type: string
   ): string => {
     if (status === "watchlist") return "In Watchlist";
     if (status === "readlist") return "In Reading List";
@@ -355,7 +355,17 @@ const SuggestedToMe = () => {
                           {item.status && (
                             <div className="absolute top-2 right-2 z-10">
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "watched" || item.status === "finished" || item.status === "listened" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : item.status === "watching" || item.status === "reading" || item.status === "listening" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"}`}
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  item.status === "watched" ||
+                                  item.status === "finished" ||
+                                  item.status === "listened"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    : item.status === "watching" ||
+                                      item.status === "reading" ||
+                                      item.status === "listening"
+                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                    : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                }`}
                               >
                                 {item.status === "watched" ||
                                 item.status === "finished" ||
@@ -364,7 +374,7 @@ const SuggestedToMe = () => {
                                     <CheckCircle className="mr-1 h-3 w-3" />
                                     {getContentSpecificStatusLabel(
                                       item.status,
-                                      item.type,
+                                      item.type
                                     )}
                                   </>
                                 ) : item.status === "watching" ||
@@ -374,7 +384,7 @@ const SuggestedToMe = () => {
                                     <Clock className="mr-1 h-3 w-3" />
                                     {getContentSpecificStatusLabel(
                                       item.status,
-                                      item.type,
+                                      item.type
                                     )}
                                   </>
                                 ) : item.status === "watchlist" ? (
@@ -409,8 +419,8 @@ const SuggestedToMe = () => {
                               {item.type === "book"
                                 ? "Finished"
                                 : item.type === "song"
-                                  ? "Listened"
-                                  : "Watched"}
+                                ? "Listened"
+                                : "Watched"}
                             </Button>
                             <Button
                               variant="outline"
@@ -422,8 +432,8 @@ const SuggestedToMe = () => {
                               {item.type === "book"
                                 ? "Reading"
                                 : item.type === "song"
-                                  ? "Listening"
-                                  : "Watching"}
+                                ? "Listening"
+                                : "Watching"}
                             </Button>
                             <Button
                               variant="outline"
@@ -435,8 +445,8 @@ const SuggestedToMe = () => {
                               {item.type === "book"
                                 ? "Reading List"
                                 : item.type === "song"
-                                  ? "Listening List"
-                                  : "Watchlist"}
+                                ? "Listening List"
+                                : "Watchlist"}
                             </Button>
                           </div>
 

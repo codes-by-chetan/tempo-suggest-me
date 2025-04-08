@@ -27,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router";
 
 interface ContentItem {
   id: string;
@@ -59,6 +60,7 @@ interface ContentItem {
 }
 
 const MyWatchlist = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
@@ -212,26 +214,26 @@ const MyWatchlist = () => {
         return status === "finished"
           ? "Finished"
           : status === "reading"
-            ? "Currently Reading"
-            : status === "readlist"
-              ? "In Reading List"
-              : "";
+          ? "Currently Reading"
+          : status === "readlist"
+          ? "In Reading List"
+          : "";
       case "song":
         return status === "listened"
           ? "Listened"
           : status === "listening"
-            ? "Currently Listening"
-            : status === "listenlist"
-              ? "In Listening List"
-              : "";
+          ? "Currently Listening"
+          : status === "listenlist"
+          ? "In Listening List"
+          : "";
       default:
         return status === "watched"
           ? "Watched"
           : status === "watching"
-            ? "Currently Watching"
-            : status === "watchlist"
-              ? "In Watchlist"
-              : "";
+          ? "Currently Watching"
+          : status === "watchlist"
+          ? "In Watchlist"
+          : "";
     }
   };
 
@@ -375,7 +377,9 @@ const MyWatchlist = () => {
                             />
                             {item.status && (
                               <Badge
-                                className={`absolute top-2 right-2 flex items-center gap-1 ${getStatusColor(item.status)}`}
+                                className={`absolute top-2 right-2 flex items-center gap-1 ${getStatusColor(
+                                  item.status
+                                )}`}
                               >
                                 {getStatusIcon(item.status)}
                                 {getStatusText(item.status, item.type)}
@@ -412,7 +416,7 @@ const MyWatchlist = () => {
                             <Button
                               variant={
                                 ["watched", "finished", "listened"].includes(
-                                  item.status || "",
+                                  item.status || ""
                                 )
                                   ? "default"
                                   : "ghost"
@@ -424,19 +428,25 @@ const MyWatchlist = () => {
                                   item.type === "book"
                                     ? "finished"
                                     : item.type === "song"
-                                      ? "listened"
-                                      : "watched";
+                                    ? "listened"
+                                    : "watched";
                                 handleUpdateStatus(item.id, completedStatus);
                               }}
                             >
                               <CheckCircle
-                                className={`h-4 w-4 ${["watched", "finished", "listened"].includes(item.status || "") ? "text-white" : "text-muted-foreground"}`}
+                                className={`h-4 w-4 ${
+                                  ["watched", "finished", "listened"].includes(
+                                    item.status || ""
+                                  )
+                                    ? "text-white"
+                                    : "text-muted-foreground"
+                                }`}
                               />
                             </Button>
                             <Button
                               variant={
                                 ["watching", "reading", "listening"].includes(
-                                  item.status || "",
+                                  item.status || ""
                                 )
                                   ? "default"
                                   : "ghost"
@@ -448,13 +458,19 @@ const MyWatchlist = () => {
                                   item.type === "book"
                                     ? "reading"
                                     : item.type === "song"
-                                      ? "listening"
-                                      : "watching";
+                                    ? "listening"
+                                    : "watching";
                                 handleUpdateStatus(item.id, inProgressStatus);
                               }}
                             >
                               <Clock
-                                className={`h-4 w-4 ${["watching", "reading", "listening"].includes(item.status || "") ? "text-white" : "text-muted-foreground"}`}
+                                className={`h-4 w-4 ${
+                                  ["watching", "reading", "listening"].includes(
+                                    item.status || ""
+                                  )
+                                    ? "text-white"
+                                    : "text-muted-foreground"
+                                }`}
                               />
                             </Button>
                             <Button
@@ -474,13 +490,21 @@ const MyWatchlist = () => {
                                   item.type === "book"
                                     ? "readlist"
                                     : item.type === "song"
-                                      ? "listenlist"
-                                      : "watchlist";
+                                    ? "listenlist"
+                                    : "watchlist";
                                 handleUpdateStatus(item.id, listStatus);
                               }}
                             >
                               <Bookmark
-                                className={`h-4 w-4 ${["watchlist", "readlist", "listenlist"].includes(item.status || "") ? "text-white" : "text-muted-foreground"}`}
+                                className={`h-4 w-4 ${
+                                  [
+                                    "watchlist",
+                                    "readlist",
+                                    "listenlist",
+                                  ].includes(item.status || "")
+                                    ? "text-white"
+                                    : "text-muted-foreground"
+                                }`}
                               />
                             </Button>
                           </div>
@@ -518,7 +542,9 @@ const MyWatchlist = () => {
                     </h3>
                     <p className="text-muted-foreground max-w-md mx-auto mb-6">
                       {statusFilter
-                        ? `You don't have any ${getStatusText(statusFilter).toLowerCase()} items in this category.`
+                        ? `You don't have any ${getStatusText(
+                            statusFilter
+                          ).toLowerCase()} items in this category.`
                         : "Your collection is empty. Add items from the 'Suggested to Me' page!"}
                     </p>
                   </div>
