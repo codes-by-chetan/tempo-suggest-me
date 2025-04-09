@@ -87,7 +87,7 @@ const Login = () => {
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">
             <Link to="/" className="text-primary hover:text-primary/90">
-              Suggest<span className="text-secondary">.me</span>
+              Suggest<span className="text-primary">.me</span>
             </Link>
           </CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
