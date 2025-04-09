@@ -22,13 +22,13 @@ const PostCard: React.FC<PostCardProps> = ({
 }) => {
   return (
     <Card
-      className="overflow-hidden border-0 rounded-md bg-white hover:shadow-md transition-shadow duration-200 cursor-pointer"
+      className="overflow-hidden border-0 rounded-md bg-white hover:shadow-md transition-shadow duration-200 cursor-pointer dark:bg-muted"
       onClick={onClick}
     >
       <div className="aspect-square relative overflow-hidden bg-muted">
         <img src={imageUrl} alt="Post" className="object-cover w-full h-full" />
       </div>
-      <CardContent className="p-3">
+      <CardContent className="p-3 dark:bg-muted">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="h-8 w-8 p-0">

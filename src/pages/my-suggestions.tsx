@@ -61,7 +61,7 @@ const MySuggestions = () => {
   // Helper functions for content-specific status labels
   const getContentSpecificStatusLabel = (
     status: string,
-    type: string,
+    type: string
   ): string => {
     if (status === "watchlist") return "In Watchlist";
     if (status === "readlist") return "In Reading List";
@@ -274,15 +274,17 @@ const MySuggestions = () => {
                     <Card
                       key={item.id}
                       className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
-                      onClick={() =>
-                        navigate(`/content/${item.id}`, {
-                          state: { contentDetails: item },
-                        })
-                      }
                     >
                       <div className="flex flex-col h-full relative">
                         {item.imageUrl && (
-                          <div className="w-full h-40 bg-muted">
+                          <div
+                            className="w-full h-40 bg-muted"
+                            onClick={() =>
+                              navigate(`/content/${item.id}`, {
+                                state: { contentDetails: item },
+                              })
+                            }
+                          >
                             <img
                               src={item.imageUrl}
                               alt={item.title}
@@ -295,7 +297,17 @@ const MySuggestions = () => {
                           {item.status && (
                             <div className="absolute top-2 right-2 z-10">
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "watched" || item.status === "finished" || item.status === "listened" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : item.status === "watching" || item.status === "reading" || item.status === "listening" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"}`}
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  item.status === "watched" ||
+                                  item.status === "finished" ||
+                                  item.status === "listened"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    : item.status === "watching" ||
+                                      item.status === "reading" ||
+                                      item.status === "listening"
+                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                    : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                }`}
                               >
                                 {item.status === "watched" ||
                                 item.status === "finished" ||
@@ -304,7 +316,7 @@ const MySuggestions = () => {
                                     <CheckCircle className="mr-1 h-3 w-3" />
                                     {getContentSpecificStatusLabel(
                                       item.status,
-                                      item.type,
+                                      item.type
                                     )}
                                   </>
                                 ) : item.status === "watching" ||
@@ -314,7 +326,7 @@ const MySuggestions = () => {
                                     <Clock className="mr-1 h-3 w-3" />
                                     {getContentSpecificStatusLabel(
                                       item.status,
-                                      item.type,
+                                      item.type
                                     )}
                                   </>
                                 ) : item.status === "watchlist" ? (
@@ -349,7 +361,14 @@ const MySuggestions = () => {
                               {new Date(item.suggestedAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+                          <h3
+                            className="font-semibold text-lg mb-1 line-clamp-1"
+                            onClick={() =>
+                              navigate(`/content/${item.id}`, {
+                                state: { contentDetails: item },
+                              })
+                            }
+                          >
                             {item.title}
                           </h3>
                           <p className="text-sm text-muted-foreground mb-2">

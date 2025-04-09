@@ -144,7 +144,7 @@ const MyWatchlist = () => {
   const filteredItems = mockWatchlistItems
     .filter((item) => activeTab === "all" || item.type === activeTab)
     .filter((item) => statusFilter === null || item.status === statusFilter);
-
+  
   const getIconForType = (type: string) => {
     switch (type) {
       case "movie":
@@ -361,15 +361,17 @@ const MyWatchlist = () => {
                     <Card
                       key={item.id}
                       className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
-                      onClick={() =>
-                        navigate(`/content/${item.id}`, {
-                          state: { contentDetails: item },
-                        })
-                      }
                     >
                       <div className="flex flex-col h-full">
                         {item.imageUrl && (
-                          <div className="w-full h-40 bg-muted relative">
+                          <div
+                            className="w-full h-40 bg-muted relative"
+                            onClick={() =>
+                              navigate(`/content/${item.id}`, {
+                                state: { contentDetails: item },
+                              })
+                            }
+                          >
                             <img
                               src={item.imageUrl}
                               alt={item.title}
@@ -401,7 +403,14 @@ const MyWatchlist = () => {
                               {new Date(item.addedAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+                          <h3
+                            className="font-semibold text-lg mb-1 line-clamp-1"
+                            onClick={() =>
+                              navigate(`/content/${item.id}`, {
+                                state: { contentDetails: item },
+                              })
+                            }
+                          >
                             {item.title}
                           </h3>
                           <p className="text-sm text-muted-foreground mb-2">

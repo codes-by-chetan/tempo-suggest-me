@@ -32,6 +32,8 @@ import {
   MessageCircle,
   Share2,
 } from "lucide-react";
+import { useNavigate } from "react-router";
+import SuggestionButton from "@/components/suggestions/SuggestionButton";
 
 interface Friend {
   id: string;
@@ -64,7 +66,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  const navigate = useNavigate();
   // Mock user data - in a real app, this would come from an API
   const [userData, setUserData] = useState({
     name: "John Doe",
@@ -367,7 +369,14 @@ const Profile = () => {
                     className="overflow-hidden cursor-pointer hover:shadow-md transition-all"
                     onClick={() => handleSavedItemClick(item.id)}
                   >
-                    <div className="h-40 w-full bg-muted">
+                    <div
+                      className="h-40 w-full bg-muted"
+                      onClick={() =>
+                        navigate(`/content/${item.id}`, {
+                          state: { contentDetails: item },
+                        })
+                      }
+                    >
                       <img
                         src={item.imageUrl}
                         alt={item.title}
@@ -383,12 +392,31 @@ const Profile = () => {
                           Saved on {new Date(item.savedAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <h3 className="font-semibold text-lg mb-1">
+                      <h3
+                        className="font-semibold text-lg mb-1"
+                        onClick={() =>
+                          navigate(`/content/${item.id}`, {
+                            state: { contentDetails: item },
+                          })
+                        }
+                      >
                         {item.title}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {item.creator} • {item.year}
                       </p>
+                      <div className="mt-4 w-[100%] flex justify-center">
+                        <Button
+                          className="w-full"
+                          onClick={() =>
+                            navigate(`/content/${item.id}`, {
+                              state: { contentDetails: item },
+                            })
+                          }
+                        >
+                          More Info...
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

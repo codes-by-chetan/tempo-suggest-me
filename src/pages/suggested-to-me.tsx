@@ -142,40 +142,46 @@ const SuggestedToMe = () => {
       : suggestions.filter((item) => item.type === activeTab);
 
   const handleMarkAsWatched = (id: string) => {
-      setSuggestions((prev) =>
-        prev.map((item) => {
-          if (item.id === id) {
-            const status = getContentSpecificWatchedStatus(item.type) as ContentItem["status"];
-            return { ...item, status };
-          }
-          return item;
-        })
-      );
-    };
+    setSuggestions((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const status = getContentSpecificWatchedStatus(
+            item.type
+          ) as ContentItem["status"];
+          return { ...item, status };
+        }
+        return item;
+      })
+    );
+  };
 
   const handleMarkAsWatching = (id: string) => {
-      setSuggestions((prev) =>
-        prev.map((item) => {
-          if (item.id === id) {
-            const status = getContentSpecificWatchingStatus(item.type) as ContentItem["status"];
-            return { ...item, status };
-          }
-          return item;
-        })
-      );
-    };
+    setSuggestions((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const status = getContentSpecificWatchingStatus(
+            item.type
+          ) as ContentItem["status"];
+          return { ...item, status };
+        }
+        return item;
+      })
+    );
+  };
 
   const handleAddToWatchlist = (id: string) => {
-      setSuggestions((prev) =>
-        prev.map((item) => {
-          if (item.id === id) {
-            const status = getContentSpecificListStatus(item.type) as ContentItem["status"];
-            return { ...item, status };
-          }
-          return item;
-        })
-      );
-    };
+    setSuggestions((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const status = getContentSpecificListStatus(
+            item.type
+          ) as ContentItem["status"];
+          return { ...item, status };
+        }
+        return item;
+      })
+    );
+  };
 
   const getContentSpecificListStatus = (type: string): string => {
     switch (type) {
@@ -311,15 +317,17 @@ const SuggestedToMe = () => {
                     <Card
                       key={item.id}
                       className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
-                      onClick={() =>
-                        navigate(`/content/${item.id}`, {
-                          state: { contentDetails: item },
-                        })
-                      }
                     >
                       <div className="flex flex-col h-full relative">
                         {item.imageUrl && (
-                          <div className="w-full h-40 bg-muted">
+                          <div
+                            className="w-full h-40 bg-muted"
+                            onClick={() =>
+                              navigate(`/content/${item.id}`, {
+                                state: { contentDetails: item },
+                              })
+                            }
+                          >
                             <img
                               src={item.imageUrl}
                               alt={item.title}
@@ -341,7 +349,14 @@ const SuggestedToMe = () => {
                               {new Date(item.suggestedAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <h3 className="font-semibold text-lg mb-1 line-clamp-1 text-foreground">
+                          <h3
+                            className="font-semibold text-lg mb-1 line-clamp-1 text-foreground"
+                            onClick={() =>
+                              navigate(`/content/${item.id}`, {
+                                state: { contentDetails: item },
+                              })
+                            }
+                          >
                             {item.title}
                           </h3>
                           <p className="text-sm text-muted-foreground mb-2">
