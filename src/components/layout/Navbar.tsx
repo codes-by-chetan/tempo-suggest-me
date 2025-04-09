@@ -33,9 +33,23 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+
+  // Get auth context
+  const auth = useAuth();
+  // Create state variables that will trigger re-renders when they change
+  const [currentUser, setCurrentUser] = useState(auth.user);
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(
+    auth.isAuthenticated,
+  );
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Update local state when auth context changes
+  useEffect(() => {
+    setCurrentUser(auth.user);
+    setIsUserAuthenticated(auth.isAuthenticated);
+  }, [auth.user, auth.isAuthenticated]);
 
   // Mock notifications data
   useEffect(() => {
@@ -135,7 +149,7 @@ const Navbar = () => {
 
   // Logout function
   const handleLogout = () => {
-    logout();
+    auth.logout();
     navigate("/login");
   };
 
@@ -284,7 +298,7 @@ const Navbar = () => {
               Suggest
             </Button>
 
-            {isAuthenticated && user ? (
+            {isUserAuthenticated && currentUser ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -292,17 +306,20 @@ const Navbar = () => {
                     className="relative h-9 w-9 rounded-full ring-2 ring-primary/20 hover:ring-primary/30 transition-all"
                   >
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarImage
+                        src={currentUser.avatar}
+                        alt={currentUser.name}
+                      />
                       <AvatarFallback className="bg-primary-100 text-primary-800">
-                        {user.name.charAt(0)}
+                        {currentUser.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+                  <DropdownMenuLabel>{currentUser.name}</DropdownMenuLabel>
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    {user.email}
+                    {currentUser.email}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -424,21 +441,24 @@ const Navbar = () => {
         </div>
 
         {/* Mobile profile section */}
-        {isAuthenticated && user ? (
+        {isUserAuthenticated && currentUser ? (
           <div className="pt-4 pb-3 border-t border-border">
             <div className="flex items-center px-4">
               <div className="flex-shrink-0">
                 <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                  />
                   <AvatarFallback className="bg-primary-100 text-primary-800">
-                    {user.name.charAt(0)}
+                    {currentUser.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="ml-3">
-                <div className="text-base font-medium">{user.name}</div>
+                <div className="text-base font-medium">{currentUser.name}</div>
                 <div className="text-sm font-medium text-muted-foreground">
-                  {user.email}
+                  {currentUser.email}
                 </div>
               </div>
               <div className="ml-auto">
