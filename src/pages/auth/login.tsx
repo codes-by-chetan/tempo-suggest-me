@@ -52,20 +52,12 @@ const Login = () => {
       // In a real app, this would be an API call to authenticate the user
       console.log("Login attempt with:", values);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Import auth context
+      const { useAuth } = await import("@/lib/auth-context");
+      const auth = useAuth();
 
-      // Mock successful login
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: "1",
-          name: "John Doe",
-          email: values.email,
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-        }),
-      );
+      // Use the auth context login method instead of directly setting localStorage
+      await auth.login(values.email, values.password);
 
       // Redirect to home page
       navigate("/");

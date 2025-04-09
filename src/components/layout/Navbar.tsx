@@ -27,6 +27,7 @@ import { useAuth } from "@/lib/auth-context";
 import NotificationItem, { Notification } from "./NotificationItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useEffect as useReactEffect } from "react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,10 +47,12 @@ const Navbar = () => {
   const location = useLocation();
 
   // Update local state when auth context changes
-  useEffect(() => {
+  useReactEffect(() => {
+    // Refresh auth state to ensure we have the latest data
+    auth.refreshAuthState();
     setCurrentUser(auth.user);
     setIsUserAuthenticated(auth.isAuthenticated);
-  }, [auth.user, auth.isAuthenticated]);
+  }, [auth.user, auth.isAuthenticated, auth.refreshAuthState]);
 
   // Mock notifications data
   useEffect(() => {
