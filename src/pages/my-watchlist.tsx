@@ -144,7 +144,7 @@ const MyWatchlist = () => {
   const filteredItems = mockWatchlistItems
     .filter((item) => activeTab === "all" || item.type === activeTab)
     .filter((item) => statusFilter === null || item.status === statusFilter);
-  
+
   const getIconForType = (type: string) => {
     switch (type) {
       case "movie":
@@ -214,26 +214,26 @@ const MyWatchlist = () => {
         return status === "finished"
           ? "Finished"
           : status === "reading"
-          ? "Currently Reading"
-          : status === "readlist"
-          ? "In Reading List"
-          : "";
+            ? "Currently Reading"
+            : status === "readlist"
+              ? "In Reading List"
+              : "";
       case "song":
         return status === "listened"
           ? "Listened"
           : status === "listening"
-          ? "Currently Listening"
-          : status === "listenlist"
-          ? "In Listening List"
-          : "";
+            ? "Currently Listening"
+            : status === "listenlist"
+              ? "In Listening List"
+              : "";
       default:
         return status === "watched"
           ? "Watched"
           : status === "watching"
-          ? "Currently Watching"
-          : status === "watchlist"
-          ? "In Watchlist"
-          : "";
+            ? "Currently Watching"
+            : status === "watchlist"
+              ? "In Watchlist"
+              : "";
     }
   };
 
@@ -261,7 +261,15 @@ const MyWatchlist = () => {
   // Update status handler
   const handleUpdateStatus = (id: string, newStatus: string | null) => {
     console.log(`Updating item ${id} to status: ${newStatus}`);
-    // In a real app, this would update the backend
+    // Update the local state with the new status
+    setWatchlistItems((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          return { ...item, status: newStatus as any };
+        }
+        return item;
+      }),
+    );
   };
 
   return (
@@ -380,7 +388,7 @@ const MyWatchlist = () => {
                             {item.status && (
                               <Badge
                                 className={`absolute top-2 right-2 flex items-center gap-1 ${getStatusColor(
-                                  item.status
+                                  item.status,
                                 )}`}
                               >
                                 {getStatusIcon(item.status)}
@@ -425,7 +433,7 @@ const MyWatchlist = () => {
                             <Button
                               variant={
                                 ["watched", "finished", "listened"].includes(
-                                  item.status || ""
+                                  item.status || "",
                                 )
                                   ? "default"
                                   : "ghost"
@@ -437,15 +445,15 @@ const MyWatchlist = () => {
                                   item.type === "book"
                                     ? "finished"
                                     : item.type === "song"
-                                    ? "listened"
-                                    : "watched";
+                                      ? "listened"
+                                      : "watched";
                                 handleUpdateStatus(item.id, completedStatus);
                               }}
                             >
                               <CheckCircle
                                 className={`h-4 w-4 ${
                                   ["watched", "finished", "listened"].includes(
-                                    item.status || ""
+                                    item.status || "",
                                   )
                                     ? "text-white"
                                     : "text-muted-foreground"
@@ -455,7 +463,7 @@ const MyWatchlist = () => {
                             <Button
                               variant={
                                 ["watching", "reading", "listening"].includes(
-                                  item.status || ""
+                                  item.status || "",
                                 )
                                   ? "default"
                                   : "ghost"
@@ -467,15 +475,15 @@ const MyWatchlist = () => {
                                   item.type === "book"
                                     ? "reading"
                                     : item.type === "song"
-                                    ? "listening"
-                                    : "watching";
+                                      ? "listening"
+                                      : "watching";
                                 handleUpdateStatus(item.id, inProgressStatus);
                               }}
                             >
                               <Clock
                                 className={`h-4 w-4 ${
                                   ["watching", "reading", "listening"].includes(
-                                    item.status || ""
+                                    item.status || "",
                                   )
                                     ? "text-white"
                                     : "text-muted-foreground"
@@ -499,8 +507,8 @@ const MyWatchlist = () => {
                                   item.type === "book"
                                     ? "readlist"
                                     : item.type === "song"
-                                    ? "listenlist"
-                                    : "watchlist";
+                                      ? "listenlist"
+                                      : "watchlist";
                                 handleUpdateStatus(item.id, listStatus);
                               }}
                             >
@@ -552,7 +560,7 @@ const MyWatchlist = () => {
                     <p className="text-muted-foreground max-w-md mx-auto mb-6">
                       {statusFilter
                         ? `You don't have any ${getStatusText(
-                            statusFilter
+                            statusFilter,
                           ).toLowerCase()} items in this category.`
                         : "Your collection is empty. Add items from the 'Suggested to Me' page!"}
                     </p>

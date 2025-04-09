@@ -246,7 +246,7 @@ const Profile = () => {
         <ProfileHeader
           userData={userData}
           friendsCount={friends.length}
-          onEditProfile={() => setActiveTab("edit-profile")}
+          onEditProfile={() => navigate("/edit-profile")}
           onOpenSettings={() => setShowSettingsDialog(true)}
         />
 
@@ -268,7 +268,7 @@ const Profile = () => {
               Friends
             </TabsTrigger>
             <TabsTrigger
-              value="edit-profile"
+              value="saved"
               className="flex items-center justify-center py-3 rounded-none border-0 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
             >
               <Bookmark className="h-4 w-4 mr-2" />
@@ -358,7 +358,7 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="edit-profile" className="mt-0">
+          <TabsContent value="saved" className="mt-0">
             {/* Saved Items Grid */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-4">Saved Items</h2>
