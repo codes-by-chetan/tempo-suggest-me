@@ -24,6 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth-context";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -36,7 +37,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const auth = useAuth();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,9 +53,8 @@ const Login = () => {
       // In a real app, this would be an API call to authenticate the user
       console.log("Login attempt with:", values);
 
-      // Import auth context
-      const { useAuth } = await import("@/lib/auth-context");
-      const auth = useAuth();
+
+      
 
       // Use the auth context login method instead of directly setting localStorage
       await auth.login(values.email, values.password);
@@ -79,7 +79,7 @@ const Login = () => {
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">
             <Link to="/" className="text-primary hover:text-primary/90">
-              Suggest<span className="text-primary">.me</span>
+              Suggest<span className="text-primary hover:text-primary/90">.me</span>
             </Link>
           </CardTitle>
           <CardDescription>Sign in to your account</CardDescription>

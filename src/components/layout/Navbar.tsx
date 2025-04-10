@@ -21,6 +21,7 @@ import {
   Bell,
   Search,
   Check,
+  BookOpenCheck,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/lib/auth-context";
@@ -48,11 +49,9 @@ const Navbar = () => {
 
   // Update local state when auth context changes
   useReactEffect(() => {
-    // Refresh auth state to ensure we have the latest data
-    auth.refreshAuthState();
     setCurrentUser(auth.user);
     setIsUserAuthenticated(auth.isAuthenticated);
-  }, [auth.user, auth.isAuthenticated, auth.refreshAuthState]);
+  }, [auth.user, auth.isAuthenticated]);
 
   // Mock notifications data
   useEffect(() => {
@@ -179,7 +178,7 @@ const Navbar = () => {
                 className={cn(
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/")
-                    ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
+                    ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
                     : "text-foreground/70 hover:bg-accent hover:text-foreground",
                 )}
               >
@@ -191,11 +190,11 @@ const Navbar = () => {
                 className={cn(
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/suggested-to-me")
-                    ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
+                    ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
                     : "text-foreground/70 hover:bg-accent hover:text-foreground",
                 )}
               >
-                <BookMarked className="mr-2 h-4 w-4" />
+                <BookOpenCheck className="mr-2 h-4 w-4" />
                 Suggested to Me
               </Link>
               <Link
@@ -203,7 +202,7 @@ const Navbar = () => {
                 className={cn(
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/my-suggestions")
-                    ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
+                    ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
                     : "text-foreground/70 hover:bg-accent hover:text-foreground",
                 )}
               >
@@ -215,7 +214,7 @@ const Navbar = () => {
                 className={cn(
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/my-watchlist")
-                    ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
+                    ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
                     : "text-foreground/70 hover:bg-accent hover:text-foreground",
                 )}
               >
@@ -234,7 +233,7 @@ const Navbar = () => {
               <input
                 type="text"
                 placeholder="Search suggestions..."
-                className="w-full py-1.5 pl-10 pr-4 rounded-full bg-accent/50 border-0 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none"
+                className="w-full py-1.5 pl-10 pr-4 rounded-full bg-accent/50 border-0 text-sm ring-1 ring-primary/30 focus:ring-1 focus:ring-primary/70 focus:outline-none"
               />
             </div>
           </div>
@@ -254,7 +253,7 @@ const Navbar = () => {
                 >
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
+                    <span className="absolute top-0 right-0  h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
@@ -473,7 +472,7 @@ const Navbar = () => {
                 >
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
+                    <span className="absolute top-0 right-0  h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}

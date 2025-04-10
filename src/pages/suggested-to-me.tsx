@@ -52,15 +52,6 @@ interface ContentItem {
 }
 
 const SuggestedToMe = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("all");
-  const [suggestions, setSuggestions] = useState<ContentItem[]>([]);
-
-  // Mock data - in a real app, this would come from an API
-  React.useEffect(() => {
-    setSuggestions(mockSuggestions);
-  }, []);
-
   const mockSuggestions: ContentItem[] = [
     {
       id: "1",
@@ -135,6 +126,16 @@ const SuggestedToMe = () => {
       whereToListen: ["Spotify", "Apple Music", "YouTube Music"],
     },
   ];
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("all");
+  const [suggestions, setSuggestions] = useState<ContentItem[]>(mockSuggestions);
+
+  // Mock data - in a real app, this would come from an API
+  React.useEffect(() => {
+    setSuggestions(mockSuggestions);
+  }, []);
+
+  
 
   const filteredSuggestions =
     activeTab === "all"
