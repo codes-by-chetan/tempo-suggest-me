@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import AppName from "@/components/tags/AppName";
 
 const formSchema = z
   .object({
@@ -97,9 +98,7 @@ const Signup = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">
-            <Link to="/" className="text-primary hover:text-primary/90">
-              Suggest<span className="text-primary hover:text-primary/90">.me</span>
-            </Link>
+              <AppName/>
           </CardTitle>
           <CardDescription>Create a new account</CardDescription>
         </CardHeader>

@@ -29,6 +29,7 @@ import NotificationItem, { Notification } from "./NotificationItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useEffect as useReactEffect } from "react";
+import AppName from "../tags/AppName";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -167,10 +168,8 @@ const Navbar = () => {
           {/* Logo and desktop navigation */}
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-bold">
-                <span className="text-primary">Suggest</span>
-                <span className="text-primary-600">.me</span>
-              </Link>
+              
+               <AppName/>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-1">
               <Link

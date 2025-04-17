@@ -10,13 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-interface Suggestor {
-  id: string;
-  name: string;
-  avatar?: string;
-  suggestionCount: number;
-}
+import { Suggestor, suggestorsArray } from "@/data/suggestors";
+import { useNavigate } from "react-router";
 
 interface SuggestorsListProps {
   suggestors?: Suggestor[];
@@ -24,45 +19,59 @@ interface SuggestorsListProps {
   className?: string;
 }
 
+interface SuggestorCardProps {
+  suggestor: Suggestor;
+  onSuggestorClick: (suggestor: Suggestor) => void;
+  navigate: ReturnType<typeof useNavigate>;
+}
+
+const SuggestorCard = ({
+  suggestor,
+  onSuggestorClick,
+  navigate,
+}: SuggestorCardProps) => (
+  <Card
+    className="cursor-pointer hover:shadow-md transition-shadow duration-300"
+    onClick={() => onSuggestorClick(suggestor)}
+  >
+    <CardHeader className="pb-2">
+      <div className="flex items-center space-x-3">
+        <Avatar>
+          <AvatarImage src={suggestor.avatar} alt={suggestor.name} />
+          <AvatarFallback>
+            {suggestor.name.substring(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <CardTitle
+          className="text-lg text-foreground text-yellow-200"
+          onClick={() => navigate(`/profile/${suggestor.id}`)}
+        >
+          {suggestor.name}
+        </CardTitle>
+      </div>
+    </CardHeader>
+    <CardContent className="pt-2 pb-0">
+      <p className="text-sm text-muted-foreground">
+        Has suggested {suggestor.suggestionCount}{" "}
+        {suggestor.suggestionCount === 1 ? "item" : "items"} to you
+      </p>
+    </CardContent>
+    <CardFooter className="pt-4">
+      <button
+        className="text-sm text-primary hover:text-primary/80 font-medium"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSuggestorClick(suggestor);
+        }}
+      >
+        View suggestions
+      </button>
+    </CardFooter>
+  </Card>
+);
+
 const SuggestorsList = ({
-  suggestors = [
-    {
-      id: "1",
-      name: "Emma Watson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
-      suggestionCount: 12,
-    },
-    {
-      id: "2",
-      name: "John Smith",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-      suggestionCount: 8,
-    },
-    {
-      id: "3",
-      name: "Sophia Chen",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
-      suggestionCount: 15,
-    },
-    {
-      id: "4",
-      name: "Michael Johnson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-      suggestionCount: 6,
-    },
-    {
-      id: "5",
-      name: "Olivia Parker",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=olivia",
-      suggestionCount: 10,
-    },
-    {
-      id: "6",
-      name: "David Kim",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david",
-      suggestionCount: 9,
-    },
-  ],
+  suggestors = suggestorsArray,
   onSuggestorClick = () => {},
   className = "",
 }: SuggestorsListProps) => {
@@ -80,6 +89,8 @@ const SuggestorsList = ({
     );
   }
 
+  const navigate = useNavigate();
+
   return (
     <div className={cn("w-full bg-card p-4", className)}>
       <h2 className="text-2xl font-bold mb-6 text-foreground">
@@ -92,41 +103,11 @@ const SuggestorsList = ({
             whileHover={{ y: -5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <Card
-              className="cursor-pointer hover:shadow-md transition-shadow duration-300"
-              onClick={() => onSuggestorClick(suggestor)}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    <AvatarImage src={suggestor.avatar} alt={suggestor.name} />
-                    <AvatarFallback>
-                      {suggestor.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <CardTitle className="text-lg text-foreground">
-                    {suggestor.name}
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-2 pb-0">
-                <p className="text-sm text-muted-foreground">
-                  Has suggested {suggestor.suggestionCount}{" "}
-                  {suggestor.suggestionCount === 1 ? "item" : "items"} to you
-                </p>
-              </CardContent>
-              <CardFooter className="pt-4">
-                <button
-                  className="text-sm text-primary hover:text-primary/80 font-medium"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSuggestorClick(suggestor);
-                  }}
-                >
-                  View suggestions
-                </button>
-              </CardFooter>
-            </Card>
+            <SuggestorCard
+              suggestor={suggestor}
+              onSuggestorClick={onSuggestorClick}
+              navigate={navigate}
+            />
           </motion.div>
         ))}
       </div>

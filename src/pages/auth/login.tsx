@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-context";
+import AppName from "@/components/tags/AppName";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -78,9 +79,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">
-            <Link to="/" className="text-primary hover:text-primary/90">
-              Suggest<span className="text-primary hover:text-primary/90">.me</span>
-            </Link>
+              <AppName/>
           </CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>

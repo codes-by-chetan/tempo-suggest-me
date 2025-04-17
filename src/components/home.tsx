@@ -5,134 +5,16 @@ import SuggestorsList from "./suggestors/SuggestorsList";
 import SuggestionButton from "./suggestions/SuggestionButton";
 import SuggestionFlow from "./suggestions/SuggestionFlow";
 import ExploreSection from "./explore/ExploreSection";
+import AppName from "./tags/AppName";
+import { Suggestor, suggestorsArray } from "@/data/suggestors";
+import { ContentItem, contentItemArray } from "@/data/contentItem";
 
-interface Suggestor {
-  id: string;
-  name: string;
-  avatar?: string;
-  suggestionCount: number;
-}
-
-interface ContentItem {
-  id: string;
-  title: string;
-  type: string;
-  imageUrl?: string;
-  year?: string;
-  creator?: string;
-  description?: string;
-  suggestedBy?: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  suggestedAt: string;
-  status?: "watched" | "watching" | "watchlist" | null;
-  whereToWatch?: string[];
-  whereToRead?: string[];
-  whereToListen?: string[];
-}
 
 const Home = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Mock authentication state
   const [isSuggestionFlowOpen, setIsSuggestionFlowOpen] = useState(false);
-  const [recentSuggestions, setRecentSuggestions] = useState<ContentItem[]>([
-    {
-      id: "1",
-      title: "The Shawshank Redemption",
-      type: "movie",
-      imageUrl:
-        "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
-      year: "1994",
-      creator: "Frank Darabont",
-      description:
-        "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
-      suggestedBy: {
-        id: "1",
-        name: "Emma Watson",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
-      },
-      suggestedAt: "2023-06-15T14:30:00Z",
-      status: "watching",
-      whereToWatch: ["Netflix", "Amazon Prime", "HBO Max"],
-    },
-    {
-      id: "2",
-      title: "To Kill a Mockingbird",
-      type: "book",
-      imageUrl:
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
-      year: "1960",
-      creator: "Harper Lee",
-      description:
-        "The story of racial injustice and the loss of innocence in the American South during the Great Depression.",
-      suggestedBy: {
-        id: "2",
-        name: "John Smith",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-      },
-      suggestedAt: "2023-06-10T09:15:00Z",
-      status: "watched",
-      whereToRead: ["Amazon Kindle", "Barnes & Noble", "Local Library"],
-    },
-    {
-      id: "3",
-      title: "Attack on Titan",
-      type: "anime",
-      imageUrl:
-        "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
-      year: "2013",
-      creator: "Hajime Isayama",
-      description:
-        "In a world where humanity lives within cities surrounded by enormous walls due to the Titans, gigantic humanoid creatures who devour humans seemingly without reason.",
-      suggestedBy: {
-        id: "3",
-        name: "Sophia Chen",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
-      },
-      suggestedAt: "2023-06-05T16:45:00Z",
-      status: "watchlist",
-      whereToWatch: ["Crunchyroll", "Funimation", "Netflix"],
-    },
-  ]);
-  const [suggestors, setSuggestors] = useState<Suggestor[]>([
-    {
-      id: "1",
-      name: "Emma Watson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
-      suggestionCount: 12,
-    },
-    {
-      id: "2",
-      name: "John Smith",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-      suggestionCount: 8,
-    },
-    {
-      id: "3",
-      name: "Sophia Chen",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
-      suggestionCount: 15,
-    },
-    {
-      id: "4",
-      name: "Michael Johnson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-      suggestionCount: 6,
-    },
-    {
-      id: "5",
-      name: "Olivia Parker",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=olivia",
-      suggestionCount: 10,
-    },
-    {
-      id: "6",
-      name: "David Kim",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david",
-      suggestionCount: 9,
-    },
-  ]);
+  const [recentSuggestions, setRecentSuggestions] = useState<ContentItem[]>(contentItemArray);
+  const [suggestors, setSuggestors] = useState<Suggestor[]>(suggestorsArray);
 
   const navigate = useNavigate();
 
@@ -167,8 +49,8 @@ const Home = () => {
 
       <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
-          <h1 className="text-3xl font-bold text-foreground mb-8">
-            Welcome to <span className="text-primary">Suggest.me</span>
+          <h1 className="text-3xl font-bold text-foreground mb-8 flex gap-2">
+            Welcome to<AppName className="text-3xl text-primary" className2="text-3xl text-primary" />
           </h1>
 
           <div className="mb-8 bg-card rounded-lg shadow-social dark:shadow-social-dark p-6 transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover">

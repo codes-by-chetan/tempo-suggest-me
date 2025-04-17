@@ -67,6 +67,58 @@ const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
         suggestedAt: new Date().toISOString(),
         whereToRead: ["Amazon", "Barnes & Noble", "Local Bookstore"],
       },
+      {
+        id: "t3",
+        title: "Oppenheimer",
+        type: "movie",
+        imageUrl:
+          "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=300&q=80",
+        year: "2023",
+        creator: "Christopher Nolan",
+        description:
+          "The story of J. Robert Oppenheimer and the creation of the atomic bomb during World War II.",
+        suggestedAt: new Date().toISOString(),
+        whereToWatch: ["Peacock", "Apple TV+"],
+      },
+      {
+        id: "t4",
+        title: "Project Hail Mary",
+        type: "book",
+        imageUrl:
+          "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=300&q=80",
+        year: "2021",
+        creator: "Andy Weir",
+        description:
+          "A lone astronaut must save humanity from disaster while piecing together his forgotten mission in deep space.",
+        suggestedAt: new Date().toISOString(),
+        whereToRead: ["Audible", "Amazon", "Bookshop.org"],
+      },
+      {
+        id: "t5",
+        title: "The Bear",
+        type: "tv",
+        imageUrl:
+          "https://images.unsplash.com/photo-1620207418302-439b387441b0?w=300&q=80",
+        year: "2022",
+        creator: "Christopher Storer",
+        description:
+          "A young chef from the fine dining world returns home to run his family's sandwich shop in Chicago.",
+        suggestedAt: new Date().toISOString(),
+        whereToWatch: ["Hulu", "Disney+"],
+      },
+      {
+        id: "t6",
+        title: "Sapiens: A Brief History of Humankind",
+        type: "book",
+        imageUrl:
+          "https://images.unsplash.com/photo-1588776814546-bc4bde8f7a5f?w=300&q=80",
+        year: "2011",
+        creator: "Yuval Noah Harari",
+        description:
+          "Explores how Homo sapiens became the dominant species and how our history shaped modern society.",
+        suggestedAt: new Date().toISOString(),
+        whereToRead: ["Kindle", "Amazon", "Libraries"],
+      },
     ];
 
     const mockFriendActivity: ContentItem[] = [
@@ -187,56 +239,50 @@ const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
     </div>
   );
 
+  const ContentRow = ({
+    contentArray,
+    heading,
+  }: {
+    contentArray: ContentItem[];
+    heading: string;
+  }) => (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold text-foreground">{heading}</h2>
+        <Link
+          to="/explore/trending"
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          View all
+        </Link>
+      </div>
+      <div className="relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden">
+          {contentArray.slice(0, 3).map(renderContentCard)}
+        </div>
+
+        {/* Fade overlay */}
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-40 bg-gradient-to-l from-background to-transparent" />
+      </div>
+    </div>
+  );
+
   return (
     <div className={`${className}`}>
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-foreground">Trending Now</h2>
-          <Link
-            to="/explore/trending"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exploreContent.trending.map(renderContentCard)}
-        </div>
-      </div>
+      <ContentRow
+        heading="Trending Now"
+        contentArray={exploreContent.trending}
+      />
 
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-foreground">
-            Friend Activity
-          </h2>
-          <Link
-            to="/explore/friends"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exploreContent.friendActivity.map(renderContentCard)}
-        </div>
-      </div>
+      <ContentRow
+        heading="Friend Activity"
+        contentArray={exploreContent.friendActivity}
+      />
 
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-foreground">
-            Recommended For You
-          </h2>
-          <Link
-            to="/explore/recommended"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exploreContent.recommended.map(renderContentCard)}
-        </div>
-      </div>
+      <ContentRow
+        heading="Recommended For You"
+        contentArray={exploreContent.recommended}
+      />
     </div>
   );
 };

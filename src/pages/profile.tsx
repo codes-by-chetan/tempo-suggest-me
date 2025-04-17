@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -32,35 +32,21 @@ import {
   MessageCircle,
   Share2,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import SuggestionButton from "@/components/suggestions/SuggestionButton";
+import { SavedItem, savedItemsArray } from "@/data/mySavedItem";
+import { myPostsArray, Post } from "@/data/myPosts";
+import { Friend, myFriendsArray } from "@/data/myFriends";
+import { suggestorsArray } from "@/data/suggestors";
 
-interface Friend {
-  id: string;
-  name: string;
-  avatar?: string;
-  email?: string;
-  mutualFriends?: number;
-}
-
-interface Post {
-  id: string;
-  imageUrl: string;
-  likes: number;
-  comments: number;
-  caption?: string;
-  date: string;
-}
-
-interface SavedItem {
-  id: string;
-  title: string;
-  type: string;
-  imageUrl: string;
-  creator?: string;
-  year?: string;
-  savedAt: string;
-}
+const defaultUser = {
+  name: "John Doe",
+  email: "john.doe@example.com",
+  avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
+  location: "San Francisco, CA",
+  joinDate: "January 2023",
+  bio: "Movie enthusiast and book lover. Always looking for new recommendations!",
+};
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -68,149 +54,33 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
   // Mock user data - in a real app, this would come from an API
-  const [userData, setUserData] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-    location: "San Francisco, CA",
-    joinDate: "January 2023",
-    bio: "Movie enthusiast and book lover. Always looking for new recommendations!",
-  });
+  // for now the type is given s any as the fields in the object differ from suggestor
+  const [userData, setUserData] = useState<any>();
 
   // Mock saved items data
-  const [savedItems, setSavedItems] = useState<SavedItem[]>([
-    {
-      id: "s1",
-      title: "Interstellar",
-      type: "movie",
-      imageUrl:
-        "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=400&q=80",
-      creator: "Christopher Nolan",
-      year: "2014",
-      savedAt: "2023-06-10",
-    },
-    {
-      id: "s2",
-      title: "The Great Gatsby",
-      type: "book",
-      imageUrl:
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80",
-      creator: "F. Scott Fitzgerald",
-      year: "1925",
-      savedAt: "2023-06-05",
-    },
-    {
-      id: "s3",
-      title: "Demon Slayer",
-      type: "anime",
-      imageUrl:
-        "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=80",
-      creator: "Koyoharu Gotouge",
-      year: "2019",
-      savedAt: "2023-05-28",
-    },
-    {
-      id: "s4",
-      title: "Bohemian Rhapsody",
-      type: "song",
-      imageUrl:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&q=80",
-      creator: "Queen",
-      year: "1975",
-      savedAt: "2023-05-20",
-    },
-  ]);
+  const [savedItems, setSavedItems] = useState<SavedItem[]>(savedItemsArray);
 
   // Mock posts data
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: "1",
-      imageUrl:
-        "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400&q=80",
-      likes: 124,
-      comments: 8,
-      caption: "Amazing sunset at the beach today! #sunset #beach #vacation",
-      date: "2023-05-15",
-    },
-    {
-      id: "2",
-      imageUrl:
-        "https://images.unsplash.com/photo-1682685797661-9e0c87f59c60?w=400&q=80",
-      likes: 89,
-      comments: 5,
-      caption: "Coffee and books, perfect morning! #coffee #reading",
-      date: "2023-05-10",
-    },
-    {
-      id: "3",
-      imageUrl:
-        "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=400&q=80",
-      likes: 210,
-      comments: 15,
-      caption: "Hiking trip with friends! #hiking #nature #friends",
-      date: "2023-05-05",
-    },
-    {
-      id: "4",
-      imageUrl:
-        "https://images.unsplash.com/photo-1674574124649-778f9afc0e9c?w=400&q=80",
-      likes: 156,
-      comments: 12,
-      caption: "New recipe I tried today. #cooking #food #homemade",
-      date: "2023-04-28",
-    },
-    {
-      id: "5",
-      imageUrl:
-        "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&q=80",
-      likes: 178,
-      comments: 9,
-      caption:
-        "Beautiful mountain view from my trip last weekend. #mountains #travel",
-      date: "2023-04-20",
-    },
-    {
-      id: "6",
-      imageUrl:
-        "https://images.unsplash.com/photo-1560703650-ef3e0f254ae0?w=400&q=80",
-      likes: 95,
-      comments: 4,
-      caption: "Concert night! #music #live #concert",
-      date: "2023-04-15",
-    },
-  ]);
+  const [posts, setPosts] = useState<Post[]>(myPostsArray);
 
   // Mock friends data
-  const [friends, setFriends] = useState<Friend[]>([
-    {
-      id: "1",
-      name: "Emma Watson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
-      email: "emma@example.com",
-      mutualFriends: 5,
-    },
-    {
-      id: "2",
-      name: "John Smith",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-      email: "john@example.com",
-      mutualFriends: 3,
-    },
-    {
-      id: "3",
-      name: "Sophia Chen",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
-      email: "sophia@example.com",
-      mutualFriends: 7,
-    },
-    {
-      id: "4",
-      name: "Michael Johnson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-      email: "michael@example.com",
-      mutualFriends: 2,
-    },
-  ]);
+  const [friends, setFriends] = useState<Friend[]>(myFriendsArray);
+
+  const { id } = useParams();
+
+  console.log("ID OF THE USER IS: ", id);
+
+  useEffect(() => {
+    if (id) {
+      const user = suggestorsArray.find((suggestor) => suggestor.id === id);
+      console.log("user isss: ",user);
+      
+    
+      setUserData(user);
+    } else {
+      setUserData(defaultUser);
+    }
+  }, []);
 
   // Mock function to handle profile update
   const handleProfileUpdate = (e: React.FormEvent) => {
@@ -245,9 +115,12 @@ const Profile = () => {
         {/* Instagram-like header section */}
         <ProfileHeader
           userData={userData}
-          friendsCount={friends.length}
+          friendsCount={friends.length | userData?.friendsCount}
           onEditProfile={() => navigate("/edit-profile")}
           onOpenSettings={() => setShowSettingsDialog(true)}
+          followingCount={userData?.followingCount}
+          postsCount={userData?.postsCount}
+          accountHolder={id ? false : true} // id id is present means we are navigating to the profile of another user
         />
 
         {/* Instagram-like tabs */}
@@ -279,7 +152,7 @@ const Profile = () => {
           <TabsContent value="profile" className="mt-0">
             {/* Posts Grid */}
             <div className="grid grid-cols-3 gap-1 md:gap-4">
-              {posts.map((post) => (
+              {posts?.map((post) => (
                 <PostCard
                   key={post.id}
                   id={post.id}
@@ -292,7 +165,7 @@ const Profile = () => {
               ))}
             </div>
 
-            {posts.length === 0 && (
+            {posts?.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No posts yet.</p>
                 <Button variant="outline" className="mt-4">
@@ -313,7 +186,7 @@ const Profile = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {friends.map((friend) => (
+                  {friends?.map((friend) => (
                     <div
                       key={friend.id}
                       className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/10"
@@ -348,7 +221,7 @@ const Profile = () => {
                     </div>
                   ))}
                 </div>
-                {friends.length === 0 && (
+                {friends?.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     You don't have any friends yet. Add some friends to get
                     started!
@@ -363,7 +236,7 @@ const Profile = () => {
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-4">Saved Items</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {savedItems.map((item) => (
+                {savedItems?.map((item) => (
                   <Card
                     key={item.id}
                     className="overflow-hidden cursor-pointer hover:shadow-md transition-all"
@@ -422,7 +295,7 @@ const Profile = () => {
                 ))}
               </div>
 
-              {savedItems.length === 0 && (
+              {savedItems?.length === 0 && (
                 <div className="text-center py-12 bg-muted/20 rounded-lg">
                   <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No saved items yet.</p>

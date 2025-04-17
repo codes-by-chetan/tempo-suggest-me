@@ -34,7 +34,7 @@ function App() {
           <Route path="/suggested-to-me" element={<SuggestedToMe />} />
           <Route path="/my-suggestions" element={<MySuggestions />} />
           <Route path="/my-watchlist" element={<MyWatchlist />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:id?" element={<Profile />} />
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

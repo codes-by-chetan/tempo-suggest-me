@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router";
+import { myWatchListItems } from "@/data/myWatchListItems";
+import { CustomTabsList } from "@/components/layout/CustomTabsList";
 
 interface ContentItem {
   id: string;
@@ -63,85 +65,11 @@ const MyWatchlist = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [watchListItems, setWatchlistItems] = useState(myWatchListItems)
 
-  // Mock data - in a real app, this would come from an API
-  const mockWatchlistItems: ContentItem[] = [
-    {
-      id: "1",
-      title: "Inception",
-      type: "movie",
-      imageUrl:
-        "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&q=80",
-      year: "2010",
-      creator: "Christopher Nolan",
-      description:
-        "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
-      suggestedBy: {
-        id: "1",
-        name: "Emma Watson",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
-      },
-      addedAt: "2023-06-15T14:30:00Z",
-      status: "watched",
-    },
-    {
-      id: "2",
-      title: "1984",
-      type: "book",
-      imageUrl:
-        "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&q=80",
-      year: "1949",
-      creator: "George Orwell",
-      description:
-        "A dystopian social science fiction novel and cautionary tale set in a totalitarian state.",
-      suggestedBy: {
-        id: "3",
-        name: "Sophia Chen",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
-      },
-      addedAt: "2023-06-10T09:15:00Z",
-      status: "reading",
-    },
-    {
-      id: "3",
-      title: "Death Note",
-      type: "anime",
-      imageUrl:
-        "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=300&q=80",
-      year: "2006",
-      creator: "Tsugumi Ohba",
-      description:
-        "A high school student discovers a supernatural notebook that allows him to kill anyone by writing the victim's name while picturing their face.",
-      suggestedBy: {
-        id: "4",
-        name: "Michael Johnson",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-      },
-      addedAt: "2023-06-05T16:45:00Z",
-      status: "watchlist",
-    },
-    {
-      id: "4",
-      title: "Imagine",
-      type: "song",
-      imageUrl:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&q=80",
-      year: "1971",
-      creator: "John Lennon",
-      description:
-        "A song co-produced by John Lennon, Yoko Ono, and Phil Spector, encouraging listeners to imagine a world of peace.",
-      suggestedBy: {
-        id: "6",
-        name: "David Kim",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david",
-      },
-      addedAt: "2023-06-01T11:20:00Z",
-      status: "listened",
-    },
-  ];
 
   // Filter by content type and status
-  const filteredItems = mockWatchlistItems
+  const filteredItems = myWatchListItems
     .filter((item) => activeTab === "all" || item.type === activeTab)
     .filter((item) => statusFilter === null || item.status === statusFilter);
 
@@ -315,260 +243,17 @@ const MyWatchlist = () => {
             </div>
           </div>
 
-          <Tabs
-            defaultValue="all"
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid grid-cols-6 mb-8 p-1 bg-muted/50">
-              <TabsTrigger value="all" className="rounded-full">
-                All
-              </TabsTrigger>
-              <TabsTrigger
-                value="movie"
-                className="flex items-center gap-2 rounded-full"
-              >
-                <Film className="h-4 w-4" />
-                Movies
-              </TabsTrigger>
-              <TabsTrigger
-                value="book"
-                className="flex items-center gap-2 rounded-full"
-              >
-                <BookOpen className="h-4 w-4" />
-                Books
-              </TabsTrigger>
-              <TabsTrigger
-                value="anime"
-                className="flex items-center gap-2 rounded-full"
-              >
-                <Tv className="h-4 w-4" />
-                Anime
-              </TabsTrigger>
-              <TabsTrigger
-                value="song"
-                className="flex items-center gap-2 rounded-full"
-              >
-                <Music className="h-4 w-4" />
-                Songs
-              </TabsTrigger>
-              <TabsTrigger
-                value="youtube"
-                className="flex items-center gap-2 rounded-full"
-              >
-                <Youtube className="h-4 w-4" />
-                Videos
-              </TabsTrigger>
-            </TabsList>
+          <CustomTabsList
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            filteredSuggestions={filteredItems}
+            handleMarkAsWatched={(id: string) => handleUpdateStatus(id, "watched")}
+            handleMarkAsWatching={(id: string) => handleUpdateStatus(id, "watching")}
+            handleAddToWatchlist={(id: string) => handleUpdateStatus(id, "watchlist")}
+            myWatchList = {true}
+          />
 
-            <TabsContent value={activeTab} className="mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredItems.length > 0 ? (
-                  filteredItems.map((item) => (
-                    <Card
-                      key={item.id}
-                      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
-                    >
-                      <div className="flex flex-col h-full">
-                        {item.imageUrl && (
-                          <div
-                            className="w-full h-40 bg-muted relative"
-                            onClick={() =>
-                              navigate(`/content/${item.id}`, {
-                                state: { contentDetails: item },
-                              })
-                            }
-                          >
-                            <img
-                              src={item.imageUrl}
-                              alt={item.title}
-                              className="h-full w-full object-cover"
-                            />
-                            {item.status && (
-                              <Badge
-                                className={`absolute top-2 right-2 flex items-center gap-1 ${getStatusColor(
-                                  item.status,
-                                )}`}
-                              >
-                                {getStatusIcon(item.status)}
-                                {getStatusText(item.status, item.type)}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                        <CardContent className="flex-1 p-5">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
-                                {getIconForType(item.type)}
-                              </div>
-                              <span className="text-xs font-medium text-primary capitalize">
-                                {item.type}
-                              </span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(item.addedAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <h3
-                            className="font-semibold text-lg mb-1 line-clamp-1"
-                            onClick={() =>
-                              navigate(`/content/${item.id}`, {
-                                state: { contentDetails: item },
-                              })
-                            }
-                          >
-                            {item.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {item.creator} • {item.year}
-                          </p>
-                          <p className="text-sm line-clamp-2 mb-4">
-                            {item.description}
-                          </p>
-
-                          {/* Status update buttons */}
-                          <div className="flex items-center justify-between mb-4">
-                            <Button
-                              variant={
-                                ["watched", "finished", "listened"].includes(
-                                  item.status || "",
-                                )
-                                  ? "default"
-                                  : "ghost"
-                              }
-                              size="sm"
-                              className="rounded-full p-2 h-auto"
-                              onClick={() => {
-                                const completedStatus =
-                                  item.type === "book"
-                                    ? "finished"
-                                    : item.type === "song"
-                                      ? "listened"
-                                      : "watched";
-                                handleUpdateStatus(item.id, completedStatus);
-                              }}
-                            >
-                              <CheckCircle
-                                className={`h-4 w-4 ${
-                                  ["watched", "finished", "listened"].includes(
-                                    item.status || "",
-                                  )
-                                    ? "text-white"
-                                    : "text-muted-foreground"
-                                }`}
-                              />
-                            </Button>
-                            <Button
-                              variant={
-                                ["watching", "reading", "listening"].includes(
-                                  item.status || "",
-                                )
-                                  ? "default"
-                                  : "ghost"
-                              }
-                              size="sm"
-                              className="rounded-full p-2 h-auto"
-                              onClick={() => {
-                                const inProgressStatus =
-                                  item.type === "book"
-                                    ? "reading"
-                                    : item.type === "song"
-                                      ? "listening"
-                                      : "watching";
-                                handleUpdateStatus(item.id, inProgressStatus);
-                              }}
-                            >
-                              <Clock
-                                className={`h-4 w-4 ${
-                                  ["watching", "reading", "listening"].includes(
-                                    item.status || "",
-                                  )
-                                    ? "text-white"
-                                    : "text-muted-foreground"
-                                }`}
-                              />
-                            </Button>
-                            <Button
-                              variant={
-                                [
-                                  "watchlist",
-                                  "readlist",
-                                  "listenlist",
-                                ].includes(item.status || "")
-                                  ? "default"
-                                  : "ghost"
-                              }
-                              size="sm"
-                              className="rounded-full p-2 h-auto"
-                              onClick={() => {
-                                const listStatus =
-                                  item.type === "book"
-                                    ? "readlist"
-                                    : item.type === "song"
-                                      ? "listenlist"
-                                      : "watchlist";
-                                handleUpdateStatus(item.id, listStatus);
-                              }}
-                            >
-                              <Bookmark
-                                className={`h-4 w-4 ${
-                                  [
-                                    "watchlist",
-                                    "readlist",
-                                    "listenlist",
-                                  ].includes(item.status || "")
-                                    ? "text-white"
-                                    : "text-muted-foreground"
-                                }`}
-                              />
-                            </Button>
-                          </div>
-
-                          <div className="flex flex-col pt-3 border-t border-border">
-                            <span className="text-xs font-medium text-foreground mb-2">
-                              Suggested by:
-                            </span>
-                            <div className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-2 transition-colors w-fit">
-                              <Avatar className="h-5 w-5 mr-1 ring-1 ring-primary/20">
-                                <AvatarImage
-                                  src={item.suggestedBy.avatar}
-                                  alt={item.suggestedBy.name}
-                                />
-                                <AvatarFallback className="bg-primary-100 text-primary-800">
-                                  {item.suggestedBy.name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs font-medium">
-                                {item.suggestedBy.name}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </div>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12 bg-card rounded-lg shadow-social dark:shadow-social-dark p-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                      <Bookmark className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">
-                      No items in your collection
-                    </h3>
-                    <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                      {statusFilter
-                        ? `You don't have any ${getStatusText(
-                            statusFilter,
-                          ).toLowerCase()} items in this category.`
-                        : "Your collection is empty. Add items from the 'Suggested to Me' page!"}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
+          
         </div>
       </main>
     </div>
