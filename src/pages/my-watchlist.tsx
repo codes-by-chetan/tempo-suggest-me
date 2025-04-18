@@ -30,6 +30,7 @@ import {
 import { useNavigate } from "react-router";
 import { myWatchListItems } from "@/data/myWatchListItems";
 import { CustomTabsList } from "@/components/layout/CustomTabsList";
+import MyWatchListCard from "@/components/layout/MyWatchListCard";
 
 interface ContentItem {
   id: string;
@@ -200,6 +201,7 @@ const MyWatchlist = () => {
     );
   };
 
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -245,11 +247,12 @@ const MyWatchlist = () => {
 
           <CustomTabsList
             activeTab={activeTab}
+            CustomCard={MyWatchListCard}
             setActiveTab={setActiveTab}
             filteredSuggestions={filteredItems}
             handleMarkAsWatched={(id: string) => handleUpdateStatus(id, "watched")}
             handleMarkAsWatching={(id: string) => handleUpdateStatus(id, "watching")}
-            handleAddToWatchlist={(id: string) => handleUpdateStatus(id, "watchlist")}
+            handleRemoveFromMyWatchList={(id:string) => handleUpdateStatus(id, "remove")}
             myWatchList = {true}
           />
 

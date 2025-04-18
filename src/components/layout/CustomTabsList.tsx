@@ -16,10 +16,11 @@ export const CustomTabsList = ({
   activeTab,
   setActiveTab,
   filteredSuggestions,
-  handleMarkAsWatched,
+  handleMarkAsWatched ,
   handleMarkAsWatching,
-  handleAddToWatchlist,
-  Card,
+  handleAddToWatchlist = (id:string) => {},
+  handleRemoveFromMyWatchList = (id:string) => {},
+  CustomCard,
   myWatchList = false,
 }) => {
   const tabs = [
@@ -30,6 +31,9 @@ export const CustomTabsList = ({
     { value: "song", label: "Songs", icon: Music },
     { value: "youtube", label: "Videos", icon: Youtube },
   ];
+
+  console.log("Card that has been passed to CustomTabsList: ",CustomCard);
+  
 
   return (
     <Tabs
@@ -58,7 +62,7 @@ export const CustomTabsList = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSuggestions.length > 0 ? (
             filteredSuggestions.map((item) => (
-              <Card
+              <CustomCard
                 key={item.id}
                 item={item}
                 myWatchlist={myWatchList}

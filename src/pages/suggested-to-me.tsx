@@ -219,7 +219,7 @@ const SuggestedToMe = () => {
           <CustomTabsList
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            Card={SuggestedToMeCard}
+            CustomCard={SuggestedToMeCard}
             filteredSuggestions={filteredSuggestions}
             handleMarkAsWatched={handleMarkAsWatched}
             handleMarkAsWatching={handleMarkAsWatching}
