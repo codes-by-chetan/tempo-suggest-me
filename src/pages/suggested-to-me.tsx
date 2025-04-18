@@ -1,26 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Film,
-  BookOpen,
-  Tv,
-  Music,
-  Youtube,
-  Instagram,
-  Heart,
-  MessageCircle,
-  Share2,
-  Plus,
-  CheckCircle,
-  Clock,
-  Bookmark,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { CustomTabsList } from "@/components/layout/CustomTabsList";
+import SuggestedToMeCard from "@/components/layout/SuggestedToMeCard";
 
 interface ContentItem {
   id: string;
@@ -127,25 +108,33 @@ const SuggestedToMe = () => {
       whereToListen: ["Spotify", "Apple Music", "YouTube Music"],
     },
   ];
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [suggestions, setSuggestions] =
     useState<ContentItem[]>(mockSuggestions);
-
+  const [filteredSuggestions, setFilteredSuggestions] = useState<ContentItem[]>(
+    activeTab === "all"
+      ? suggestions
+      : suggestions.filter((item) => item.type === activeTab)
+  );
   // Mock data - in a real app, this would come from an API
   React.useEffect(() => {
     setSuggestions(mockSuggestions);
   }, []);
 
-  const filteredSuggestions =
-    activeTab === "all"
-      ? suggestions
-      : suggestions.filter((item) => item.type === activeTab);
+  React.useEffect(() => {
+    setFilteredSuggestions(
+      activeTab === "all"
+        ? suggestions
+        : suggestions.filter((item) => item.type === activeTab)
+    );
+    console.log("filtered Suggestions: ", filteredSuggestions)
+  }, [activeTab, suggestions]);
 
   const handleMarkAsWatched = (id: string) => {
     setSuggestions((prev) =>
       prev.map((item) => {
         if (item.id === id) {
+          
           const status = getContentSpecificWatchedStatus(
             item.type
           ) as ContentItem["status"];
@@ -217,43 +206,6 @@ const SuggestedToMe = () => {
     }
   };
 
-  const getContentSpecificStatusLabel = (
-    status: string,
-    type: string
-  ): string => {
-    if (status === "watchlist") return "In Watchlist";
-    if (status === "readlist") return "In Reading List";
-    if (status === "listenlist") return "In Listening List";
-
-    switch (type) {
-      case "book":
-        return status === "finished" ? "Finished" : "Reading";
-      case "song":
-        return status === "listened" ? "Listened" : "Listening";
-      default:
-        return status === "watched" ? "Watched" : "Watching";
-    }
-  };
-
-  const getIconForType = (type: string) => {
-    switch (type) {
-      case "movie":
-        return <Film className="h-5 w-5" />;
-      case "book":
-        return <BookOpen className="h-5 w-5" />;
-      case "anime":
-        return <Tv className="h-5 w-5" />;
-      case "song":
-        return <Music className="h-5 w-5" />;
-      case "youtube":
-        return <Youtube className="h-5 w-5" />;
-      case "reels":
-        return <Instagram className="h-5 w-5" />;
-      default:
-        return <Film className="h-5 w-5" />;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -267,13 +219,12 @@ const SuggestedToMe = () => {
           <CustomTabsList
             activeTab={activeTab}
             setActiveTab={setActiveTab}
+            Card={SuggestedToMeCard}
             filteredSuggestions={filteredSuggestions}
             handleMarkAsWatched={handleMarkAsWatched}
             handleMarkAsWatching={handleMarkAsWatching}
             handleAddToWatchlist={handleAddToWatchlist}
           />
-          
-          
         </div>
       </main>
     </div>
