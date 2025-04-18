@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Film,
   BookOpen,
@@ -10,31 +8,21 @@ import {
   Music,
   Youtube,
   Instagram,
-  User,
   Plus,
-  Share2,
-  Heart,
-  MessageCircle,
-  CheckCircle,
-  Clock,
-  Bookmark,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import SuggestionFlow from "@/components/suggestions/SuggestionFlow";
 import { CustomTabsList } from "@/components/layout/CustomTabsList";
 import { mockMySuggestions } from "@/data/mySuggestions";
-import { Value } from "@radix-ui/react-select";
-import MySuggestionCard from "@/components/layout/SuggestedToMeCard";
-
+import MySuggestionCard from "@/components/layout/MySuggestion";
 
 const MySuggestions = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [isSuggestionFlowOpen, setIsSuggestionFlowOpen] = useState(false);
-  useEffect(()=>{
+  useEffect(() => {
     console.log("activeTab", activeTab);
-  },[activeTab]);
+  }, [activeTab]);
   // Helper functions for content-specific status labels
   const getContentSpecificStatusLabel = (
     status: string,
@@ -55,7 +43,6 @@ const MySuggestions = () => {
   };
 
   // Mock data - in a real app, this would come from an API
-  
 
   const filteredSuggestions =
     activeTab === "all"
@@ -110,13 +97,11 @@ const MySuggestions = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             filteredSuggestions={filteredSuggestions}
-            Card={MySuggestionCard}
+            CustomCard={MySuggestionCard}
             handleMarkAsWatched={() => {}}
             handleMarkAsWatching={() => {}}
             handleAddToWatchlist={() => {}}
           />
-
-         
         </div>
       </main>
 
