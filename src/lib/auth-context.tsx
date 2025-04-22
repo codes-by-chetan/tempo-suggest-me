@@ -1,3 +1,5 @@
+import AuthService from "@/services/auth.service";
+import { getToast } from "@/services/toasts.service";
 import React, {
   createContext,
   useContext,
@@ -6,36 +8,56 @@ import React, {
   useCallback,
 } from "react";
 
-type User = {
-  id: string;
-  name: string;
+interface User {
+  fullName: FullName;
   email: string;
-  avatar?: string;
-} | null;
+  contactNumber: ContactNumber;
+  role: string;
+  fullNameString: string;
+  avatar?: {
+    url: string;
+    publicId: string
+  }
+}
+
+interface ContactNumber {
+  countryCode: string;
+  number: string;
+  _id: string;
+  id: string;
+}
+
+interface FullName {
+  firstName: string;
+  lastName: string;
+  _id: string;
+}
 
 type AuthContextType = {
   user: User;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (data: any) => Promise<boolean>;
   logout: () => void;
   refreshAuthState: () => void;
+  setIsAuthenticated: (isAuthenticated: boolean) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const authService = new AuthService();
   const [user, setUser] = useState<User>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   // Function to refresh auth state from localStorage
-  const refreshAuthState = useCallback(() => {
-    const storedAuth = localStorage.getItem("isAuthenticated");
-    const storedUser = localStorage.getItem("user");
+  const refreshAuthState = useCallback(async () => {
+    const storedAuth = localStorage.getItem("token");
 
-    if (storedAuth === "true" && storedUser) {
+    if (storedAuth === "true") {
       try {
-        setUser(JSON.parse(storedUser));
+        await authService.refreshUserDetails().then((res)=>{})
+
         setIsAuthenticated(true);
       } catch (error) {
         console.error("Error parsing stored user:", error);
@@ -67,61 +89,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshAuthState]);
 
   const login = async (email: string, password: string) => {
-    try {
-      // In a real app, this would be an API call to authenticate the user
-      console.log("Login attempt with:", { email, password });
+    console.log("Login attempt with:", { email, password });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock successful login
-      const mockUser = {
-        id: "1",
-        name: "John Doe",
-        email: email,
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-      };
-
-      // Update state first to ensure immediate UI update
-      setUser(mockUser);
-      setIsAuthenticated(true);
-
-      // Then update localStorage
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(mockUser));
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    }
+    const success = await authService.login({ email, password }).then((res) => {
+      if (res.success) {
+        localStorage.setItem("token", res.data.token);
+        setUser(res.data.user);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        getToast("error", res.message);
+        return false;
+      }
+    });
+    return success;
   };
 
-  const signup = async (name: string, email: string, password: string) => {
-    try {
-      // In a real app, this would be an API call to register the user
-      console.log("Signup attempt with:", { name, email, password });
+  const signup = async (data: any) => {
+    // In a real app, this would be an API call to register the user
+    console.log("Signup attempt with:", data);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock successful registration
-      const mockUser = {
-        id: "1",
-        name: name,
-        email: email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.toLowerCase().replace(/\s+/g, "")}`,
-      };
-
-      // Update state first to ensure immediate UI update
-      setUser(mockUser);
-      setIsAuthenticated(true);
-
-      // Then update localStorage
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(mockUser));
-    } catch (error) {
-      console.error("Signup error:", error);
-      throw error;
-    }
+    // Simulate API call
+    const success = await authService.register(data).then((res) => {
+      if (res.success) {
+        localStorage.setItem("token", res.data.token);
+        setUser(res.data.user);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        getToast("error", res.message);
+        return false;
+      }
+    });
+    return success;
   };
 
   const logout = () => {
@@ -143,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signup,
         logout,
         refreshAuthState,
+        setIsAuthenticated,
       }}
     >
       {children}

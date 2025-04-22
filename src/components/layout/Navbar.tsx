@@ -44,7 +44,8 @@ const Navbar = () => {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(
     auth.isAuthenticated,
   );
-
+  console.log(auth);
+  
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -308,17 +309,17 @@ const Navbar = () => {
                   >
                     <Avatar className="h-9 w-9">
                       <AvatarImage
-                        src={currentUser.avatar}
-                        alt={currentUser.name}
+                        src={currentUser.avatar.url}
+                        alt={currentUser.fullNameString}
                       />
                       <AvatarFallback className="bg-primary-100 text-primary-800">
-                        {currentUser.name.charAt(0)}
+                        {currentUser.fullName.firstName.charAt(0)}{currentUser.fullName.lastName.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>{currentUser.name}</DropdownMenuLabel>
+                  <DropdownMenuLabel>{currentUser.fullNameString}</DropdownMenuLabel>
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
                     {currentUser.email}
                   </DropdownMenuLabel>
@@ -448,16 +449,16 @@ const Navbar = () => {
               <div className="flex-shrink-0">
                 <Avatar className="h-10 w-10 ring-2 ring-primary/20">
                   <AvatarImage
-                    src={currentUser.avatar}
-                    alt={currentUser.name}
+                    src={currentUser.avatar.url}
+                    alt={currentUser.fullNameString}
                   />
                   <AvatarFallback className="bg-primary-100 text-primary-800">
-                    {currentUser.name.charAt(0)}
+                  {currentUser.fullName.firstName.charAt(0)}{currentUser.fullName.lastName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="ml-3">
-                <div className="text-base font-medium">{currentUser.name}</div>
+                <div className="text-base font-medium">{currentUser.fullNameString}</div>
                 <div className="text-sm font-medium text-muted-foreground">
                   {currentUser.email}
                 </div>

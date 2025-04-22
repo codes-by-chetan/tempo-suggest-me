@@ -1,9 +1,11 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
 import ErrorPage from "./components/errorPage";
-
+import { useAuth } from "./lib/auth-context";
+import AuthService from "./services/auth.service";
+import { getToast } from "./services/toasts.service";
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
 const MySuggestions = lazy(() => import("./pages/my-suggestions"));
@@ -19,7 +21,34 @@ const ExploreTrending = lazy(() => import("./pages/explore/Trending"));
 const ExploreFriends = lazy(() => import("./pages/explore/FriendActivity"));
 const ExploreRecommended = lazy(() => import("./pages/explore/Recommended"));
 
+
 function App() {
+  // const authProvider = useAuth();
+  // const authService = new AuthService();
+  // const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+
+  //   useEffect(()=>{
+     
+  //       authService.isAuthenticated().then((response)=>{
+          
+  //           authProvider.refreshAuthState()
+          
+  //       }).catch((_err)=>{
+  //         // setResult(false)
+  //         getToast("error", _err.message)
+  //       })
+      
+  //   },[])
+  //   if (!result) {
+  //     authService.logout()
+  //   }
+  //   return result ? children : <Navigate to="/auth/login" />;
+  // };
+  // const CanAccess = ({ children }: { children: JSX.Element }) => {
+  //   if(isAuthenticated()) getToast("error", "user is already logged in")
+  //   return !isAuthenticated() ? children : <Navigate to="/" />;
+  // };
+  
   return (
     <Suspense
       fallback={
