@@ -1,0 +1,101 @@
+import api from "./api.service";
+import { UserProfileResponse } from "../interfaces/user.interface";
+import { response } from "@/interfaces/auth.interfaces";
+export default class UserService {
+  getAccessToken() {
+    const token: string | null = localStorage.getItem("token");
+    return token;
+  }
+
+  async getUserProfile(): Promise<UserProfileResponse> {
+    return api
+      .get("user/profile", {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+  async getUserProfileById(userId: string): Promise<UserProfileResponse> {
+    return api
+      .get(`profiles/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+  async followUser(userId: string): Promise<UserProfileResponse> {
+    return api
+      .get(`relations/follow/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+  async getUserWholeProfile(): Promise<response> {
+    return api
+      .get("user/profile-whole", {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+  async updateUserProfilePicture(data: any): Promise<response> {
+    return api
+      .post("user/avatar", data, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+
+  async updateUserProfile(data: any): Promise<response> {
+    return api
+      .post("user/update/profile", data, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+}

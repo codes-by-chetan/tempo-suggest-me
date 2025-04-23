@@ -42,10 +42,10 @@ const Navbar = () => {
   // Create state variables that will trigger re-renders when they change
   const [currentUser, setCurrentUser] = useState(auth.user);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(
-    auth.isAuthenticated,
+    auth.isAuthenticated
   );
   console.log(auth);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -134,15 +134,15 @@ const Navbar = () => {
   const handleMarkAsRead = (id: string) => {
     setNotifications((prev) =>
       prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification,
-      ),
+        notification.id === id ? { ...notification, read: true } : notification
+      )
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   };
 
   const handleMarkAllAsRead = () => {
     setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, read: true })),
+      prev.map((notification) => ({ ...notification, read: true }))
     );
     setUnreadCount(0);
   };
@@ -169,8 +169,7 @@ const Navbar = () => {
           {/* Logo and desktop navigation */}
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              
-               <AppName/>
+              <AppName />
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-1">
               <Link
@@ -179,7 +178,7 @@ const Navbar = () => {
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/")
                     ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                    : "text-foreground/70 hover:bg-accent hover:text-foreground"
                 )}
               >
                 <Home className="mr-2 h-4 w-4" />
@@ -191,7 +190,7 @@ const Navbar = () => {
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/suggested-to-me")
                     ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                    : "text-foreground/70 hover:bg-accent hover:text-foreground"
                 )}
               >
                 <BookOpenCheck className="mr-2 h-4 w-4" />
@@ -203,7 +202,7 @@ const Navbar = () => {
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/my-suggestions")
                     ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                    : "text-foreground/70 hover:bg-accent hover:text-foreground"
                 )}
               >
                 <User className="mr-2 h-4 w-4" />
@@ -215,7 +214,7 @@ const Navbar = () => {
                   "px-3 py-2 text-sm font-medium flex items-center transition-colors",
                   isActive("/my-watchlist")
                     ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                    : "text-foreground/70 hover:bg-accent hover:text-foreground"
                 )}
               >
                 <BookMarked className="mr-2 h-4 w-4" />
@@ -308,18 +307,24 @@ const Navbar = () => {
                     className="relative h-9 w-9 rounded-full ring-2 ring-primary/20 hover:ring-primary/30 transition-all"
                   >
                     <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={currentUser.avatar.url}
-                        alt={currentUser.fullNameString}
-                      />
-                      <AvatarFallback className="bg-primary-100 text-primary-800">
-                        {currentUser.fullName.firstName.charAt(0)}{currentUser.fullName.lastName.charAt(0)}
-                      </AvatarFallback>
+                      {currentUser?.avatar ? (
+                        <AvatarImage
+                          src={currentUser.avatar.url}
+                          alt={currentUser.fullNameString}
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-primary-100 text-primary-800">
+                          {currentUser.fullName.firstName.charAt(0)}
+                          {currentUser.fullName.lastName.charAt(0)}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>{currentUser.fullNameString}</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    {currentUser.fullNameString}
+                  </DropdownMenuLabel>
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
                     {currentUser.email}
                   </DropdownMenuLabel>
@@ -398,7 +403,7 @@ const Navbar = () => {
               "block px-3 py-2 text-base font-medium",
               isActive("/")
                 ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                : "text-foreground/70 hover:bg-accent hover:text-foreground"
             )}
           >
             <Home className="inline-block mr-2 h-5 w-5" />
@@ -410,7 +415,7 @@ const Navbar = () => {
               "block px-3 py-2 text-base font-medium",
               isActive("/suggested-to-me")
                 ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                : "text-foreground/70 hover:bg-accent hover:text-foreground"
             )}
           >
             <BookMarked className="inline-block mr-2 h-5 w-5" />
@@ -422,7 +427,7 @@ const Navbar = () => {
               "block px-3 py-2 text-base font-medium",
               isActive("/my-suggestions")
                 ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                : "text-foreground/70 hover:bg-accent hover:text-foreground"
             )}
           >
             <User className="inline-block mr-2 h-5 w-5" />
@@ -434,7 +439,7 @@ const Navbar = () => {
               "block px-3 py-2 text-base font-medium",
               isActive("/my-watchlist")
                 ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
+                : "text-foreground/70 hover:bg-accent hover:text-foreground"
             )}
           >
             <BookMarked className="inline-block mr-2 h-5 w-5" />
@@ -448,17 +453,23 @@ const Navbar = () => {
             <div className="flex items-center px-4">
               <div className="flex-shrink-0">
                 <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                  <AvatarImage
-                    src={currentUser.avatar.url}
-                    alt={currentUser.fullNameString}
-                  />
-                  <AvatarFallback className="bg-primary-100 text-primary-800">
-                  {currentUser.fullName.firstName.charAt(0)}{currentUser.fullName.lastName.charAt(0)}
-                  </AvatarFallback>
+                  {currentUser?.avatar ? (
+                    <AvatarImage
+                      src={currentUser.avatar.url}
+                      alt={currentUser.fullNameString}
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-primary-100 text-primary-800">
+                      {currentUser.fullName.firstName.charAt(0)}
+                      {currentUser.fullName.lastName.charAt(0)}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
               </div>
               <div className="ml-3">
-                <div className="text-base font-medium">{currentUser.fullNameString}</div>
+                <div className="text-base font-medium">
+                  {currentUser.fullNameString}
+                </div>
                 <div className="text-sm font-medium text-muted-foreground">
                   {currentUser.email}
                 </div>

@@ -1,43 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import PostCard from "@/components/profile/PostCard";
 import {
-  User,
-  Mail,
-  MapPin,
-  Calendar,
-  Edit2,
   UserPlus,
   UserMinus,
   Users,
   Grid,
   Bookmark,
   Settings,
-  Heart,
-  MessageCircle,
-  Share2,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
-import SuggestionButton from "@/components/suggestions/SuggestionButton";
 import { SavedItem, savedItemsArray } from "@/data/mySavedItem";
 import { myPostsArray, Post } from "@/data/myPosts";
 import { Friend, myFriendsArray } from "@/data/myFriends";
 import { suggestorsArray } from "@/data/suggestors";
+import UserService from "@/services/user.service";
+import { getToast } from "@/services/toasts.service";
+import { UserProfileData } from "@/interfaces/user.interface";
 
 const defaultUser = {
   name: "John Doe",
@@ -49,13 +33,15 @@ const defaultUser = {
 };
 
 const Profile = () => {
+  const userService = new UserService();
   const [activeTab, setActiveTab] = useState("profile");
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
   const navigate = useNavigate();
   // Mock user data - in a real app, this would come from an API
   // for now the type is given s any as the fields in the object differ from suggestor
-  const [userData, setUserData] = useState<any>();
+  const [userData, setUserData] = useState<UserProfileData>();
 
   // Mock saved items data
   const [savedItems, setSavedItems] = useState<SavedItem[]>(savedItemsArray);
@@ -69,17 +55,28 @@ const Profile = () => {
   const { id } = useParams();
 
   console.log("ID OF THE USER IS: ", id);
+  const refreshDetails = useCallback(async () => {
+    if (id) {
+      userService.getUserProfileById(id).then((res) => {
+        if (res.success) {
+          setUserData(res.data);
+        } else {
+          getToast("error", res.message);
+        }
+      });
+    } else {
+      userService.getUserProfile().then((res) => {
+        if (res.success) {
+          setUserData(res.data);
+        } else {
+          getToast("error", res.message);
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
-    if (id) {
-      const user = suggestorsArray.find((suggestor) => suggestor.id === id);
-      console.log("user isss: ",user);
-      
-    
-      setUserData(user);
-    } else {
-      setUserData(defaultUser);
-    }
+    refreshDetails();
   }, []);
 
   // Mock function to handle profile update
@@ -115,11 +112,12 @@ const Profile = () => {
         {/* Instagram-like header section */}
         <ProfileHeader
           userData={userData}
-          friendsCount={friends.length | userData?.friendsCount}
+          FollowersCount={userData?.relations.followers.count}
           onEditProfile={() => navigate("/edit-profile")}
           onOpenSettings={() => setShowSettingsDialog(true)}
-          followingCount={userData?.followingCount}
+          followingCount={userData?.relations.followings.count}
           postsCount={userData?.postsCount}
+          refreshProfile={refreshDetails}
           accountHolder={id ? false : true} // id id is present means we are navigating to the profile of another user
         />
 

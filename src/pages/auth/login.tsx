@@ -54,14 +54,12 @@ const Login = () => {
       // In a real app, this would be an API call to authenticate the user
       console.log("Login attempt with:", values);
 
-
-      
-
       // Use the auth context login method instead of directly setting localStorage
-      await auth.login(values.email, values.password);
-
-      // Redirect to home page
-      navigate("/");
+      const res = await auth.login(values.email, values.password);
+      if (res) {
+        // Redirect to home page
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login error:", error);
       // Handle login error
@@ -79,7 +77,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">
-              <AppName/>
+            <AppName />
           </CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>

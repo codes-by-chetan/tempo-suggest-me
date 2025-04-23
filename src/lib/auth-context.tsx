@@ -16,8 +16,8 @@ interface User {
   fullNameString: string;
   avatar?: {
     url: string;
-    publicId: string
-  }
+    publicId: string;
+  };
 }
 
 interface ContactNumber {
@@ -53,20 +53,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Function to refresh auth state from localStorage
   const refreshAuthState = useCallback(async () => {
     const storedAuth = localStorage.getItem("token");
+    console.log("Stored auth token:", storedAuth);
 
-    if (storedAuth === "true") {
-      try {
-        await authService.refreshUserDetails().then((res)=>{})
-
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        // Clear invalid data
-        localStorage.removeItem("isAuthenticated");
-        localStorage.removeItem("user");
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+    if (storedAuth) {
+      await authService.refreshUserDetails().then((res) => {
+        if (res.success) {
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+          console.log("User details refreshed:", res.data.user);
+        } else {
+          console.error("Error parsing stored user:", res.message);
+          localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      });
     } else {
       setUser(null);
       setIsAuthenticated(false);
@@ -78,14 +81,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshAuthState();
 
     // Add storage event listener to sync auth state across tabs
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "isAuthenticated" || event.key === "user") {
-        refreshAuthState();
-      }
-    };
+    // const handleStorageChange = (event: StorageEvent) => {
+    //   if (event.key === "isAuthenticated" || event.key === "user") {
+    //     refreshAuthState();
+    //   }
+    // };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    // window.addEventListener("storage", handleStorageChange);
+    // return () => window.removeEventListener("storage", handleStorageChange);
   }, [refreshAuthState]);
 
   const login = async (email: string, password: string) => {
@@ -94,8 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const success = await authService.login({ email, password }).then((res) => {
       if (res.success) {
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("tokenExpiry", res.data.expiryTime);
         setUser(res.data.user);
         setIsAuthenticated(true);
+        refreshAuthState();
         return true;
       } else {
         getToast("error", res.message);
@@ -113,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const success = await authService.register(data).then((res) => {
       if (res.success) {
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("tokenExpiry", res.data.expiryTime);
         setUser(res.data.user);
         setIsAuthenticated(true);
         return true;
@@ -124,14 +130,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return success;
   };
 
-  const logout = () => {
+  const logout = async () => {
     // Update state first to ensure immediate UI update
-    setUser(null);
-    setIsAuthenticated(false);
 
+    await authService.logout().then((res) => {
+      if (res) {
+        setUser(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("tokenExpiry");
+      }
+    });
     // Then update localStorage
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("user");
   };
 
   return (

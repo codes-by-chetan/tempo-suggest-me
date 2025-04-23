@@ -26,7 +26,22 @@ export default class AuthService {
       });
   }
 
-  
+  async logout(): Promise<boolean> {
+    return api
+      .get("/auth/logout", {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((_response: any) => {
+        return true;
+      })
+      .catch((_err) => {
+        getToast("error", _err?.response?.data?.message || "failed to fetch");
+        // if(_err?.response.)
+        return false;
+      });
+  }
 
   async isAuthenticated(): Promise<boolean> {
     return api

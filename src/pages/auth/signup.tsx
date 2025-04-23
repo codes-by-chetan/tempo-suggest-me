@@ -89,7 +89,7 @@ const Signup = () => {
       
       const success = await auth.signup(userData);
       if(success){
-        navigate("/"); 
+        navigate("/profile"); 
       }
     } catch (error) {
       console.error("Signup error:", error);
