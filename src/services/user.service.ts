@@ -52,6 +52,23 @@ export default class UserService {
         return err.response.data;
       });
   }
+
+  async getRelation(userId: string): Promise<UserProfileResponse> {
+    return api
+      .get(`relations/relation/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+
   async getUserWholeProfile(): Promise<response> {
     return api
       .get("user/profile-whole", {

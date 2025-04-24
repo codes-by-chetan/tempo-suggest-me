@@ -18,26 +18,17 @@ import { useNavigate, useParams } from "react-router";
 import { SavedItem, savedItemsArray } from "@/data/mySavedItem";
 import { myPostsArray, Post } from "@/data/myPosts";
 import { Friend, myFriendsArray } from "@/data/myFriends";
-import { suggestorsArray } from "@/data/suggestors";
 import UserService from "@/services/user.service";
 import { getToast } from "@/services/toasts.service";
 import { UserProfileData } from "@/interfaces/user.interface";
-
-const defaultUser = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-  location: "San Francisco, CA",
-  joinDate: "January 2023",
-  bio: "Movie enthusiast and book lover. Always looking for new recommendations!",
-};
+import { useAuth } from "@/lib/auth-context";
 
 const Profile = () => {
   const userService = new UserService();
   const [activeTab, setActiveTab] = useState("profile");
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  const authProvider = useAuth();
   const navigate = useNavigate();
   // Mock user data - in a real app, this would come from an API
   // for now the type is given s any as the fields in the object differ from suggestor
@@ -118,7 +109,7 @@ const Profile = () => {
           followingCount={userData?.relations.followings.count}
           postsCount={userData?.postsCount}
           refreshProfile={refreshDetails}
-          accountHolder={id ? false : true} // id id is present means we are navigating to the profile of another user
+          accountHolder={id ? (id===authProvider?.user?._id ? true: false) : true} // id id is present means we are navigating to the profile of another user
         />
 
         {/* Instagram-like tabs */}

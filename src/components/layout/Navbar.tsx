@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -25,141 +25,150 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/lib/auth-context";
-import NotificationItem, { Notification } from "./NotificationItem";
+import NotificationItem from "./NotificationItem";
+import SearchResultsPopup from "./SearchResultsPopup";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useEffect as useReactEffect } from "react";
 import AppName from "../tags/AppName";
+import { globalSearch, searchPeople } from "@/services/search.service";
+import debounce from "lodash.debounce";
+import { useNotifications } from "@/lib/notification-context";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-
-  // Get auth context
-  const auth = useAuth();
-  // Create state variables that will trigger re-renders when they change
-  const [currentUser, setCurrentUser] = useState(auth.user);
-  const [isUserAuthenticated, setIsUserAuthenticated] = useState(
-    auth.isAuthenticated
-  );
-  console.log(auth);
-
+  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [globalResults, setGlobalResults] = useState<any>(null);
+  const [peopleResults, setPeopleResults] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+    useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
+  const desktopInputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
+  // Map backend notifications to NotificationItem format
+  const formattedNotifications = notifications.map((n) => ({
+    id: n._id,
+    type: n.type,
+    title:
+      n.type === "Suggestion"
+        ? "New Suggestion"
+        : n.type === "Like"
+        ? "New Like"
+        : n.type === "Comment"
+        ? "New Comment"
+        : n.type === "System"
+        ? "System Notification"
+        : n.type === "FollowRequest"
+        ? "Follow Request"
+        : n.type === "FollowAccepted"
+        ? "Follow Accepted"
+        : n.type === "NewContent"
+        ? "New Content"
+        : n.type === "Mention"
+        ? "Mention"
+        : "Notification",
+    message: n.message,
+    timestamp: n.createdAt,
+    read: n.status === "Read",
+    contentType: n.relatedContent?.contentType,
+    user: n.sender
+      ? {
+          id: n.sender._id,
+          fullName: n.sender.fullName,
+          avatar:
+            n.sender?.profile?.avatar?.url,
+          fullNameString: n.sender.fullNameString,
+        }
+      : undefined,
+  }));
 
-  // Update local state when auth context changes
-  useReactEffect(() => {
-    setCurrentUser(auth.user);
-    setIsUserAuthenticated(auth.isAuthenticated);
-  }, [auth.user, auth.isAuthenticated]);
-
-  // Mock notifications data
   useEffect(() => {
-    // In a real app, this would be fetched from an API
-    const mockNotifications: Notification[] = [
-      {
-        id: "1",
-        type: "suggestion",
-        title: "New Suggestion",
-        message: "Emma Watson suggested 'Inception' to you",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-        read: false,
-        contentType: "movie",
-        user: {
-          id: "1",
-          name: "Emma Watson",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
-        },
-      },
-      {
-        id: "2",
-        type: "suggestion",
-        title: "New Suggestion",
-        message: "John Smith suggested 'To Kill a Mockingbird' to you",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-        read: false,
-        contentType: "book",
-        user: {
-          id: "2",
-          name: "John Smith",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-        },
-      },
-      {
-        id: "3",
-        type: "like",
-        title: "New Like",
-        message: "Sophia Chen liked your suggestion 'Attack on Titan'",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
-        read: true,
-        contentType: "anime",
-        user: {
-          id: "3",
-          name: "Sophia Chen",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
-        },
-      },
-      {
-        id: "4",
-        type: "comment",
-        title: "New Comment",
-        message:
-          "Michael Johnson commented on your suggestion 'Bohemian Rhapsody': 'Great song! I love Queen.'",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-        read: true,
-        contentType: "song",
-        user: {
-          id: "4",
-          name: "Michael Johnson",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-        },
-      },
-      {
-        id: "5",
-        type: "system",
-        title: "Welcome to Suggest.me",
-        message:
-          "Thanks for joining! Start by suggesting content to your friends or exploring suggestions made to you.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
-        read: true,
-      },
-    ];
+    console.log("peopleResults:", peopleResults); // Debug peopleResults state
+  }, [peopleResults]);
 
-    setNotifications(mockNotifications);
-    setUnreadCount(mockNotifications.filter((n) => !n.read).length);
+  useEffect(() => {
+    const closePopups = () => {
+      setDesktopSearchOpen(false);
+      setMobileSearchOpen(false);
+    };
+    document.addEventListener("closeSearchPopups", closePopups);
+    return () => {
+      document.removeEventListener("closeSearchPopups", closePopups);
+    };
   }, []);
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-  };
+  // Debounced search function
+  const performSearch = useCallback(
+    debounce(async (term: string) => {
+      if (term.trim().length < 1) {
+        setGlobalResults(null);
+        setPeopleResults(null);
+        setIsSearching(false);
+        setDesktopSearchOpen(false);
+        setMobileSearchOpen(false);
+        return;
+      }
 
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, read: true }))
-    );
-    setUnreadCount(0);
-  };
+      try {
+        setIsSearching(true);
+        setDesktopSearchOpen(true); // Open popup for desktop
+        setMobileSearchOpen(true); // Open popup for mobile
+        const [global, people] = await Promise.all([
+          globalSearch({ searchTerm: term }),
+          searchPeople({ searchTerm: term }),
+        ]);
+        setGlobalResults(global.data.results);
+        setPeopleResults(people.data);
+        console.log("Search results:", {
+          global: global.data.results,
+          people: people.data,
+        });
+      } catch (error) {
+        console.error("Search error:", error);
+        setGlobalResults(null);
+        setPeopleResults(null);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300),
+    []
+  );
+
+  // Handle search input changes
+  useEffect(() => {
+    performSearch(searchTerm);
+    return () => {
+      performSearch.cancel(); // Clean up debounce on unmount
+    };
+  }, [searchTerm, performSearch]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Logout function
   const handleLogout = () => {
-    auth.logout();
+    logout();
     navigate("/login");
   };
 
-  // Check if the current path matches the link path
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  // Handle input focus to ensure typing is possible
+  const handleInputFocus = (isDesktop: boolean) => {
+    if (isDesktop) {
+      desktopInputRef.current?.focus();
+      if (searchTerm.trim().length > 0) setDesktopSearchOpen(true);
+    } else {
+      mobileInputRef.current?.focus();
+      if (searchTerm.trim().length > 0) setMobileSearchOpen(true);
+    }
   };
 
   return (
@@ -230,10 +239,24 @@ const Navbar = () => {
                 <Search className="h-4 w-4 text-muted-foreground" />
               </div>
               <input
+                ref={desktopInputRef}
                 type="text"
                 placeholder="Search suggestions..."
                 className="w-full py-1.5 pl-10 pr-4 rounded-full bg-accent/50 border-0 text-sm ring-1 ring-primary/30 focus:ring-1 focus:ring-primary/70 focus:outline-none"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => handleInputFocus(true)}
+                onClick={(e) => e.stopPropagation()}
               />
+              {desktopSearchOpen && (
+                <div className="absolute top-full left-0 mt-2 w-full z-[1000]">
+                  <SearchResultsPopup
+                    globalResults={globalResults}
+                    peopleResults={peopleResults}
+                    isSearching={isSearching}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -252,7 +275,7 @@ const Navbar = () => {
                 >
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0  h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
+                    <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
@@ -268,20 +291,21 @@ const Navbar = () => {
                       variant="ghost"
                       size="sm"
                       className="h-8 text-xs flex items-center gap-1"
-                      onClick={handleMarkAllAsRead}
+                      onClick={markAllAsRead}
                     >
-                      <Check className="h-3 w-3" /> Mark all as read
+                      <Check className="h-3 w-3" />
+                      Mark all as read
                     </Button>
                   )}
                 </div>
                 <Separator />
                 <ScrollArea className="h-[300px]">
-                  {notifications.length > 0 ? (
-                    notifications.map((notification) => (
+                  {formattedNotifications.length > 0 ? (
+                    formattedNotifications.map((notification) => (
                       <NotificationItem
                         key={notification.id}
                         notification={notification}
-                        onMarkAsRead={handleMarkAsRead}
+                        onMarkAsRead={() => markAsRead(notification.id)}
                       />
                     ))
                   ) : (
@@ -299,7 +323,7 @@ const Navbar = () => {
               Suggest
             </Button>
 
-            {isUserAuthenticated && currentUser ? (
+            {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -307,26 +331,24 @@ const Navbar = () => {
                     className="relative h-9 w-9 rounded-full ring-2 ring-primary/20 hover:ring-primary/30 transition-all"
                   >
                     <Avatar className="h-9 w-9">
-                      {currentUser?.avatar ? (
+                      {user?.avatar ? (
                         <AvatarImage
-                          src={currentUser.avatar.url}
-                          alt={currentUser.fullNameString}
+                          src={user.avatar.url}
+                          alt={user.fullNameString}
                         />
                       ) : (
                         <AvatarFallback className="bg-primary-100 text-primary-800">
-                          {currentUser.fullName.firstName.charAt(0)}
-                          {currentUser.fullName.lastName.charAt(0)}
+                          {user.fullName.firstName.charAt(0)}
+                          {user.fullName.lastName.charAt(0)}
                         </AvatarFallback>
                       )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    {currentUser.fullNameString}
-                  </DropdownMenuLabel>
+                  <DropdownMenuLabel>{user.fullNameString}</DropdownMenuLabel>
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    {currentUser.email}
+                    {user.email}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -389,10 +411,24 @@ const Navbar = () => {
               <Search className="h-4 w-4 text-muted-foreground" />
             </div>
             <input
+              ref={mobileInputRef}
               type="text"
               placeholder="Search suggestions..."
               className="w-full py-2 pl-10 pr-4 rounded-full bg-accent/50 border-0 text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => handleInputFocus(false)}
+              onClick={(e) => e.stopPropagation()}
             />
+            {mobileSearchOpen && (
+              <div className="absolute top-full left-0 mt-2 w-full z-[1000]">
+                <SearchResultsPopup
+                  globalResults={globalResults}
+                  peopleResults={peopleResults}
+                  isSearching={isSearching}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -418,7 +454,7 @@ const Navbar = () => {
                 : "text-foreground/70 hover:bg-accent hover:text-foreground"
             )}
           >
-            <BookMarked className="inline-block mr-2 h-5 w-5" />
+            <BookOpenCheck className="inline-block mr-2 h-5 w-5" />
             Suggested to Me
           </Link>
           <Link
@@ -448,30 +484,30 @@ const Navbar = () => {
         </div>
 
         {/* Mobile profile section */}
-        {isUserAuthenticated && currentUser ? (
+        {isAuthenticated && user ? (
           <div className="pt-4 pb-3 border-t border-border">
             <div className="flex items-center px-4">
               <div className="flex-shrink-0">
                 <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                  {currentUser?.avatar ? (
+                  {user?.avatar ? (
                     <AvatarImage
-                      src={currentUser.avatar.url}
-                      alt={currentUser.fullNameString}
+                      src={user.avatar.url}
+                      alt={user.fullNameString}
                     />
                   ) : (
                     <AvatarFallback className="bg-primary-100 text-primary-800">
-                      {currentUser.fullName.firstName.charAt(0)}
-                      {currentUser.fullName.lastName.charAt(0)}
+                      {user.fullName.firstName.charAt(0)}
+                      {user.fullName.lastName.charAt(0)}
                     </AvatarFallback>
                   )}
                 </Avatar>
               </div>
               <div className="ml-3">
                 <div className="text-base font-medium">
-                  {currentUser.fullNameString}
+                  {user.fullNameString}
                 </div>
                 <div className="text-sm font-medium text-muted-foreground">
-                  {currentUser.email}
+                  {user.email}
                 </div>
               </div>
               <div className="ml-auto">
@@ -483,7 +519,7 @@ const Navbar = () => {
                 >
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0  h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
+                    <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}

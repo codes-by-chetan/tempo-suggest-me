@@ -1,23 +1,36 @@
-import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { Film, BookOpen, Tv, Music, Youtube, Instagram } from "lucide-react";
+import {
+  Film,
+  BookOpen,
+  Tv,
+  Youtube,
+  Users,
+  Bell,
+  MessageSquare,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
-export interface Notification {
+interface Notification {
   id: string;
-  type: "suggestion" | "friend_request" | "like" | "comment" | "system";
+  type: string;
   title: string;
   message: string;
   timestamp: string;
   read: boolean;
-  contentType?: "movie" | "book" | "anime" | "song" | "youtube" | "reels";
+  contentType?: string;
   user?: {
     id: string;
-    name: string;
-    avatar?: string;
+    fullName: {
+      firstName: string;
+      lastName: string;
+      _id: string;
+      [key: string]: any;
+    };
+    avatar: string;
+    fullNameString: string;
   };
 }
-
 interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
@@ -27,36 +40,54 @@ const NotificationItem = ({
   notification,
   onMarkAsRead,
 }: NotificationItemProps) => {
-  const getIconForContentType = (type?: string) => {
-    if (!type) return null;
+  const getIconForContentType = (type?: string, notificationType?: string) => {
+    if (!type && !notificationType) return <Bell className="h-4 w-4" />;
 
+    // Handle notification types without contentType (e.g., FollowRequest)
+    if (!type) {
+      switch (notificationType) {
+        case "FollowRequest":
+        case "FollowAccepted":
+          return <Users className="h-4 w-4" />;
+        case "System":
+        case "Mention":
+        case "Other":
+          return <Bell className="h-4 w-4" />;
+        default:
+          return null;
+      }
+    }
+
+    // Handle contentType-based icons
     switch (type) {
       case "movie":
         return <Film className="h-4 w-4" />;
       case "book":
         return <BookOpen className="h-4 w-4" />;
-      case "anime":
+      case "series":
         return <Tv className="h-4 w-4" />;
-      case "song":
-        return <Music className="h-4 w-4" />;
-      case "youtube":
+      case "video":
         return <Youtube className="h-4 w-4" />;
-      case "reels":
-        return <Instagram className="h-4 w-4" />;
+      case "comment":
+        return <MessageSquare className="h-4 w-4" />;
+      case "other":
+        return <Bell className="h-4 w-4" />;
       default:
         return null;
     }
   };
 
   const handleClick = () => {
-    onMarkAsRead(notification.id);
+    if (!notification.read) {
+      onMarkAsRead(notification.id);
+    }
   };
 
   return (
     <div
       className={cn(
         "flex items-start gap-3 p-3 hover:bg-accent/50 transition-colors cursor-pointer",
-        !notification.read && "bg-primary/5 dark:bg-primary/10",
+        !notification.read && "bg-primary/5 dark:bg-primary/10"
       )}
       onClick={handleClick}
     >
@@ -64,19 +95,16 @@ const NotificationItem = ({
         <Avatar className="h-8 w-8 ring-1 ring-primary/20">
           <AvatarImage
             src={notification.user.avatar}
-            alt={notification.user.name}
+            alt={notification.user.fullNameString}
           />
           <AvatarFallback className="bg-primary-100 text-primary-800">
-            {notification.user.name.charAt(0)}
+            {notification.user.fullName.firstName.charAt(0)}{" "}
+            {notification.user.fullName.lastName.charAt(0)}
           </AvatarFallback>
         </Avatar>
       ) : (
         <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-          {notification.contentType ? (
-            getIconForContentType(notification.contentType)
-          ) : (
-            <span className="text-xs font-bold text-primary">!</span>
-          )}
+          {getIconForContentType(notification.contentType, notification.type)}
         </div>
       )}
       <div className="flex-1 min-w-0">
@@ -85,7 +113,9 @@ const NotificationItem = ({
             {notification.title}
           </p>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
-            {new Date(notification.timestamp).toLocaleDateString()}
+            {formatDistanceToNow(new Date(notification.timestamp), {
+              addSuffix: true,
+            })}
           </span>
         </div>
         <p className="text-xs text-muted-foreground line-clamp-2">

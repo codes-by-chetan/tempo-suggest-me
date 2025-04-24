@@ -7,6 +7,7 @@ import { ThemeProvider } from "./lib/theme-context";
 import { AuthProvider } from "./lib/auth-context";
 
 import { TempoDevtools } from "tempo-devtools";
+import { NotificationProvider } from "./lib/notification-context.tsx";
 TempoDevtools.init();
 
 const basename = import.meta.env.BASE_URL;
@@ -15,10 +16,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider defaultTheme="light">
       <AuthProvider>
-        <BrowserRouter basename={basename}>
-          <App />
-        </BrowserRouter>
+        <NotificationProvider>
+          <BrowserRouter basename={basename}>
+            <App />
+          </BrowserRouter>
+        </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
