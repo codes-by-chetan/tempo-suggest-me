@@ -34,6 +34,24 @@ import { globalSearch, searchPeople } from "@/services/search.service";
 import debounce from "lodash.debounce";
 import { useNotifications } from "@/lib/notification-context";
 
+// Hook to detect clicks outside a ref
+const useOutsideClick = (
+  ref: React.RefObject<HTMLElement>,
+  callback: () => void
+) => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref, callback]);
+};
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -50,42 +68,12 @@ const Navbar = () => {
   const location = useLocation();
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
-  // Map backend notifications to NotificationItem format
-  const formattedNotifications = notifications.map((n) => ({
-    id: n._id,
-    type: n.type,
-    title:
-      n.type === "Suggestion"
-        ? "New Suggestion"
-        : n.type === "Like"
-        ? "New Like"
-        : n.type === "Comment"
-        ? "New Comment"
-        : n.type === "System"
-        ? "System Notification"
-        : n.type === "FollowRequest"
-        ? "Follow Request"
-        : n.type === "FollowAccepted"
-        ? "Follow Accepted"
-        : n.type === "NewContent"
-        ? "New Content"
-        : n.type === "Mention"
-        ? "Mention"
-        : "Notification",
-    message: n.message,
-    timestamp: n.createdAt,
-    read: n.status === "Read",
-    contentType: n.relatedContent?.contentType,
-    user: n.sender
-      ? {
-          id: n.sender._id,
-          fullName: n.sender.fullName,
-          avatar:
-            n.sender?.profile?.avatar?.url,
-          fullNameString: n.sender.fullNameString,
-        }
-      : undefined,
-  }));
+  const desktopSearchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
+
+  // Close search popup on outside click
+  useOutsideClick(desktopSearchRef, () => setDesktopSearchOpen(false));
+  useOutsideClick(mobileSearchRef, () => setMobileSearchOpen(false));
 
   useEffect(() => {
     console.log("peopleResults:", peopleResults); // Debug peopleResults state
@@ -109,8 +97,6 @@ const Navbar = () => {
         setGlobalResults(null);
         setPeopleResults(null);
         setIsSearching(false);
-        setDesktopSearchOpen(false);
-        setMobileSearchOpen(false);
         return;
       }
 
@@ -160,14 +146,14 @@ const Navbar = () => {
     return location.pathname === path;
   };
 
-  // Handle input focus to ensure typing is possible
+  // Handle input focus to ensure typing and open popup
   const handleInputFocus = (isDesktop: boolean) => {
     if (isDesktop) {
       desktopInputRef.current?.focus();
-      if (searchTerm.trim().length > 0) setDesktopSearchOpen(true);
+      setDesktopSearchOpen(searchTerm.length > 0 ? true : false);
     } else {
       mobileInputRef.current?.focus();
-      if (searchTerm.trim().length > 0) setMobileSearchOpen(true);
+      setMobileSearchOpen(searchTerm.length > 0 ? true : false);
     }
   };
 
@@ -234,7 +220,7 @@ const Navbar = () => {
 
           {/* Search bar - desktop only */}
           <div className="hidden md:flex items-center flex-1 max-w-xs mx-4">
-            <div className="relative w-full">
+            <div ref={desktopSearchRef} className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-muted-foreground" />
               </div>
@@ -246,7 +232,10 @@ const Navbar = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => handleInputFocus(true)}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleInputFocus(true);
+                }}
               />
               {desktopSearchOpen && (
                 <div className="absolute top-full left-0 mt-2 w-full z-[1000]">
@@ -300,20 +289,72 @@ const Navbar = () => {
                 </div>
                 <Separator />
                 <ScrollArea className="h-[300px]">
-                  {formattedNotifications.length > 0 ? (
-                    formattedNotifications.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onMarkAsRead={() => markAsRead(notification.id)}
-                      />
-                    ))
+                  {notifications.length > 0 ? (
+                    notifications
+                      .slice(0, 5) // Show only the latest 5 notifications
+                      .map((notification) => (
+                        <NotificationItem
+                          key={notification._id}
+                          notification={{
+                            id: notification._id,
+                            type: notification.type,
+                            title:
+                              notification.type === "Suggestion"
+                                ? "New Suggestion"
+                                : notification.type === "Like"
+                                ? "New Like"
+                                : notification.type === "Comment"
+                                ? "New Comment"
+                                : notification.type === "System"
+                                ? "System Notification"
+                                : notification.type === "FollowRequest"
+                                ? "Follow Request"
+                                : notification.type === "FollowAccepted"
+                                ? "Follow Accepted"
+                                : notification.type === "FollowedYou"
+                                ? "Followed You"
+                                : notification.type === "NewContent"
+                                ? "New Content"
+                                : notification.type === "Mention"
+                                ? "Mention"
+                                : "Notification",
+                            message: notification.message,
+                            timestamp: notification.createdAt,
+                            read: notification.status === "Read",
+                            contentType:
+                              notification.relatedContent?.contentType,
+                            user: notification.sender
+                              ? {
+                                  id: notification.sender._id,
+                                  fullName: notification.sender.fullName,
+                                  fullNameString:
+                                    notification.sender.fullNameString ||
+                                    `${notification.sender.fullName.firstName} ${notification.sender.fullName.lastName}`,
+                                  avatar:
+                                    notification.sender.avatar?.url || null,
+                                }
+                              : undefined,
+                          }}
+                          onMarkAsRead={() => markAsRead(notification._id)}
+                        />
+                      ))
                   ) : (
                     <div className="p-4 text-center text-muted-foreground text-sm">
                       No notifications yet
                     </div>
                   )}
                 </ScrollArea>
+                <Separator />
+                <div className="p-3">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => navigate("/notifications")}
+                  >
+                    View All Notifications
+                  </Button>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -406,7 +447,7 @@ const Navbar = () => {
       <div className={cn("sm:hidden", isMenuOpen ? "block" : "hidden")}>
         {/* Mobile search */}
         <div className="px-4 pt-2 pb-3">
-          <div className="relative">
+          <div ref={mobileSearchRef} className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -418,7 +459,10 @@ const Navbar = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => handleInputFocus(false)}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInputFocus(false);
+              }}
             />
             {mobileSearchOpen && (
               <div className="absolute top-full left-0 mt-2 w-full z-[1000]">

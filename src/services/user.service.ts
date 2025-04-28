@@ -53,6 +53,22 @@ export default class UserService {
       });
   }
 
+  async acceptFollowRequest(requestId: string): Promise<UserProfileResponse> {
+    return api
+      .get(`relations/accept/follow/${requestId}`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+
   async getRelation(userId: string): Promise<UserProfileResponse> {
     return api
       .get(`relations/relation/${userId}`, {

@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Settings, Camera } from "lucide-react";
+import {
+  MapPin,
+  Calendar,
+  Settings,
+  Camera,
+  CheckCircle2,
+  VerifiedIcon,
+} from "lucide-react";
 import { UserProfileData } from "@/interfaces/user.interface";
 import ProfilePictureUploader from "./ProfilePictureUploader";
 import UserService from "@/services/user.service";
 import { useNavigate } from "react-router-dom";
+import VerifiedBadgeIcon from "./VerifiedBadgeIcon";
 
 // Interface for ProfileHeaderProps
 interface ProfileHeaderProps {
@@ -42,7 +50,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         try {
           const response = await userService.getRelation(userData.id);
           if (response.success && response.data) {
-            console.log(response)
+            console.log(response);
             setIsFollowing(response.data.status || null); // "accepted" or "pending"
           } else {
             setIsFollowing(null);
@@ -55,7 +63,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     };
     checkFollowStatus();
   }, [accountHolder, userData?.id]);
-
+  console.log(userData);
   // Handle profile picture submission
   const handleImageSubmit = async (formData: FormData) => {
     try {
@@ -101,12 +109,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   };
 
   return (
-    <div className="py-6 px-4 sm:px-6 bg-white">
+    <div className="py-6 px-4 sm:px-6 bg-background">
       <div className="max-w-3xl mx-auto">
         {/* Profile picture and stats */}
         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
           {/* Profile picture with camera icon */}
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0 items-center">
             <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-2 border-gray-200 rounded-full">
               {userData?.profile?.avatar ? (
                 <AvatarImage
@@ -115,7 +123,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   className="rounded-full"
                 />
               ) : (
-                <AvatarFallback className="text-2xl bg-gray-200">
+                <AvatarFallback className="text-4xl text-primary-800 font-bold bg-gray-200">
                   {userData?.fullName.firstName.charAt(0)}
                   {userData?.fullName.lastName.charAt(0)}
                 </AvatarFallback>
@@ -133,10 +141,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
           {/* Stats and buttons */}
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-3">
-              <h1 className="text-lg sm:text-xl font-semibold">
-                {userData?.fullNameString}
-              </h1>
+            <div className="my-auto flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-semibold">
+                  {userData?.fullNameString}
+                </h1>
+                {userData?.profile.isVerified && <VerifiedBadgeIcon className="w-1 h-1"/>}
+              </div>
               {accountHolder ? (
                 <div className="flex gap-2">
                   <Button
@@ -191,34 +202,34 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 <span className="text-sm text-gray-600 ml-1">Following</span>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Bio and details */}
-        <div className="mt-4">
-          <p className="font-medium text-sm">{userData?.fullNameString}</p>
-          <p className="text-sm text-gray-600">{userData?.profile?.bio}</p>
-          <div className="flex items-center mt-2">
-            <MapPin className="h-4 w-4 mr-1 text-gray-500" />
-            <span className="text-sm text-gray-600">
-              {userData?.profile?.location}
-            </span>
-          </div>
-          <div className="flex items-center mt-1">
-            <Calendar className="h-4 w-4 mr-1 text-gray-500" />
-            <span className="text-sm text-gray-600">
-              Joined {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : ""}
-            </span>
+            {/* Bio and details */}
+            <div className="mt-4">
+              <p className="font-medium text-sm">{userData?.fullNameString}</p>
+              <p className="text-sm text-gray-600">{userData?.profile?.bio}</p>
+              <div className="flex items-center mt-2">
+                <MapPin className="h-4 w-4 mr-1 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  {userData?.profile?.location}
+                </span>
+              </div>
+              <div className="flex items-center mt-1">
+                <Calendar className="h-4 w-4 mr-1 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  Joined{" "}
+                  {userData?.createdAt
+                    ? new Date(userData.createdAt).toLocaleDateString()
+                    : ""}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Profile Picture Uploader Dialog */}
       {showUploader && (
-        <ProfilePictureUploader
-          onImageSubmit={handleImageSubmit}
-          
-        />
+        <ProfilePictureUploader onImageSubmit={handleImageSubmit} />
       )}
     </div>
   );

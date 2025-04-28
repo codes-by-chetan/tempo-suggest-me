@@ -5,17 +5,19 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   connectSocket,
-  disconnectSocket,
   subscribeToNotifications,
   Notification,
+  dismissNotification,
+  dismissAllNotifications,
 } from "@/services/notification.service";
-
 
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  dismiss: (id: string) => Promise<void>;
+  dismissAll: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -29,20 +31,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, isAuthenticated } = useAuth();
 
-  // Fetch notifications and set up socket when user is authenticated
   useEffect(() => {
     if (!isAuthenticated || !user?._id) return;
 
-    // Fetch initial notifications
     const loadNotifications = async () => {
       try {
-        await fetchNotifications().then((res) => {
-          console.log(res);
-          setNotifications((res.data ) || []);
-          setUnreadCount(
-            res.data.filter((n: Notification) => n.status === "Unread").length
-          );
-        });
+        const res = await fetchNotifications();
+        console.log("Fetched notifications:", res);
+        setNotifications(res.data || []);
+        setUnreadCount(
+          (res.data || []).filter((n: Notification) => n.status === "Unread")
+            .length
+        );
       } catch (error) {
         console.error("Failed to fetch notifications:", error);
       }
@@ -50,45 +50,125 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
     loadNotifications();
 
-    // Connect to socket and subscribe
-    const socket = connectSocket();
-    socket.on("connect", () => {
-      socket.emit("joinRoom", `user-${user._id}`);
+    connectSocket(user._id);
+
+    subscribeToNotifications((notification: Notification) => {
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => n._id)); // Declare inside callback
+        if (notification.status === "Dismissed") {
+          // Remove notification if status is Dismissed
+          const newNotifications = prev.filter(
+            (n) => n._id !== notification._id
+          );
+          console.log(newNotifications);
+          return newNotifications;
+        } else if (existingIds.has(notification._id)) {
+          // Replace existing notification
+          return prev
+            .map((n) => (n._id === notification._id ? notification : n))
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            ); // Sort by createdAt
+        } else {
+          // Add new notification at 0th index
+          return [notification, ...prev].sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        }
+      });
+      console.log("updated notifications:  ", notifications);
+      setUnreadCount((prev) => {
+        const existingIds = new Set(notifications.map((n) => n._id)); // Use current notifications state
+        if (existingIds.has(notification._id)) {
+          const oldNotification = notifications.find(
+            (n) => n._id === notification._id
+          );
+          if (
+            oldNotification?.status === "Unread" &&
+            notification.status !== "Unread"
+          ) {
+            return Math.max(0, prev - 1); // Decrease if status changed from Unread
+          } else if (
+            oldNotification?.status !== "Unread" &&
+            notification.status === "Unread"
+          ) {
+            return prev + 1; // Increase if status changed to Unread
+          }
+          return prev; // No change if status remains same
+        } else if (notification.status === "Unread") {
+          return prev + 1; // Increase for new Unread notification
+        } else if (notification.status === "Dismissed") {
+          return prev; // No change for Dismissed (already removed from list)
+        }
+        return prev; // No change for other cases
+      });
     });
 
-    // Subscribe to new notifications
-    subscribeToNotifications((newNotification: Notification) => {
-      setNotifications((prev) => [newNotification, ...prev]);
-      if (newNotification.status === "Unread") {
-        setUnreadCount((prev) => prev + 1);
-      }
-    });
-
-    // Cleanup on unmount
-    return () => {
-      disconnectSocket();
-    };
+    // No cleanup needed since socket is managed globally
   }, [isAuthenticated, user?._id]);
 
-  // Mark a single notification as read
   const markAsRead = async (id: string) => {
     try {
-      await markNotificationAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, status: "Read" } : n))
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      await markNotificationAsRead(id).then((response) => {
+        if (response.success) {
+          console.log(response.data);
+
+          setNotifications((prev) =>
+            prev.map((n) =>
+              n._id === id ? (response.data as Notification) : n
+            )
+          );
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+      });
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }
   };
+  const dismiss = async (id: string) => {
+    try {
+      await dismissNotification(id).then((response) => {
+        if (response.success) {
+          console.log(response.data);
 
-  // Mark all notifications as read
+          setNotifications(
+            (prev) => prev.filter((n) => n._id !== id) // Remove the notification from the array
+          );
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+      });
+    } catch (error) {
+      console.error("Failed to dismiss notification:", error);
+    }
+  };
+
   const markAllAsRead = async () => {
     try {
-      await markAllNotificationsAsRead(user._id);
+      await markAllNotificationsAsRead(user._id).then((response) => {
+        if (response.success) {
+          setNotifications((prev) =>
+            prev.map((n) => ({ ...n, status: "Read" }))
+          );
+          setUnreadCount(0);
+        }
+      });
       setNotifications((prev) => prev.map((n) => ({ ...n, status: "Read" })));
       setUnreadCount(0);
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
+  };
+  const dismissAll = async () => {
+    try {
+      await dismissAllNotifications().then((response) => {
+        if (response.success) {
+          setNotifications([]);
+          setUnreadCount(0);
+        }
+      });
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
     }
@@ -96,14 +176,20 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, unreadCount, markAsRead, markAllAsRead }}
+      value={{
+        notifications,
+        unreadCount,
+        markAsRead,
+        markAllAsRead,
+        dismiss,
+        dismissAll,
+      }}
     >
       {children}
     </NotificationContext.Provider>
   );
 };
 
-// Custom hook to use notifications
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {

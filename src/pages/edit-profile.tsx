@@ -118,7 +118,7 @@ const EditProfile: React.FC = () => {
         throw new Error("Failed to fetch profile");
       }
       const profile = response.data as UserProfileResponse;
-
+      console.log(profile)
       // Validate and filter preferredContentTypes
       const validContentTypes = (profile.preferences?.preferredContentTypes || []).filter(
         (type): type is ContentType =>
@@ -133,8 +133,8 @@ const EditProfile: React.FC = () => {
       setValue("socialLinks.website", profile.socialLinks?.website || "");
       setValue("preferences.favoriteGenres", profile.preferences?.favoriteGenres || []);
       setValue("preferences.preferredContentTypes", validContentTypes);
-      setValue("isPublic", profile.isPublic ?? true);
-      setValue("isVerified", profile.isVerified ?? false);
+      setValue("isPublic", profile.isPublic);
+      setValue("isVerified", profile.isVerified);
     } catch (error) {
       log("Error fetching profile:", error);
       toast({
@@ -353,10 +353,17 @@ const EditProfile: React.FC = () => {
 
               {/* Is Public */}
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isPublic"
-                  {...register("isPublic")}
-                  aria-label="Make profile public"
+                <Controller
+                  name="isPublic"
+                  control={control}
+                  render={({ field }) => (
+                    <Checkbox
+                      id="isPublic"
+                      checked={field.value}
+                      onCheckedChange={(checked) => field.onChange(checked)}
+                      aria-label="Make profile public"
+                    />
+                  )}
                 />
                 <Label htmlFor="isPublic">Public Profile</Label>
               </div>

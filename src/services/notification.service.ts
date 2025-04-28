@@ -1,9 +1,12 @@
-import io from "socket.io-client";
+import {
+  initializeSocket,
+  getSocket,
+  disconnectSocket as disconnect,
+} from "@/lib/socket";
 import api from "./api.service";
 import { response } from "@/interfaces/auth.interfaces";
 
 const API_BASE_URL = "http://192.168.0.39:3200";
-let socket = null;
 
 interface NotificationResponse {
   statusCode: number;
@@ -28,14 +31,15 @@ export interface Notification {
   createdAt: string;
   updatedAt: string;
   id: string;
-  [key: string]: any
+  [key: string]: any;
 }
 
 interface Metadata {
   followRequestStatus: string;
+  followRequestId: string;
   _id: string;
   id: string;
-  [key: string]: any
+  [key: string]: any;
 }
 
 interface Sender {
@@ -44,7 +48,7 @@ interface Sender {
   profile: Profile;
   fullNameString: string;
   id: string;
-  [key: string]: any
+  [key: string]: any;
 }
 
 interface Profile {
@@ -52,43 +56,56 @@ interface Profile {
   isComplete: boolean;
   avatar: { url: string; publicId: string; [key: string]: any };
   id: string;
-  [key: string]: any
+  [key: string]: any;
 }
 
 interface FullName {
   firstName: string;
   lastName: string;
   _id: string;
-  [key: string]: any
+  [key: string]: any;
 }
 
-// Connect to Socket.IO
-export const connectSocket = () => {
-  socket = io(API_BASE_URL, {
-    transports: ["websocket"],
-    reconnection: true,
-    reconnectionAttempts: 5,
-  });
-  return socket;
-};
 function getAccessToken() {
   const token: string | null = localStorage.getItem("token");
+  console.log(token);
   return token;
 }
-// Disconnect from Socket.IO
-export const disconnectSocket = () => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
+
+export const connectSocket = (userId: string) => {
+  const socket = initializeSocket();
+  const userIdString = userId.toString(); // Ensure string format
+  socket.emit("join", userIdString);
+
+  socket.on("connect", () => {
+    console.log("Socket connected, joining room:", userIdString);
+    socket.emit("join", userIdString);
+  });
+
+  socket.on("reconnect", () => {
+    console.log("Socket reconnected, rejoining room:", userIdString);
+    socket.emit("join", userIdString);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected");
+  });
+
+  return socket;
 };
 
-// Subscribe to new notifications
-export const subscribeToNotifications = (callback) => {
+export const disconnectSocket = () => {
+  disconnect();
+};
+
+export const subscribeToNotifications = (
+  callback: (notification: Notification) => void
+) => {
+  const socket = getSocket();
   if (!socket) return;
 
-  socket.on("newNotification", (notification:Notification) => {
-    console.log(notification);
+  socket.on("notification", (notification: Notification) => {
+    console.log("Received notification:", notification);
     callback(notification);
   });
 };
@@ -96,7 +113,7 @@ export const subscribeToNotifications = (callback) => {
 // Fetch notifications for a user
 export const fetchNotifications = async (): Promise<NotificationResponse> => {
   return api
-    .get(`user/notifications`, {
+    .get(`notifications`, {
       headers: {
         Authorization: `Bearer ${getAccessToken()}`,
       },
@@ -115,11 +132,15 @@ export const markNotificationAsRead = async (
   notificationId: string
 ): Promise<response> => {
   return api
-    .get(`notifications/${notificationId}/read`, {
-      headers: {
-        Authorization: `Bearer ${getAccessToken()}`,
-      },
-    })
+    .post(
+      `notifications/mark/read/${notificationId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${getAccessToken()}`,
+        },
+      }
+    )
     .then((response) => {
       return response.data;
     })
@@ -134,11 +155,55 @@ export const markAllNotificationsAsRead = async (
   userId: string
 ): Promise<response> => {
   return api
-    .get(`notifications/read-all`, {
-      headers: {
-        Authorization: `Bearer ${getAccessToken()}`,
-      },
+    .post(
+      `notifications/mark/all/read`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${getAccessToken()}`,
+        },
+      }
+    )
+    .then((response) => {
+      return response.data;
     })
+    .catch((err) => {
+      console.log(err);
+      return err.response.data;
+    });
+};
+
+export const dismissNotification = async (notificationId: string) => {
+  return api
+    .post(
+      `notifications/mark/dismiss/${notificationId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${getAccessToken()}`,
+        },
+      }
+    )
+    .then((response) => {
+      return response.data;
+    })
+    .catch((err) => {
+      console.log(err);
+      return err.response.data;
+    });
+};
+
+export const dismissAllNotifications = async () => {
+  return api
+    .post(
+      `notifications/mark/all/dismiss`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${getAccessToken()}`,
+        },
+      }
+    )
     .then((response) => {
       return response.data;
     })
