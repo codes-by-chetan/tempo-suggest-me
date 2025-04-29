@@ -53,7 +53,7 @@ const SearchResultsPopup = ({
   isSearching,
 }: SearchResultsPopupProps) => {
   const navigate = useNavigate();
-
+  console.log(globalResults );
   const getIconForType = (type: string) => {
     switch (type) {
       case "movies":
@@ -188,8 +188,8 @@ const SearchResultsPopup = ({
             >
               Searching...
             </motion.div>
-          ) : globalResults?.results &&
-            Object.keys(globalResults.results).length > 0 ? (
+          ) : globalResults &&
+            Object.keys(globalResults).length > 0 ? (
             <motion.div
               key="global-results"
               variants={containerVariants}
@@ -197,7 +197,7 @@ const SearchResultsPopup = ({
               animate="visible"
               exit="hidden"
             >
-              {Object.entries(globalResults.results).map(([type, { data }]) =>
+              {Object.entries(globalResults).map(([type, { data }]) =>
                 data.length > 0 ? (
                   <div key={type}>
                     <div className="px-3 py-2 text-xs font-semibold text-muted-foreground capitalize flex items-center gap-2">
