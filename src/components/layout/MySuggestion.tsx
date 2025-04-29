@@ -16,9 +16,15 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+import EmojiPicker from "emoji-picker-react";
+import LikeCommentShare from "../reusables/LikeCommentShare";
 
 function MySuggestionCard({ item }) {
   const navigate = useNavigate();
+
+
+  
 
   const getIconForType = (type: string) => {
     switch (type) {
@@ -56,6 +62,8 @@ function MySuggestionCard({ item }) {
         return status === "watched" ? "Watched" : "Watching";
     }
   };
+
+
   return (
     <Card
       key={item.id}
@@ -156,31 +164,7 @@ function MySuggestionCard({ item }) {
           </p>
           <p className="text-sm line-clamp-2 mb-4">{item.description}</p>
 
-          {/* Social media style interaction buttons */}
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full p-2 h-auto"
-            >
-              <Heart className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full p-2 h-auto"
-            >
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full p-2 h-auto"
-            >
-              <Share2 className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </div>
-
+          <LikeCommentShare/>
           <div className="flex flex-col pt-3 border-t border-border">
             <span className="text-xs font-medium text-foreground mb-2">
               Suggested to:
