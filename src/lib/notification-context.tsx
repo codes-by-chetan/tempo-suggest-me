@@ -4,12 +4,12 @@ import {
   fetchNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
-  connectSocket,
   subscribeToNotifications,
   Notification,
   dismissNotification,
   dismissAllNotifications,
 } from "@/services/notification.service";
+import { useSocket } from "./socket-context";
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -30,7 +30,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, isAuthenticated } = useAuth();
-
+  const { socket } = useSocket();
   useEffect(() => {
     if (!isAuthenticated || !user?._id) return;
 
@@ -50,9 +50,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
     loadNotifications();
 
-    connectSocket(user._id);
-
-    subscribeToNotifications((notification: Notification) => {
+    subscribeToNotifications(socket, (notification: Notification) => {
       setNotifications((prev) => {
         const existingIds = new Set(prev.map((n) => n._id)); // Declare inside callback
         if (notification.status === "Dismissed") {
@@ -101,10 +99,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         } else if (notification.status === "Unread") {
           return prev + 1; // Increase for new Unread notification
         } else if (notification.status === "Dismissed") {
+          if (notifications.length < 1) {
+            return 0
+          }
           return prev; // No change for Dismissed (already removed from list)
         }
         return prev; // No change for other cases
       });
+
+      
     });
 
     // No cleanup needed since socket is managed globally

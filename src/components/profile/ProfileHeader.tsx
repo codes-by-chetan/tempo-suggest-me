@@ -14,6 +14,9 @@ import ProfilePictureUploader from "./ProfilePictureUploader";
 import UserService from "@/services/user.service";
 import { useNavigate } from "react-router-dom";
 import VerifiedBadgeIcon from "./VerifiedBadgeIcon";
+import { useSocket } from "@/lib/socket-context";
+import { any } from "zod";
+import { log } from "console";
 
 // Interface for ProfileHeaderProps
 interface ProfileHeaderProps {
@@ -39,9 +42,42 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 }) => {
   const [isFollowing, setIsFollowing] = useState<string | null>(null); // null, "accepted", "pending"
   const [showUploader, setShowUploader] = useState(false);
+  const [followsYou, setFollowsYou] = useState<{ [key: string]: any } | null>(
+    null
+  );
   const userService = new UserService();
   const navigate = useNavigate();
-
+  const { socket } = useSocket();
+  socket.on("followAccepted", (data: any) => {
+    console.log("Follow request accepted :", data);
+    if (data.following === userData.id) {
+      setIsFollowing("Accepted");
+      followingCount += 1;
+    }
+  });
+  socket.on("followedYou", (data: any) => {
+    console.log("Followed You :", data);
+    if (data.follower === userData.id) {
+      setFollowsYou(data);
+      FollowersCount += 1;
+    }
+  });
+  socket.on("unFollowedYou", (data: any) => {
+    console.log("UnFollowed You :", data);
+    if (data.follower === userData.id) {
+      setFollowsYou(null);
+      FollowersCount -= 1;
+    }
+  });
+  const handleAccept = () => {
+    console.log(`Accept follow request for ${userData._id}`);
+    // TODO: Add API call for accept
+    userService.acceptFollowRequest(followsYou._id).then((res) => {
+      if (res.success) {
+        setFollowsYou(res.data);
+      }
+    });
+  };
   // Check follow status if not account holder and user is logged in
   useEffect(() => {
     const checkFollowStatus = async () => {
@@ -59,6 +95,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           console.error("Error checking follow status:", error);
           setIsFollowing(null);
         }
+        await userService.getFollowsYou(userData.id).then((res) => {
+          if (res.success) {
+            setFollowsYou(res.data);
+            console.log(res.data);
+          }
+        });
       }
     };
     checkFollowStatus();
@@ -84,25 +126,30 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     }
 
     try {
-      if (isFollowing === "accepted") {
+      if (isFollowing === "Accepted") {
         // Unfollow user (assuming API supports DELETE or similar)
-        await userService.followUser(userData?.id!); // Assuming followUser toggles
-        setIsFollowing(null);
-        console.log("Unfollowed user:", userData?.fullNameString);
-      } else if (isFollowing === "pending") {
+        await userService.unFollowUser(userData?.id!).then((res) => {
+          if (res.success) {
+            setIsFollowing(null);
+            console.log("Unfollowed user:", userData?.fullNameString);
+            followingCount -= 1;
+          }
+        }); // Assuming followUser toggles
+      } else if (isFollowing === "Pending") {
         // Withdraw follow request (assuming API supports this)
-        await userService.followUser(userData?.id!); // Assuming same endpoint toggles
-        setIsFollowing(null);
-        console.log("Withdrew follow request for:", userData?.fullNameString);
+        await userService.unFollowUser(userData?.id!).then((res) => {
+          setIsFollowing(null);
+          console.log("Withdrew follow request for:", userData?.fullNameString);
+        }); // Assuming same endpoint toggles
       } else {
         // Follow user
         const res = await userService.followUser(userData?.id!);
         if (res.success) {
           setIsFollowing(res.data.status || "pending");
-          console.log("Followed user:", userData?.fullNameString);
+          console.log("Followed user:", res);
+          followingCount += 1;
         }
       }
-      refreshProfile();
     } catch (error) {
       console.error("Error toggling follow status:", error);
     }
@@ -146,7 +193,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 <h1 className="text-lg sm:text-xl font-semibold">
                   {userData?.fullNameString}
                 </h1>
-                {userData?.profile.isVerified && <VerifiedBadgeIcon className="w-1 h-1"/>}
+                {userData?.profile.isVerified && (
+                  <VerifiedBadgeIcon className="w-1 h-1" />
+                )}
               </div>
               {accountHolder ? (
                 <div className="flex gap-2">
@@ -167,23 +216,53 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   </Button>
                 </div>
               ) : (
-                <Button
-                  variant={isFollowing === "Accepted" ? "outline" : "default"}
-                  className={`h-8 text-sm ${
-                    isFollowing === "Accepted"
-                      ? "border-gray-300 text-gray-700 hover:bg-gray-100"
+                <div className="flex flex-col">
+                  <Button
+                    variant={isFollowing === "Accepted" ? "outline" : "default"}
+                    className={`h-8 text-sm ${
+                      isFollowing === "Accepted"
+                        ? "border-gray-300 text-gray-700 hover:bg-gray-100"
+                        : isFollowing === "Pending"
+                        ? "border-gray-300 bg-slate-500 text-white hover:bg-slate-700"
+                        : "bg-primary-700 text-white hover:bg-primary-800"
+                    }`}
+                    onClick={handleFollowToggle}
+                  >
+                    {isFollowing === "Accepted"
+                      ? "Unfollow"
                       : isFollowing === "Pending"
-                      ? "border-gray-300 text-gray-700 hover:bg-gray-100"
-                      : "bg-primary-700 text-white hover:bg-primary-800"
-                  }`}
-                  onClick={handleFollowToggle}
-                >
-                  {isFollowing === "Accepted"
-                    ? "Unfollow"
-                    : isFollowing === "Pending"
-                    ? "Withdraw"
-                    : "Follow"}
-                </Button>
+                      ? "Withdraw"
+                      : "Follow"}
+                  </Button>
+                  {isFollowing === "Pending" && (
+                    <span className="text-green-500 text-xs  w-full text-center">
+                      Requested
+                    </span>
+                  )}
+                  {followsYou?.status === "Accepted" && (
+                    <span className="text-green-500 text-xs  w-full text-center">
+                      Follows You
+                    </span>
+                  )}
+                  {followsYou?.status === "Pending" && (
+                    <>
+                      <span className="text-foreground text-xs  w-full text-center">
+                        Requested to Follows You
+                      </span>
+                    </>
+                  )}
+                  {followsYou?.status === "Pending" && (
+                    <Button
+                      variant={"default"}
+                      className={
+                        "h-8 text-sm bg-primary-700 text-white hover:bg-primary-800"
+                      }
+                      onClick={handleAccept}
+                    >
+                      Accept
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
 

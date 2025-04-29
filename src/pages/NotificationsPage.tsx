@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
-import { format, subDays, isAfter } from "date-fns";
+import { subDays, isAfter } from "date-fns";
 import NotificationItem2 from "@/components/layout/NotificationItem-2";
 import Navbar from "@/components/layout/Navbar";
 
@@ -43,18 +43,6 @@ interface Notification {
   };
 }
 
-// Placeholder API for dismissing notifications
-const dismissNotification = async (notificationId: string) => {
-  try {
-    console.log(`Dismissing notification ${notificationId}`);
-    // TODO: Implement actual API call
-    // await api.dismissNotification(notificationId);
-    return { success: true };
-  } catch (error) {
-    console.error("Dismiss error:", error);
-    return { success: false };
-  }
-};
 
 const NotificationsPage = () => {
   const { notifications, markAsRead, dismiss } = useNotifications();

@@ -37,9 +37,24 @@ export default class UserService {
         return err.response.data;
       });
   }
-  async followUser(userId: string): Promise<UserProfileResponse> {
+  async followUser(userId: string): Promise<response> {
     return api
       .get(`relations/follow/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+  async unFollowUser(userId: string): Promise<response> {
+    return api
+      .get(`relations/unfollow/${userId}`, {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,
         },
@@ -72,6 +87,21 @@ export default class UserService {
   async getRelation(userId: string): Promise<UserProfileResponse> {
     return api
       .get(`relations/relation/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+  async getFollowsYou(userId: string): Promise<UserProfileResponse> {
+    return api
+      .get(`relations/follows/you/${userId}`, {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,
         },

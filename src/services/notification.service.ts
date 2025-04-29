@@ -1,12 +1,5 @@
-import {
-  initializeSocket,
-  getSocket,
-  disconnectSocket as disconnect,
-} from "@/lib/socket";
 import api from "./api.service";
 import { response } from "@/interfaces/auth.interfaces";
-
-const API_BASE_URL = "http://192.168.0.39:3200";
 
 interface NotificationResponse {
   statusCode: number;
@@ -72,36 +65,11 @@ function getAccessToken() {
   return token;
 }
 
-export const connectSocket = (userId: string) => {
-  const socket = initializeSocket();
-  const userIdString = userId.toString(); // Ensure string format
-  socket.emit("join", userIdString);
-
-  socket.on("connect", () => {
-    console.log("Socket connected, joining room:", userIdString);
-    socket.emit("join", userIdString);
-  });
-
-  socket.on("reconnect", () => {
-    console.log("Socket reconnected, rejoining room:", userIdString);
-    socket.emit("join", userIdString);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected");
-  });
-
-  return socket;
-};
-
-export const disconnectSocket = () => {
-  disconnect();
-};
 
 export const subscribeToNotifications = (
+  socket= null,
   callback: (notification: Notification) => void
 ) => {
-  const socket = getSocket();
   if (!socket) return;
 
   socket.on("notification", (notification: Notification) => {
