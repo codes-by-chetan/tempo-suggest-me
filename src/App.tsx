@@ -70,6 +70,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/content/:id" element={<ContentDetailsPage />} />
+          <Route path="/movies/:id" element={<ContentDetailsPage />} />
+          <Route path="/series/:id" element={<ContentDetailsPage />} />
+          <Route path="/books/:id" element={<ContentDetailsPage />} />
+          <Route path="/music/:id" element={<ContentDetailsPage />} />
+          <Route path="/videos/:id" element={<ContentDetailsPage />} />
           <Route path="/explore/trending" element={<ExploreTrending />} />
           <Route path="/explore/friends" element={<ExploreFriends />} />
           <Route path="/explore/recommended" element={<ExploreRecommended />} />

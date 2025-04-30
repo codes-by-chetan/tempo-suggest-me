@@ -10,7 +10,7 @@ interface SearchResult {
   title?: string;
   name?: string;
   slug?: string;
-  poster?: string;
+  poster?: { url: string; [key: string]: any } | string;
   coverImage?: string;
   profileImage?: string;
   userName?: string;
@@ -21,6 +21,7 @@ interface SearchResult {
     bio?: string;
     [key: string]: any;
   } | null;
+  [key: string]: any;
 }
 
 interface SearchResults {
@@ -53,7 +54,7 @@ const SearchResultsPopup = ({
   isSearching,
 }: SearchResultsPopupProps) => {
   const navigate = useNavigate();
-  console.log(globalResults );
+  console.log(globalResults);
   const getIconForType = (type: string) => {
     switch (type) {
       case "movies":
@@ -76,7 +77,7 @@ const SearchResultsPopup = ({
   };
 
   const getRouteForType = (type: string, item: SearchResult) => {
-    const slug = item.slug || item._id;
+    const slug = item._id || item?.tmdbId || item?.spotifyId || item?.openLibraryId;
     switch (type) {
       case "movies":
         return `/movies/${slug}`;
@@ -100,10 +101,12 @@ const SearchResultsPopup = ({
 
   const renderResultItem = (item: SearchResult, type: string) => {
     const image =
-      item.poster ||
-      item.coverImage ||
-      item.profileImage ||
-      item.profile?.avatar?.url;
+      typeof item.poster === "object"
+        ? item.poster?.url
+        : item.poster ||
+          item.coverImage ||
+          item.profileImage ||
+          item.profile?.avatar?.url;
     const title =
       item.title ||
       item.name ||
@@ -188,8 +191,7 @@ const SearchResultsPopup = ({
             >
               Searching...
             </motion.div>
-          ) : globalResults &&
-            Object.keys(globalResults).length > 0 ? (
+          ) : globalResults && Object.keys(globalResults).length > 0 ? (
             <motion.div
               key="global-results"
               variants={containerVariants}

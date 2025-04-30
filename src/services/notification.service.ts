@@ -59,7 +59,7 @@ interface FullName {
   [key: string]: any;
 }
 
-function getAccessToken() {
+export function getAccessToken() {
   const token: string | null = localStorage.getItem("token");
   console.log(token);
   return token;
