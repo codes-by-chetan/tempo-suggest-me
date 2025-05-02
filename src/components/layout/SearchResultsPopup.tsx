@@ -77,7 +77,12 @@ const SearchResultsPopup = ({
   };
 
   const getRouteForType = (type: string, item: SearchResult) => {
-    const slug = item._id || item?.tmdbId || item?.spotifyId || item?.openLibraryId;
+    const slug =
+      item._id ||
+      item?.tmdbId ||
+      item?.spotifyId ||
+      item?.openLibraryId ||
+      item?.googleBooksId;
     switch (type) {
       case "movies":
         return `/movies/${slug}`;

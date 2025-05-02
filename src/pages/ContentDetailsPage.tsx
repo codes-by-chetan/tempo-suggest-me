@@ -658,14 +658,14 @@ const ContentDetailsPage = () => {
                         <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20 cursor-pointer">
                           <AvatarImage
                             src={actor.person?.profileImage?.url}
-                            alt={actor.person.name}
+                            alt={actor.person?.name}
                             className="w-full h-full object-cover"
                           />
-                          <AvatarFallback>{actor.person.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback>{actor.person?.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{actor.person.name}</p>
-                          <p className="text-sm text-muted-foreground">as {actor.character}</p>
+                          <p className="font-medium">{actor.person?.name}</p>
+                          <p className="text-sm text-muted-foreground">as {actor?.character}</p>
                         </div>
                       </div>
                     ))}
