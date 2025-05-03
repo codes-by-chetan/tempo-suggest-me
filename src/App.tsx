@@ -16,12 +16,12 @@ const EditProfile = lazy(() => import("./pages/edit-profile"));
 const Login = lazy(() => import("./pages/auth/login"));
 const Signup = lazy(() => import("./pages/auth/signup"));
 const ContentDetailsPage = lazy(() => import("./pages/ContentDetailsPage"));
+const BookDetailsPage = lazy(() => import("./pages/BookDetailsPage"));
 
 // Explore pages
 const ExploreTrending = lazy(() => import("./pages/explore/Trending"));
 const ExploreFriends = lazy(() => import("./pages/explore/FriendActivity"));
 const ExploreRecommended = lazy(() => import("./pages/explore/Recommended"));
-
 
 function App() {
   // const authProvider = useAuth();
@@ -29,16 +29,16 @@ function App() {
   // const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   //   useEffect(()=>{
-     
+
   //       authService.isAuthenticated().then((response)=>{
-          
+
   //           authProvider.refreshAuthState()
-          
+
   //       }).catch((_err)=>{
   //         // setResult(false)
   //         getToast("error", _err.message)
   //       })
-      
+
   //   },[])
   //   if (!result) {
   //     authService.logout()
@@ -49,7 +49,7 @@ function App() {
   //   if(isAuthenticated()) getToast("error", "user is already logged in")
   //   return !isAuthenticated() ? children : <Navigate to="/" />;
   // };
-  
+
   return (
     <Suspense
       fallback={
@@ -72,7 +72,7 @@ function App() {
           <Route path="/content/:id" element={<ContentDetailsPage />} />
           <Route path="/movies/:id" element={<ContentDetailsPage />} />
           <Route path="/series/:id" element={<ContentDetailsPage />} />
-          <Route path="/books/:id" element={<ContentDetailsPage />} />
+          <Route path="/books/:id" element={<BookDetailsPage />} />
           <Route path="/music/:id" element={<ContentDetailsPage />} />
           <Route path="/videos/:id" element={<ContentDetailsPage />} />
           <Route path="/explore/trending" element={<ExploreTrending />} />
