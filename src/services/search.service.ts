@@ -2,6 +2,7 @@ import { response } from "@/interfaces/auth.interfaces";
 import api from "./api.service";
 
 interface SearchParams {
+  searchType?: string;
   searchTerm: string;
   page?: number;
   limit?: number;
@@ -17,6 +18,7 @@ interface PeopleSearchParams {
 
 // Global search across all models (movies, series, books, videos, people, etc.)
 export const globalSearch = async ({
+  searchType = "all",
   searchTerm,
   page = 1,
   limit = 10,
@@ -25,7 +27,7 @@ export const globalSearch = async ({
 }: SearchParams): Promise<response> => {
     console.log(searchTerm)
   return api
-    .get("/search", {
+    .get(`/search/${searchType}`, {
       params: {
         search: searchTerm,
         page,

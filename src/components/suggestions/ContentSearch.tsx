@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import debounce from "lodash/debounce";
 import { log } from "console";
+import { globalSearch } from "@/services/search.service";
 
 interface ContentSearchProps {
   contentType?: string;
@@ -27,6 +29,10 @@ const ContentSearch = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchData, setSearchData] = useState(null);
 
   // Mock data for different content types
   const mockData: Record<string, ContentItem[]> = {
@@ -141,14 +147,15 @@ const ContentSearch = ({
 
   useEffect(() => {
     // Simulate API call with mock data
-    if (searchQuery.length > 2) {
       setIsLoading(true);
 
       // Simulate network delay
       const timer = setTimeout(() => {
         const filteredResults =
           mockData[contentType]?.filter((item) =>{
-            console.log(item.title.toLowerCase(), searchQuery.toLowerCase(), "includes =>", item.title.toLowerCase().includes(searchQuery.toLowerCase()))
+            console.log("searchquery: ", searchQuery);
+            performSearch(searchQuery);
+            // console.log(item.title.toLowerCase(), searchQuery.toLowerCase(), "includes =>", item.title.toLowerCase().includes(searchQuery.toLowerCase()))
             return item.title.toLowerCase().includes(searchQuery.toLowerCase())
       }) || [];
         console.log(filteredResults, contentType);
@@ -157,10 +164,38 @@ const ContentSearch = ({
       }, 500);
 
       return () => clearTimeout(timer);
-    } else {
-      setSearchResults([]);
-    }
+    
   }, [searchQuery, contentType]);
+
+   const performSearch = useCallback(
+      debounce(async (term: string) => {
+        if (term.trim().length < 1) {
+          setSearchResults(null);
+          setIsSearching(false);
+          return;
+        }
+        globalSearch({ searchTerm: term, searchType: contentType }).then((response) => {
+          console.log(response.data.results.book.data);
+          // setSearchResults(response.data);
+        }
+        );
+        // Simulate a search API call
+  
+        try {
+          setIsSearching(true);
+          // Define setDesktopSearchOpen if needed
+          setDesktopSearchOpen(true); // Open popup for desktop
+          setMobileSearchOpen(true); // Open popup for mobile
+          
+        } catch (error) {
+          console.error("Search error:", error);
+          setSearchResults(null);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300),
+      []
+    );
 
   const handleClearSearch = () => {
     setSearchQuery("");
@@ -202,7 +237,7 @@ const ContentSearch = ({
           <div className="mt-2 text-sm text-muted-foreground">Searching...</div>
         )}
 
-        {searchResults.length > 0 && (
+        {searchResults?.length > 0 && (
           <div className="mt-2 border rounded-md max-h-[300px] overflow-y-auto">
             {searchResults.map((result) => (
               <div
@@ -233,7 +268,7 @@ const ContentSearch = ({
           </div>
         )}
 
-        {searchQuery.length > 2 && searchResults.length === 0 && !isLoading && (
+        {searchQuery?.length > 2 && searchResults?.length === 0 && !isLoading && (
           <div className="mt-2 p-3 text-sm text-muted-foreground border rounded-md">
             No {contentType}s found matching "{searchQuery}".
             <Button variant="link" className="px-1 h-auto" onClick={() => {}}>
@@ -251,3 +286,37 @@ const ContentSearch = ({
 };
 
 export default ContentSearch;
+// function useCallback(arg0: any, arg1: undefined[]) {
+//   throw new Error("Function not implemented.");
+// }
+
+// function debounce(arg0: (term: string) => Promise<void>, arg1: number): any {
+//   throw new Error("Function not implemented.");
+// }
+
+// function setGlobalResults(arg0: null) {
+//   throw new Error("Function not implemented.");
+// }
+
+// function setPeopleResults(arg0: null) {
+//   throw new Error("Function not implemented.");
+// }
+
+// function setIsSearching(arg0: boolean) {
+//   throw new Error("Function not implemented.");
+// }
+
+// function setDesktopSearchOpen(arg0: boolean) {
+//   throw new Error("Function not implemented.");
+// }
+
+// function setMobileSearchOpen(arg0: boolean) {
+//   throw new Error("Function not implemented.");
+// }
+
+
+
+function searchPeople(arg0: { searchTerm: string; }): any {
+  throw new Error("Function not implemented.");
+}
+
