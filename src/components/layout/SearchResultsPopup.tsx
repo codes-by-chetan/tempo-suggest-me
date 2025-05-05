@@ -86,7 +86,7 @@ const SearchResultsPopup = ({
     switch (type) {
       case "movie":
         return `/movies/${slug}`;
-      case "serie":
+      case "series":
         return `/series/${slug}`;
       case "book":
         return `/books/${slug}`;
