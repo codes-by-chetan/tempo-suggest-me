@@ -84,20 +84,20 @@ const SearchResultsPopup = ({
       item?.openLibraryId ||
       item?.googleBooksId;
     switch (type) {
-      case "movies":
+      case "movie":
         return `/movies/${slug}`;
-      case "series":
+      case "serie":
         return `/series/${slug}`;
-      case "books":
+      case "book":
         return `/books/${slug}`;
       case "music":
       case "albums":
         return `/music/${slug}`;
-      case "videos":
+      case "video":
         return `/videos/${slug}`;
       case "people":
         return `/people/${slug}`;
-      case "users":
+      case "user":
         return `/profile/${item.userName || item._id}`;
       default:
         return "#";
