@@ -82,7 +82,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       disconnectSocket();
     };
-  }, [isAuthenticated, user?._id]);
+  }, []);
 
   return (
     <SocketContext.Provider
