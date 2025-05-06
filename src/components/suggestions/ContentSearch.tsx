@@ -147,55 +147,54 @@ const ContentSearch = ({
 
   useEffect(() => {
     // Simulate API call with mock data
-      setIsLoading(true);
+    setIsLoading(true);
 
-      // Simulate network delay
-      const timer = setTimeout(() => {
-        const filteredResults =
-          mockData[contentType]?.filter((item) =>{
-            console.log("searchquery: ", searchQuery);
-            performSearch(searchQuery);
-            // console.log(item.title.toLowerCase(), searchQuery.toLowerCase(), "includes =>", item.title.toLowerCase().includes(searchQuery.toLowerCase()))
-            return item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      }) || [];
-        console.log(filteredResults, contentType);
-        setSearchResults(filteredResults);
-        setIsLoading(false);
-      }, 500);
+    // Simulate network delay
+    const timer = setTimeout(() => {
+      const filteredResults =
+        mockData[contentType]?.filter((item) => {
+          console.log("searchquery: ", searchQuery);
+          performSearch(searchQuery);
+          // console.log(item.title.toLowerCase(), searchQuery.toLowerCase(), "includes =>", item.title.toLowerCase().includes(searchQuery.toLowerCase()))
+          return item.title.toLowerCase().includes(searchQuery.toLowerCase());
+        }) || [];
+      console.log(filteredResults, contentType);
+      setSearchResults(filteredResults);
+      setIsLoading(false);
+    }, 500);
 
-      return () => clearTimeout(timer);
-    
+    return () => clearTimeout(timer);
   }, [searchQuery, contentType]);
 
-   const performSearch = useCallback(
-      debounce(async (term: string) => {
-        if (term.trim().length < 1) {
-          setSearchResults(null);
-          setIsSearching(false);
-          return;
-        }
-        globalSearch({ searchTerm: term, searchType: contentType }).then((response) => {
+  const performSearch = useCallback(
+    debounce(async (term: string) => {
+      if (term.trim().length < 1) {
+        setSearchResults(null);
+        setIsSearching(false);
+        return;
+      }
+      globalSearch({ searchTerm: term, searchType: contentType }).then(
+        (response) => {
           console.log(response.data.results.book.data);
           // setSearchResults(response.data);
-        }
-        );
-        // Simulate a search API call
-  
-        try {
-          setIsSearching(true);
-          // Define setDesktopSearchOpen if needed
-          setDesktopSearchOpen(true); // Open popup for desktop
-          setMobileSearchOpen(true); // Open popup for mobile
-          
-        } catch (error) {
-          console.error("Search error:", error);
-          setSearchResults(null);
-        } finally {
-          setIsSearching(false);
-        }
-      }, 300),
-      []
-    );
+        },
+      );
+      // Simulate a search API call
+
+      try {
+        setIsSearching(true);
+        // Define setDesktopSearchOpen if needed
+        setDesktopSearchOpen(true); // Open popup for desktop
+        setMobileSearchOpen(true); // Open popup for mobile
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults(null);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300),
+    [],
+  );
 
   const handleClearSearch = () => {
     setSearchQuery("");
@@ -268,14 +267,22 @@ const ContentSearch = ({
           </div>
         )}
 
-        {searchQuery?.length > 2 && searchResults?.length === 0 && !isLoading && (
-          <div className="mt-2 p-3 text-sm text-muted-foreground border rounded-md">
-            No {contentType}s found matching "{searchQuery}".
-            <Button variant="link" className="px-1 h-auto" onClick={() => {}}>
-              Add new {contentType}
-            </Button>
-          </div>
-        )}
+        {searchQuery?.length > 2 &&
+          searchResults?.length === 0 &&
+          !isLoading && (
+            <div className="mt-2 p-3 text-sm text-muted-foreground border rounded-md">
+              No {contentType}s found matching "{searchQuery}".
+              <Button
+                variant="link"
+                className="px-1 h-auto"
+                onClick={() =>
+                  (window.location.href = `/add-content/${contentType}?title=${encodeURIComponent(searchQuery)}`)
+                }
+              >
+                Add new {contentType}
+              </Button>
+            </div>
+          )}
       </div>
 
       <div className="mt-4 text-sm text-muted-foreground">
@@ -314,9 +321,6 @@ export default ContentSearch;
 //   throw new Error("Function not implemented.");
 // }
 
-
-
-function searchPeople(arg0: { searchTerm: string; }): any {
+function searchPeople(arg0: { searchTerm: string }): any {
   throw new Error("Function not implemented.");
 }
-

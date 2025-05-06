@@ -7,6 +7,7 @@ import { useAuth } from "./lib/auth-context";
 import AuthService from "./services/auth.service";
 import { getToast } from "./services/toasts.service";
 import NotificationsPage from "./pages/NotificationsPage";
+import ContentDetailsForm from "./components/suggestions/ContentDetailsForm";
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
 const MySuggestions = lazy(() => import("./pages/my-suggestions"));
@@ -78,6 +79,20 @@ function App() {
           <Route path="/explore/trending" element={<ExploreTrending />} />
           <Route path="/explore/friends" element={<ExploreFriends />} />
           <Route path="/explore/recommended" element={<ExploreRecommended />} />
+          <Route
+            path="/add-content/:contentType"
+            element={
+              <div className="container mx-auto py-8">
+                <ContentDetailsForm
+                  onSubmit={(data) => {
+                    getToast("success", "Content added successfully!");
+                    window.history.back();
+                  }}
+                  onBack={() => window.history.back()}
+                />
+              </div>
+            }
+          />
           <Route path="*" element={<ErrorPage />} />
 
           {/* Allow Tempo routes */}

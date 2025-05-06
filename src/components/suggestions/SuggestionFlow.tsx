@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import ContentTypeSelector from "./ContentTypeSelector";
 import ContentSearch from "./ContentSearch";
-import ContentDetailsForm from "./ContentDetailsForm";
+import ContentPreview from "./ContentPreview";
 import RecipientSelector from "./RecipientSelector";
 import { useTheme } from "@/lib/theme-context";
 
@@ -68,8 +68,7 @@ const SuggestionFlow = ({
     setStep(3);
   };
 
-  const handleContentDetailsSubmit = (details: any) => {
-    setContentDetails(details);
+  const handleContentPreviewNext = () => {
     setStep(4);
   };
 
@@ -79,7 +78,7 @@ const SuggestionFlow = ({
 
   const handleComplete = () => {
     onComplete({
-      content: { ...selectedContent, ...contentDetails },
+      content: selectedContent as ContentItem,
       recipients,
       note,
     });
@@ -162,12 +161,11 @@ const SuggestionFlow = ({
         );
       case 3:
         return (
-          <ContentDetailsForm
-            contentType={contentType as any}
-            initialData={selectedContent}
-            onSubmit={handleContentDetailsSubmit}
+          <ContentPreview
+            content={selectedContent as ContentItem}
+            contentType={contentType}
             onBack={handleBack}
-            onNext={() => setStep(4)}
+            onNext={handleContentPreviewNext}
           />
         );
       case 4:
@@ -209,7 +207,11 @@ const SuggestionFlow = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={"new-suggestion-dialogue-box-content"} aria-description={"new-suggestion-dialogue-box-content"} className="sm:max-w-[600px] md:max-w-[800px] p-0 overflow-auto max-h-[90vh] bg-background border-border">
+      <DialogContent
+        aria-describedby={"new-suggestion-dialogue-box-content"}
+        aria-description={"new-suggestion-dialogue-box-content"}
+        className="sm:max-w-[600px] md:max-w-[800px] p-0 overflow-auto max-h-[90vh] bg-background border-border"
+      >
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-2xl font-bold text-center text-foreground">
             {getStepTitle()}
@@ -245,10 +247,7 @@ const SuggestionFlow = ({
               <Button
                 onClick={() => setStep(step + 1)}
                 className="flex items-center gap-1"
-                disabled={
-                  (step === 2 && !selectedContent) ||
-                  (step === 3 && !contentDetails)
-                }
+                disabled={step === 2 && !selectedContent}
               >
                 Next <ChevronRight className="h-4 w-4" />
               </Button>
