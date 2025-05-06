@@ -288,7 +288,16 @@ const ContentSearch = ({
       </div>
 
       <div className="mt-4 text-sm text-muted-foreground">
-        <p>Search for existing {contentType}s or add a new one if not found.</p>
+        <p>
+          Search for existing {contentType}s or{" "}
+          <a
+            href={`/add-content/${contentType}`}
+            className="text-primary hover:underline font-medium"
+          >
+            add a new one
+          </a>{" "}
+          if not found.
+        </p>
       </div>
     </div>
   );
