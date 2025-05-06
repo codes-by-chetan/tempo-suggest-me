@@ -1,272 +1,308 @@
-import React, { useState, useRef } from "react";
-import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Camera, Upload, Check, X } from "lucide-react";
-import "react-image-crop/dist/ReactCrop.css";
-import UserService from "@/services/user.service";
-import { getToast } from "@/services/toasts.service";
-import { useAuth } from "@/lib/auth-context";
+"use client"
 
-// Props for the uploader component
+import type React from "react"
+
+import { useState, useRef, useEffect, useCallback } from "react"
+import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Camera, Upload, Check, X, Loader2 } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import "react-image-crop/dist/ReactCrop.css"
+
 interface ProfilePictureUploaderProps {
-  onImageSubmit: (formData: FormData) => void;
-  currentAvatar?: string;
+  onImageSubmit: (formData: FormData) => Promise<void>
+  currentAvatar?: string
+  isLoading?: boolean
+  userInitials?: string
 }
-
-// ImageCropper component for handling the cropping functionality
-const ImageCropper = ({
-  imageSrc,
-  onCropComplete,
-  onCancel,
-}: {
-  imageSrc: string;
-  onCropComplete: (blob: Blob) => void;
-  onCancel: () => void;
-}) => {
-  const [crop, setCrop] = useState<Crop>({
-    unit: "px",
-    width: 500,
-    height: 500,
-    x: 0,
-    y: 0,
-  });
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
-
-  // Get cropped image
-  const getCroppedImg = (
-    image: HTMLImageElement,
-    crop: PixelCrop,
-  ): Promise<Blob> => {
-    const canvas = document.createElement("canvas");
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    canvas.width = crop.width;
-    canvas.height = crop.height;
-    const ctx = canvas.getContext("2d");
-
-    if (ctx) {
-      ctx.drawImage(
-        image,
-        crop.x * scaleX,
-        crop.y * scaleY,
-        crop.width * scaleX,
-        crop.height * scaleY,
-        0,
-        0,
-        crop.width,
-        crop.height,
-      );
-    }
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        if (blob) resolve(blob);
-      }, "image/jpeg");
-    });
-  };
-
-  // Handle image load
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    imgRef.current = e.currentTarget;
-  };
-
-  // Handle crop completion
-  const handleCropComplete = async () => {
-    if (imgRef.current && completedCrop) {
-      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
-      onCropComplete(croppedBlob);
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex-1 overflow-y-auto p-4">
-        <ReactCrop
-          crop={crop}
-          onChange={(_, pixelCrop) => setCrop(pixelCrop)}
-          onComplete={(c) => setCompletedCrop(c)}
-          aspect={1}
-          circularCrop
-          minWidth={250}
-          minHeight={250}
-        >
-          <img
-            src={imageSrc}
-            onLoad={onImageLoad}
-            alt="Crop preview"
-            className="max-w-full max-h-[400px] object-contain"
-          />
-        </ReactCrop>
-      </div>
-      <DialogFooter className="flex justify-between gap-2 pt-4">
-        <Button variant="outline" onClick={onCancel}>
-          <X className="h-4 w-4 mr-2" /> Cancel
-        </Button>
-        <Button onClick={handleCropComplete} disabled={!completedCrop}>
-          <Check className="h-4 w-4 mr-2" /> Apply
-        </Button>
-      </DialogFooter>
-    </div>
-  );
-};
 
 const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
   onImageSubmit,
   currentAvatar,
+  isLoading = false,
+  userInitials = "US",
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [step, setStep] = useState<"upload" | "crop" | "preview">("upload");
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const userService = new UserService();
-  const authProvider = useAuth();
+  const [isOpen, setIsOpen] = useState(false)
+  const [imageSrc, setImageSrc] = useState<string | null>(null)
+  const [crop, setCrop] = useState<Crop>()
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null)
+  const [originalFile, setOriginalFile] = useState<File | null>(null)
+  const [activeTab, setActiveTab] = useState("upload")
+  const [imageLoaded, setImageLoaded] = useState(false)
+
+  const imgRef = useRef<HTMLImageElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Handle dialog open
+  const handleOpenDialog = () => {
+    setIsOpen(true)
+    setActiveTab("upload")
+    setImageSrc(null)
+    setOriginalFile(null)
+    setImageLoaded(false)
+  }
 
   // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageSrc(reader.result as string);
-        setIsOpen(true);
-        setStep("crop");
-      };
-      reader.readAsDataURL(file);
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Store the original file for later use
+    setOriginalFile(file)
+
+    // Validate file size
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image size should be less than 10MB")
+      return
     }
-  };
 
-  // Handle crop completion
-  const handleCropComplete = (blob: Blob) => {
-    const imageUrl = URL.createObjectURL(blob);
-    setCroppedImage(imageUrl);
-    setStep("preview");
-  };
+    const reader = new FileReader()
+    reader.onload = () => {
+      setImageSrc(reader.result as string)
+      setActiveTab("crop")
+      setImageLoaded(false) // Reset image loaded state
+    }
+    reader.readAsDataURL(file)
+  }
 
-  // Handle submit
+  // Fit image to container when loaded
+  useEffect(() => {
+    if (!imageLoaded || !imgRef.current || !containerRef.current) return
+
+    const img = imgRef.current
+    const container = containerRef.current
+
+    // Get available container dimensions
+    const containerWidth = container.clientWidth
+    const containerHeight = container.clientHeight
+
+    // Maximum allowable dimension (maintain aspect ratio)
+    const maxDimension = Math.min(containerWidth - 40, containerHeight - 40, 500)
+
+    // Calculate scale factor to fit image within container
+    const scaleX = maxDimension / img.naturalWidth
+    const scaleY = maxDimension / img.naturalHeight
+    const scale = Math.min(scaleX, scaleY)
+
+    // Apply scaling
+    if (scale < 1) {
+      img.style.width = `${img.naturalWidth * scale}px`
+      img.style.height = `${img.naturalHeight * scale}px`
+    } else {
+      // Limit even smaller images to a reasonable size
+      const maxSize = Math.min(img.naturalWidth, img.naturalHeight, 400)
+      const smallScale = maxSize / Math.max(img.naturalWidth, img.naturalHeight)
+      img.style.width = `${img.naturalWidth * smallScale}px`
+      img.style.height = `${img.naturalHeight * smallScale}px`
+    }
+
+    // Recalculate crop after resizing
+    requestAnimationFrame(() => {
+      const { width, height } = img
+      const cropSize = Math.min(width, height) * 0.8
+      const x = (width - cropSize) / 2
+      const y = (height - cropSize) / 2
+
+      setCrop({
+        unit: "px",
+        width: cropSize,
+        height: cropSize,
+        x,
+        y,
+      })
+    })
+  }, [imageLoaded])
+
+  // Handle image load for cropping
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    imgRef.current = e.currentTarget
+    setImageLoaded(true)
+  }, [])
+
+  // Get cropped image while preserving original format
+  const getCroppedImg = async (): Promise<Blob> => {
+    if (!imgRef.current || !completedCrop || !originalFile) {
+      throw new Error("Crop not complete")
+    }
+
+    const image = imgRef.current
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+
+    if (!ctx) {
+      throw new Error("No 2d context")
+    }
+
+    // Calculate scaling factors
+    const scaleX = image.naturalWidth / image.width
+    const scaleY = image.naturalHeight / image.height
+
+    // Set canvas size to desired output size
+    canvas.width = 500
+    canvas.height = 500
+
+    // Draw the cropped image on the canvas
+    ctx.drawImage(
+      image,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    )
+
+    // Determine output format based on original file
+    const isGif = originalFile.type === "image/gif"
+
+    // For GIFs, we need to return the original file with cropping metadata
+    // This is a simplified approach - in a real implementation, you'd need a server-side
+    // component that can crop GIFs while preserving animation
+    if (isGif) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob)
+        }, "image/gif")
+      })
+    }
+
+    // For other formats, return a JPEG blob
+    return new Promise((resolve) => {
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob)
+        },
+        "image/jpeg",
+        0.95,
+      )
+    })
+  }
+
+  // Handle crop completion and submission
   const handleSubmit = async () => {
-    if (croppedImage) {
-      // Convert data URL to blob
-      const response = await fetch(croppedImage);
-      const blob = await response.blob();
+    if (!completedCrop || !originalFile || isLoading) return
 
-      const formData = new FormData();
-      formData.append("avatar", blob, "profile-picture.jpg");
+    try {
+      const croppedBlob = await getCroppedImg()
 
-      await userService.updateUserProfilePicture(formData).then((res) => {
-        if (res.success) {
-          setIsOpen(false);
-          setImageSrc(null);
-          setCroppedImage(null);
-          setStep("upload");
-          authProvider.refreshAuthState();
-          onImageSubmit(formData);
-          getToast("success", "Profile picture updated successfully!");
-        } else {
-          getToast("error", res.message);
-        }
-      });
+      // Determine file extension based on original file
+      const isGif = originalFile.type === "image/gif"
+      const fileName = isGif ? "profile-picture.gif" : "profile-picture.jpg"
+
+      // Create a new file with the correct type
+      const fileType = isGif ? "image/gif" : "image/jpeg"
+      const croppedFile = new File([croppedBlob], fileName, { type: fileType })
+
+      // Create form data and submit
+      const formData = new FormData()
+      formData.append("avatar", croppedFile)
+
+      await onImageSubmit(formData)
+      setIsOpen(false)
+    } catch (error) {
+      console.error("Error processing image:", error)
+      alert("Failed to process image. Please try again.")
     }
-  };
-
-  // Handle dialog close
-  const handleDialogClose = () => {
-    setIsOpen(false);
-    setImageSrc(null);
-    setCroppedImage(null);
-    setStep("upload");
-  };
+  }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="relative group">
-        {currentAvatar && (
-          <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary mx-auto">
-            <img
-              src={currentAvatar}
-              alt="Current profile picture"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Camera className="h-4 w-4" />
-        </Button>
-      </div>
-
+    <>
       <Button
-        variant="outline"
-        className="mt-2 h-9 bg-primary-50 text-primary-700 border-primary-200 hover:bg-primary-100"
-        onClick={() => fileInputRef.current?.click()}
+        variant="ghost"
+        size="icon"
+        className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow-md hover:bg-primary/90"
+        onClick={handleOpenDialog}
       >
-        <Upload className="h-4 w-4 mr-2" /> Change Profile Picture
+        <Camera className="h-5 w-5" />
       </Button>
 
-      <input
-        type="file"
-        accept="image/*"
-        ref={fileInputRef}
-        className="hidden"
-        onChange={handleFileSelect}
-      />
-
-      <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-        <DialogContent className="w-[90vw] max-w-[600px] h-[80vh] max-h-[600px] flex flex-col">
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {step === "crop" && "Crop Profile Picture"}
-              {step === "preview" && "Preview Profile Picture"}
-            </DialogTitle>
+            <DialogTitle>Update Profile Picture</DialogTitle>
           </DialogHeader>
 
-          {step === "crop" && imageSrc && (
-            <ImageCropper
-              imageSrc={imageSrc}
-              onCropComplete={handleCropComplete}
-              onCancel={handleDialogClose}
-            />
-          )}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">Upload</TabsTrigger>
+              <TabsTrigger value="crop" disabled={!imageSrc}>
+                Crop
+              </TabsTrigger>
+            </TabsList>
 
-          {step === "preview" && croppedImage && (
-            <div className="flex flex-col items-center gap-4 p-4">
-              <div className="w-40 h-40 rounded-full overflow-hidden border-2 border-primary">
-                <img
-                  src={croppedImage}
-                  alt="Profile preview"
-                  className="w-full h-full object-cover"
-                />
+            <TabsContent value="upload" className="py-4">
+              <div className="flex flex-col items-center gap-4">
+                <Avatar className="h-32 w-32 border-2 border-muted">
+                  {currentAvatar ? (
+                    <AvatarImage src={currentAvatar || "/placeholder.svg"} alt="Current profile picture" />
+                  ) : (
+                    <AvatarFallback className="text-4xl">{userInitials}</AvatarFallback>
+                  )}
+                </Avatar>
+
+                <div className="flex flex-col gap-2 items-center">
+                  <Button onClick={() => fileInputRef.current?.click()} className="flex gap-2">
+                    <Upload className="h-4 w-4" />
+                    Select Image
+                  </Button>
+                  <p className="text-sm text-muted-foreground">JPG, PNG, or GIF. Max 10MB.</p>
+                </div>
+
+                <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
               </div>
-              <p className="text-center text-muted-foreground">
-                Your new profile picture
-              </p>
-              <DialogFooter className="flex justify-between w-full gap-2 pt-4">
-                <Button variant="outline" onClick={() => setStep("crop")}>
-                  <X className="h-4 w-4 mr-2" /> Try Again
-                </Button>
-                <Button onClick={handleSubmit}>
-                  <Check className="h-4 w-4 mr-2" /> Save
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
+            </TabsContent>
+
+            <TabsContent value="crop" className="py-4">
+              {imageSrc && (
+                <div className="flex flex-col gap-4">
+                  <div ref={containerRef} className="relative h-[350px] flex items-center justify-center">
+                    <ReactCrop
+                      crop={crop}
+                      onChange={(_, percentCrop) => setCrop(percentCrop)}
+                      onComplete={(c) => setCompletedCrop(c)}
+                      aspect={1}
+                      circularCrop
+                      minWidth={50}
+                    >
+                      <img
+                        ref={imgRef}
+                        src={imageSrc || "/placeholder.svg"}
+                        alt="Crop preview"
+                        onLoad={onImageLoad}
+                        className="object-contain"
+                      />
+                    </ReactCrop>
+                  </div>
+
+                  <div className="flex justify-between gap-2 pt-2">
+                    <Button variant="outline" onClick={() => setActiveTab("upload")}>
+                      <X className="h-4 w-4 mr-2" /> Back
+                    </Button>
+                    <Button onClick={handleSubmit} disabled={!completedCrop || isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-2" /> Apply & Save
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-};
+    </>
+  )
+}
 
-export default ProfilePictureUploader;
+export default ProfilePictureUploader

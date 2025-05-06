@@ -54,7 +54,6 @@ const SearchResultsPopup = ({
   isSearching,
 }: SearchResultsPopupProps) => {
   const navigate = useNavigate();
-  console.log(globalResults);
   const getIconForType = (type: string) => {
     switch (type) {
       case "movies":
@@ -97,8 +96,8 @@ const SearchResultsPopup = ({
         return `/videos/${slug}`;
       case "people":
         return `/people/${slug}`;
-      case "user":
-        return `/profile/${item.userName || item._id}`;
+      case "users":
+        return `/profile/${item._id}`;
       default:
         return "#";
     }
@@ -126,6 +125,10 @@ const SearchResultsPopup = ({
         className="flex items-center gap-3 p-2 hover:bg-accent/50 transition-colors cursor-pointer"
         onClick={() => {
           navigate(getRouteForType(type, item));
+          console.log("type: ", type, item);
+          
+          console.log(getRouteForType(type, item));
+          
           document.dispatchEvent(new Event("closeSearchPopups"));
         }}
         initial={{ opacity: 0, y: 10 }}
@@ -197,25 +200,44 @@ const SearchResultsPopup = ({
               Searching...
             </motion.div>
           ) : globalResults && Object.keys(globalResults).length > 0 ? (
-            <motion.div
-              key="global-results"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-            >
-              {Object.entries(globalResults).map(([type, { data }]) =>
-                data.length > 0 ? (
-                  <div key={type}>
-                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground capitalize flex items-center gap-2">
-                      {getIconForType(type)}
-                      {type}
+            <>
+              <motion.div
+                key="global-results"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+              >
+                {Object.entries(globalResults).map(([type, { data }]) =>
+                  data.length > 0 ? (
+                    <div key={type}>
+                      <div className="px-3 py-2 text-xs font-semibold text-muted-foreground capitalize flex items-center gap-2">
+                        {getIconForType(type)}
+                        {type}
+                      </div>
+                      {data.map((item) => renderResultItem(item, type))}
                     </div>
-                    {data.map((item) => renderResultItem(item, type))}
+                  ) : null
+                )}
+              </motion.div>
+              {peopleResults?.data && peopleResults.data.length > 0 && (
+                <motion.div
+                  key="people-results"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                >
+                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground capitalize flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Users
                   </div>
-                ) : null
+                  {peopleResults.data.map((item) =>
+                    renderResultItem(item, "users")
+                  )}
+                </motion.div>
               )}
-            </motion.div>
+            </>
           ) : peopleResults?.data && peopleResults.data.length > 0 ? (
             <motion.div
               key="people-results"

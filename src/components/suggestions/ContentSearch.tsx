@@ -146,6 +146,9 @@ const ContentSearch = ({
   };
 
   useEffect(() => {
+    if (searchQuery.length < 1) {
+      return;
+    }
     // Simulate API call with mock data
     setIsLoading(true);
 
@@ -154,12 +157,15 @@ const ContentSearch = ({
       const filteredResults =
         mockData[contentType]?.filter((item) => {
           console.log("searchquery: ", searchQuery);
-          performSearch(searchQuery);
+
           // console.log(item.title.toLowerCase(), searchQuery.toLowerCase(), "includes =>", item.title.toLowerCase().includes(searchQuery.toLowerCase()))
           return item.title.toLowerCase().includes(searchQuery.toLowerCase());
         }) || [];
       console.log(filteredResults, contentType);
-      setSearchResults(filteredResults);
+      performSearch(searchQuery);
+      if (!searchResults || searchResults.length < 1) {
+        setSearchResults(filteredResults);
+      }
       setIsLoading(false);
     }, 500);
 
@@ -176,8 +182,8 @@ const ContentSearch = ({
       globalSearch({ searchTerm: term, searchType: contentType }).then(
         (response) => {
           console.log(response.data.results.book.data);
-          // setSearchResults(response.data);
-        },
+          setSearchResults(response.data.results[contentType]);
+        }
       );
       // Simulate a search API call
 
@@ -193,7 +199,7 @@ const ContentSearch = ({
         setIsSearching(false);
       }
     }, 300),
-    [],
+    []
   );
 
   const handleClearSearch = () => {
@@ -278,7 +284,9 @@ const ContentSearch = ({
                 variant="default"
                 className="w-full mt-2"
                 onClick={() =>
-                  (window.location.href = `/add-content/${contentType}?title=${encodeURIComponent(searchQuery)}`)
+                  (window.location.href = `/add-content/${contentType}?title=${encodeURIComponent(
+                    searchQuery
+                  )}`)
                 }
               >
                 Add new {contentType}

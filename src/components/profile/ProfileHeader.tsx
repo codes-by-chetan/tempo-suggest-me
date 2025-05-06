@@ -42,6 +42,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 }) => {
   const [isFollowing, setIsFollowing] = useState<string | null>(null); // null, "accepted", "pending"
   const [showUploader, setShowUploader] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
   const [followsYou, setFollowsYou] = useState<{ [key: string]: any } | null>(
     null
   );
@@ -108,12 +110,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   console.log(userData);
   // Handle profile picture submission
   const handleImageSubmit = async (formData: FormData) => {
+    setIsUploading(true);
+
     try {
       await userService.updateUserProfilePicture(formData);
       refreshProfile();
       setShowUploader(false);
     } catch (error) {
       console.error("Error uploading profile picture:", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -176,13 +182,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 </AvatarFallback>
               )}
             </Avatar>
+            {/* Integrated Profile Picture Uploader */}
             {accountHolder && (
-              <button
-                onClick={() => setShowUploader(!showUploader)}
-                className="absolute bottom-0 right-0 bg-primary-700 text-white rounded-full p-2 shadow-md hover:bg-primary-800"
-              >
-                <Camera className="h-5 w-5" />
-              </button>
+              <ProfilePictureUploader
+                onImageSubmit={handleImageSubmit}
+                currentAvatar={userData?.profile?.avatar?.url}
+                isLoading={isUploading}
+                userInitials={`${
+                  userData?.fullName?.firstName?.charAt(0) || "U"
+                }${userData?.fullName?.lastName?.charAt(0) || "S"}`}
+              />
             )}
           </div>
 
@@ -308,7 +317,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
       {/* Profile Picture Uploader Dialog */}
       {showUploader && (
-        <ProfilePictureUploader onImageSubmit={handleImageSubmit} />
+        <ProfilePictureUploader
+          onImageSubmit={handleImageSubmit}
+          isLoading={isUploading}
+          currentAvatar={userData.profile?.avatar?.url}
+        />
       )}
     </div>
   );

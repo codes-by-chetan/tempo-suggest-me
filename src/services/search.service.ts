@@ -27,7 +27,7 @@ export const globalSearch = async ({
 }: SearchParams): Promise<response> => {
     console.log(searchTerm)
   return api
-    .get(`/search/${searchType}`, {
+    .get(`/search/global/${searchType}`, {
       params: {
         search: searchTerm,
         page,
