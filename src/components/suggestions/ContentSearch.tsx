@@ -270,11 +270,13 @@ const ContentSearch = ({
         {searchQuery?.length > 2 &&
           searchResults?.length === 0 &&
           !isLoading && (
-            <div className="mt-2 p-3 text-sm text-muted-foreground border rounded-md">
-              No {contentType}s found matching "{searchQuery}".
+            <div className="mt-2 p-3 text-sm text-muted-foreground border rounded-md flex flex-col items-center">
+              <p className="mb-2 text-center">
+                No {contentType}s found matching "{searchQuery}".
+              </p>
               <Button
-                variant="link"
-                className="px-1 h-auto"
+                variant="default"
+                className="w-full mt-2"
                 onClick={() =>
                   (window.location.href = `/add-content/${contentType}?title=${encodeURIComponent(searchQuery)}`)
                 }
