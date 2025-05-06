@@ -16,6 +16,8 @@ import {
   Youtube,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useState } from "react";
+import CommentBox from "../reusables/CommentBox";
 
 function SuggestedToMeCard({
   item,
@@ -25,6 +27,14 @@ function SuggestedToMeCard({
 }) {
   console.log("item:", item);
   const navigate = useNavigate();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [openCommentBox, setOpenCommentBox] = useState(false);
+
+  const handleComment = ({ note }: { note?: string }) => {
+    // Logic to handle comment submission
+    console.log("Comment submitted:", note);
+  }
+
   const getIconForType = (type: string) => {
     switch (type) {
       case "movie":
@@ -60,6 +70,12 @@ function SuggestedToMeCard({
       default:
         return status === "watched" ? "Watched" : "Watching";
     }
+  };
+
+  const toggleWatchList = (id: string) => {
+    // Logic to add the item to the watchlist
+    console.log(`Added ${id} to watchlist`);
+    setIsFavorite(!isFavorite);
   };
 
   return (
@@ -252,16 +268,24 @@ function SuggestedToMeCard({
               variant="ghost"
               size="sm"
               className="rounded-full p-2 h-auto"
+              onClick={() => toggleWatchList(item.id)}
             >
-              <Heart className="h-4 w-4 text-muted-foreground" />
+              <Heart
+                className={`h-4 w-4 ${
+                  isFavorite ? "text-red-500" : "text-muted-foreground"
+                }`}
+                fill={isFavorite ? "red" : "none"}
+              />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="rounded-full p-2 h-auto"
+              onClick={() => setOpenCommentBox(!openCommentBox)}
             >
               <MessageCircle className="h-4 w-4 text-muted-foreground" />
             </Button>
+            <CommentBox open={openCommentBox} onOpenChange={setOpenCommentBox} onComplete={handleComment} />
             <Button
               variant="ghost"
               size="sm"

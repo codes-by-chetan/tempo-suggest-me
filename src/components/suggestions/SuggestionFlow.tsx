@@ -220,7 +220,7 @@ const SuggestionFlow = ({
 
         {renderStepIndicator()}
 
-        <div className="px-6 pb-6">
+        <div className="px-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}

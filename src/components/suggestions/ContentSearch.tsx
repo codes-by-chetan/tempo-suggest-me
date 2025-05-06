@@ -223,7 +223,7 @@ const ContentSearch = ({
   };
 
   return (
-    <div className="w-full bg-white dark:bg-muted p-6 rounded-lg shadow-sm">
+    <div className="w-full bg-white dark:bg-muted p-3 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Search for {contentType}</h2>
 
       <div className="relative">
