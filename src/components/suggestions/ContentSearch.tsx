@@ -181,8 +181,17 @@ const ContentSearch = ({
       }
       globalSearch({ searchTerm: term, searchType: contentType }).then(
         (response) => {
-          console.log(response.data.results.book.data);
-          setSearchResults(response.data.results[contentType]);
+          console.log("search res: ",response.data.results[contentType].data);
+            const normalizedResults = response.data.results[contentType].data.map((item: any) => ({
+            id: item.tmdbId || item._id,
+            title: item.title,
+            type: contentType,
+            imageUrl: item.poster?.url || item.poster || "",
+            year: item.year || "",
+            creator: item.director?.join(", ") || "",
+            description: item.plot || "",
+            }));
+            setSearchResults(normalizedResults);
         }
       );
       // Simulate a search API call
