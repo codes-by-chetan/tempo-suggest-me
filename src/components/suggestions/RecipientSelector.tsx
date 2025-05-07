@@ -1,16 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import UserService from "@/services/user.service";
+import { searchPeople } from "@/services/search.service";
+import { useAuth } from "@/lib/auth-context";
 
-interface Recipient {
-  id: string;
-  name: string;
-  avatar?: string;
-  email?: string;
+export interface Recipient {
+  fullName: FullName;
+  profile: friendProfile;
+  [key: string]: any;
+}
+interface friendProfile {
+  avatar: Avatar;
+  isVerified: boolean;
+  [key: string]: any;
+}
+interface Avatar {
+  publicId: string;
+  url: string;
+  [key: string]: any;
+}
+
+interface FullName {
+  firstName: string;
+  lastName: string;
+  [key: string]: any;
 }
 
 interface RecipientSelectorProps {
@@ -26,65 +44,54 @@ const RecipientSelector = ({
   onComplete = () => {},
   preSelectedRecipients = [],
 }: RecipientSelectorProps) => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>(
-    preSelectedRecipients,
+    preSelectedRecipients
   );
   const [searchResults, setSearchResults] = useState<Recipient[]>([]);
 
   // Mock data for search results
-  const mockUsers: Recipient[] = [
-    {
-      id: "1",
-      name: "Alex Johnson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=alex",
-      email: "alex@example.com",
-    },
-    {
-      id: "2",
-      name: "Jamie Smith",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=jamie",
-      email: "jamie@example.com",
-    },
-    {
-      id: "3",
-      name: "Taylor Wilson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=taylor",
-      email: "taylor@example.com",
-    },
-    {
-      id: "4",
-      name: "Jordan Lee",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=jordan",
-      email: "jordan@example.com",
-    },
-    {
-      id: "5",
-      name: "Casey Brown",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=casey",
-      email: "casey@example.com",
-    },
-  ];
-
+  const [users, setUsers] = useState<Recipient[]>([]);
+  const userService = new UserService();
   // Filter users based on search query
-  useEffect(() => {
+  const searchPeoples = useCallback(async () => {
+    console.log("searchPeople : ", searchQuery);
+
     if (searchQuery.trim() === "") {
       setSearchResults([]);
       return;
     }
-
-    const filteredResults = mockUsers.filter(
-      (user) =>
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (user.email &&
-          user.email.toLowerCase().includes(searchQuery.toLowerCase())),
-    );
+    const peoples = (await searchPeople({ searchTerm: searchQuery })).data;
+    const filteredResults = peoples.data.filter((people) => {
+      if (people._id === user._id) return;
+      return {
+        _id: people._id,
+        fullName: people.fullName,
+        profile: {
+          avatar: people.profile.avatar,
+          isVerified: people.profile.isVerified,
+          displayName: people.profile?.displayName || "",
+        },
+        fullNameString: people?.fullNameString || "",
+      };
+    });
 
     setSearchResults(filteredResults);
   }, [searchQuery]);
+  useEffect(() => {
+    searchPeoples();
+  }, [searchQuery]);
+  useEffect(() => {
+    userService.getUserFriends().then((res) => {
+      if (res.success) {
+        setUsers(res.data);
+      }
+    });
+  }, []);
 
   const handleSelectRecipient = (recipient: Recipient) => {
-    if (!selectedRecipients.some((r) => r.id === recipient.id)) {
+    if (!selectedRecipients.some((r) => r._id === recipient._id)) {
       const newSelectedRecipients = [...selectedRecipients, recipient];
       setSelectedRecipients(newSelectedRecipients);
       onSelect(newSelectedRecipients);
@@ -93,8 +100,12 @@ const RecipientSelector = ({
   };
 
   const handleRemoveRecipient = (id: string) => {
-    const newSelectedRecipients = selectedRecipients.filter((r) => r.id !== id);
+    console.log(id);
+    const newSelectedRecipients = selectedRecipients.filter(
+      (r) => r._id !== id
+    );
     setSelectedRecipients(newSelectedRecipients);
+    console.log(selectedRecipients);
     onSelect(newSelectedRecipients);
   };
 
@@ -116,7 +127,10 @@ const RecipientSelector = ({
           type="text"
           placeholder="Search for friends by name or email..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            console.log(e.target.value);
+            setSearchQuery(e.target.value);
+          }}
           className="pl-10"
         />
       </div>
@@ -126,16 +140,22 @@ const RecipientSelector = ({
         <div className="flex flex-wrap gap-2 mt-2">
           {selectedRecipients.map((recipient) => (
             <div
-              key={recipient.id}
+              key={recipient._id}
               className="flex items-center gap-2 bg-gray-100 dark:bg-muted-foreground rounded-full py-1 px-3"
             >
               <Avatar className="h-6 w-6">
-                <AvatarImage src={recipient.avatar} alt={recipient.name} />
-                <AvatarFallback>{recipient.name.charAt(0)}</AvatarFallback>
+                <AvatarImage
+                  src={recipient.profile.avatar.url}
+                  alt={recipient.name}
+                />
+                <AvatarFallback>
+                  {recipient.fullName.firstName.charAt(0)}
+                  {recipient.fullName.lastName.charAt(0)}
+                </AvatarFallback>
               </Avatar>
-              <span className="text-sm">{recipient.name}</span>
+              <span className="text-sm">{recipient.fullNameString}</span>
               <button
-                onClick={() => handleRemoveRecipient(recipient.id)}
+                onClick={() => handleRemoveRecipient(recipient._id)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X className="h-4 w-4" />
@@ -151,24 +171,32 @@ const RecipientSelector = ({
           <ul className="divide-y">
             {searchResults.map((user) => (
               <li
-                key={user.id}
+                key={user._id}
                 className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between"
                 onClick={() => handleSelectRecipient(user)}
               >
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src={user.profile.avatar.url}
+                      alt={user.fullNameString}
+                    />
+                    <AvatarFallback>
+                      {user.fullName.firstName.charAt(0)}
+                      {user.fullName.lastName.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{user.name}</p>
-                    {user.email && (
-                      <p className="text-sm text-gray-500">{user.email}</p>
+                    <p className="font-medium">{user.fullNameString}</p>
+                    {user.displayName && (
+                      <p className="text-sm text-gray-500">
+                        {user.displayName}
+                      </p>
                     )}
                   </div>
                 </div>
                 <Checkbox
-                  checked={selectedRecipients.some((r) => r.id === user.id)}
+                  checked={selectedRecipients.some((r) => r._id === user._id)}
                   onCheckedChange={() => handleSelectRecipient(user)}
                 />
               </li>
@@ -181,14 +209,14 @@ const RecipientSelector = ({
       <div className="mt-4">
         <h3 className="text-sm font-medium text-gray-500 mb-2">Suggested</h3>
         <div className="grid grid-cols-1 gap-2">
-          {mockUsers.slice(0, 3).map((user) => (
+          {users.slice(0, 3).map((user) => (
             <div
-              key={user.id}
+              key={user._id}
               className={cn(
                 "p-3 rounded-md flex items-center justify-between",
-                selectedRecipients.some((r) => r.id === user.id)
+                selectedRecipients.some((r) => r._id === user._id)
                   ? "bg-gray-100 dark:bg-gray-700"
-                  : "hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700",
+                  : "hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700"
               )}
               onClick={() => {
                 if (!selectedRecipients.some((r) => r.id === user.id)) {
@@ -198,21 +226,27 @@ const RecipientSelector = ({
             >
               <div className="flex items-center gap-3">
                 <Avatar>
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={user.profile.avatar.url}
+                    alt={user.fullNameString}
+                  />
+                  <AvatarFallback>
+                    {user.fullName.firstName.charAt(0)}
+                    {user.fullName.lastName.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{user.name}</p>
-                  {user.email && (
-                    <p className="text-sm text-gray-500">{user.email}</p>
+                  <p className="font-medium">{user.fullNameString}</p>
+                  {user.displayName && (
+                    <p className="text-sm text-gray-500">{user.displayName}</p>
                   )}
                 </div>
               </div>
               <Checkbox
-                checked={selectedRecipients.some((r) => r.id === user.id)}
+                checked={selectedRecipients.some((r) => r._id === user._id)}
                 onCheckedChange={() => {
-                  if (selectedRecipients.some((r) => r.id === user.id)) {
-                    handleRemoveRecipient(user.id);
+                  if (selectedRecipients.some((r) => r._id === user._id)) {
+                    handleRemoveRecipient(user._id);
                   } else {
                     handleSelectRecipient(user);
                   }
@@ -233,7 +267,9 @@ const RecipientSelector = ({
         >
           {selectedRecipients.length === 0
             ? "Select Recipients"
-            : `Send to ${selectedRecipients.length} ${selectedRecipients.length === 1 ? "person" : "people"}`}
+            : `Send to ${selectedRecipients.length} ${
+                selectedRecipients.length === 1 ? "person" : "people"
+              }`}
         </Button>
       </div>
     </div>

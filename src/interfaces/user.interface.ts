@@ -1,6 +1,6 @@
 export interface UserProfileResponse {
   statusCode: number;
-  data: UserProfileData|null;
+  data: UserProfileData | null;
   message: string;
   success: boolean;
   redirect: null;
@@ -45,8 +45,7 @@ interface Preferences {
   preferredContentTypes: any[];
 }
 
-interface SocialLinks {
-}
+interface SocialLinks {}
 
 interface ContactNumber {
   countryCode: string;
@@ -59,4 +58,36 @@ interface FullName {
   firstName: string;
   lastName: string;
   _id: string;
+}
+
+export interface friendsResponse {
+  statusCode: number;
+  data: Datum[];
+  message: string;
+  success: boolean;
+  redirect: null;
+}
+
+interface Datum {
+  fullName: FullName;
+  profile: friendProfile;
+  [key: string]: any;
+}
+
+interface friendProfile {
+  avatar: Avatar;
+  isVerified: boolean;
+  [key: string]: any;
+}
+
+interface Avatar {
+  publicId: string;
+  url: string;
+  [key: string]: any;
+}
+
+interface FullName {
+  firstName: string;
+  lastName: string;
+  [key: string]: any;
 }

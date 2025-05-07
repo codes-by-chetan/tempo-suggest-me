@@ -5,7 +5,6 @@ import routes from "tempo-routes";
 import ErrorPage from "./components/errorPage";
 import { useAuth } from "./lib/auth-context";
 import AuthService from "./services/auth.service";
-import { getToast } from "./services/toasts.service";
 import NotificationsPage from "./pages/NotificationsPage";
 import ContentDetailsForm from "./components/suggestions/ContentDetailsForm";
 // Lazy load routes for better performance
@@ -85,7 +84,7 @@ function App() {
               <div className="container mx-auto py-8">
                 <ContentDetailsForm
                   onSubmit={(data) => {
-                    getToast("success", "Content added successfully!");
+                    // getToast("success", "Content added successfully!");
                     window.history.back();
                   }}
                   onBack={() => window.history.back()}

@@ -1,5 +1,5 @@
 import api from "./api.service";
-import { UserProfileResponse } from "../interfaces/user.interface";
+import { friendsResponse, UserProfileResponse } from "../interfaces/user.interface";
 import { response } from "@/interfaces/auth.interfaces";
 export default class UserService {
   getAccessToken() {
@@ -118,6 +118,22 @@ export default class UserService {
   async getUserWholeProfile(): Promise<response> {
     return api
       .get("user/profile-whole", {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      })
+      .then((response: any) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+
+  async getUserFriends(): Promise<friendsResponse> {
+    return api
+      .get("relations/friends", {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,
         },

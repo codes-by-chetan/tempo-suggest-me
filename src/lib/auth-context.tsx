@@ -1,5 +1,4 @@
 import AuthService from "@/services/auth.service";
-import { getToast } from "@/services/toasts.service";
 import React, {
   createContext,
   useContext,
@@ -104,7 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshAuthState();
         return true;
       } else {
-        getToast("error", res.message);
         return false;
       }
     });
@@ -124,7 +122,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
         return true;
       } else {
-        getToast("error", res.message);
         return false;
       }
     });

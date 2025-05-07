@@ -6,7 +6,7 @@ import {
   registrationDetails,
   response,
 } from "../interfaces/auth.interfaces";
-import { getToast } from "./toasts.service.ts";
+// import { getToast } from "./toasts.service.ts";
 import { useAuth } from "@/lib/auth-context.tsx";
 
 export default class AuthService {
@@ -37,7 +37,7 @@ export default class AuthService {
         return true;
       })
       .catch((_err) => {
-        getToast("error", _err?.response?.data?.message || "failed to fetch");
+        // getToast("error", _err?.response?.data?.message || "failed to fetch");
         // if(_err?.response.)
         return false;
       });
@@ -54,7 +54,7 @@ export default class AuthService {
         return true;
       })
       .catch((_err) => {
-        getToast("error", _err?.response?.data?.message || "failed to fetch");
+        // getToast("error", _err?.response?.data?.message || "failed to fetch");
         // if(_err?.response.)
         return false;
       });

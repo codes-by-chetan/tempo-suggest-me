@@ -12,8 +12,7 @@ import { Button } from "@/components/ui/button";
 import ContentTypeSelector from "./ContentTypeSelector";
 import ContentSearch from "./ContentSearch";
 import ContentPreview from "./ContentPreview";
-import RecipientSelector from "./RecipientSelector";
-import { useTheme } from "@/lib/theme-context";
+import RecipientSelector, { Recipient } from "./RecipientSelector";
 
 interface ContentItem {
   id: string;
@@ -26,12 +25,7 @@ interface ContentItem {
   [key: string]: any;
 }
 
-interface Recipient {
-  id: string;
-  name: string;
-  avatar?: string;
-  email?: string;
-}
+
 
 interface SuggestionFlowProps {
   open?: boolean;
@@ -48,7 +42,6 @@ const SuggestionFlow = ({
   onOpenChange = () => {},
   onComplete = () => {},
 }: SuggestionFlowProps) => {
-  const { theme } = useTheme();
   const [step, setStep] = useState(1);
   const [contentType, setContentType] = useState("");
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(

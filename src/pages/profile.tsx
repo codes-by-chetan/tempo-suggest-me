@@ -20,7 +20,6 @@ import { SavedItem, savedItemsArray } from "@/data/mySavedItem";
 import { myPostsArray, Post } from "@/data/myPosts";
 import { Friend, myFriendsArray } from "@/data/myFriends";
 import UserService from "@/services/user.service";
-import { getToast } from "@/services/toasts.service";
 import { UserProfileData } from "@/interfaces/user.interface";
 import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion"; // Add framer-motion
@@ -50,7 +49,7 @@ const Profile = () => {
     if (response.success && response.data) {
       setUserData(response.data);
     } else {
-      getToast("error", response.message);
+      // getToast("error", response.message);
     }
     setTimeout(() => {
       setIsLoading(false);

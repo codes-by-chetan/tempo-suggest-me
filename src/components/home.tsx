@@ -8,6 +8,7 @@ import ExploreSection from "./explore/ExploreSection";
 import AppName from "./tags/AppName";
 import { Suggestor, suggestorsArray } from "@/data/suggestors";
 import { ContentItem, contentItemArray } from "@/data/contentItem";
+import { suggestContent } from "@/services/suggestion.service";
 
 
 const Home = () => {
@@ -32,8 +33,11 @@ const Home = () => {
     // navigate(`/suggestor/${suggestor.id}`);
   };
 
-  const handleSuggestionComplete = (data: any) => {
+  const handleSuggestionComplete = async (data: any) => {
     console.log("Suggestion completed:", data);
+    await suggestContent(data).then((res)=>{
+      console.log(res)
+    })
     setIsSuggestionFlowOpen(false);
     // In a real app, this would send the suggestion to the backend
   };

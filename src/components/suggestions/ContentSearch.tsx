@@ -183,7 +183,7 @@ const ContentSearch = ({
         (response) => {
           console.log("search res: ",response.data.results[contentType].data);
             const normalizedResults = response.data.results[contentType].data.map((item: any) => ({
-            id: item.tmdbId || item._id,
+            id: item.tmdbId || item._id || item?.imdbId,
             title: item.title,
             type: contentType,
             imageUrl: item.poster?.url || item.poster || "",

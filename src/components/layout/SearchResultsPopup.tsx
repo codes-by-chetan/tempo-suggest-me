@@ -78,6 +78,7 @@ const SearchResultsPopup = ({
   const getRouteForType = (type: string, item: SearchResult) => {
     const slug =
       item._id ||
+      item?.imdbId ||
       item?.tmdbId ||
       item?.spotifyId ||
       item?.openLibraryId ||
@@ -126,9 +127,9 @@ const SearchResultsPopup = ({
         onClick={() => {
           navigate(getRouteForType(type, item));
           console.log("type: ", type, item);
-          
+
           console.log(getRouteForType(type, item));
-          
+
           document.dispatchEvent(new Event("closeSearchPopups"));
         }}
         initial={{ opacity: 0, y: 10 }}

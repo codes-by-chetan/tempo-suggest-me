@@ -1,5 +1,6 @@
 import { response } from "@/interfaces/auth.interfaces";
 import api from "./api.service";
+import { GlobalSearchResponse, PeopleSearchResponse } from "@/interfaces/search.interface";
 
 interface SearchParams {
   searchType?: string;
@@ -24,7 +25,7 @@ export const globalSearch = async ({
   limit = 10,
   sortBy = "relevance",
   contentTypes = [],
-}: SearchParams): Promise<response> => {
+}: SearchParams): Promise<GlobalSearchResponse> => {
     console.log(searchTerm)
   return api
     .get(`/search/global/${searchType}`, {
@@ -50,7 +51,7 @@ export const searchPeople = async ({
   searchTerm,
   page = 1,
   limit = 10,
-}: PeopleSearchParams): Promise<response> => {
+}: PeopleSearchParams): Promise<PeopleSearchResponse> => {
   return api
     .get("/search/users", {
       params: {
