@@ -1,24 +1,24 @@
-import React, { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
-import { CustomTabsList } from "@/components/layout/CustomTabsList";
-import SuggestedToMeCard from "@/components/layout/SuggestedToMeCard";
-import { getSuggestedToYou } from "@/services/suggestion.service";
+import { useState, useEffect } from "react"
+import Navbar from "@/components/layout/Navbar"
+import { CustomTabsList } from "@/components/layout/CustomTabsList"
+import SuggestedToMeCard from "@/components/layout/SuggestedToMeCard"
+import { getSuggestedToYou } from "@/services/suggestion.service"
 
 interface ContentItem {
-  id: string;
-  contentId?: string;
-  title: string;
-  type: string;
-  imageUrl?: string;
-  year?: string;
-  creator?: string;
-  description?: string;
+  id: string
+  contentId?: string
+  title: string
+  type: string
+  imageUrl?: string
+  year?: string
+  creator?: string
+  description?: string
   suggestedBy: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  suggestedAt: string;
+    id: string
+    name: string
+    avatar?: string
+  }
+  suggestedAt: string
   status?:
     | "watched"
     | "watching"
@@ -29,10 +29,10 @@ interface ContentItem {
     | "listening"
     | "readlist"
     | "listenlist"
-    | null;
-  whereToWatch?: string[];
-  whereToRead?: string[];
-  whereToListen?: string[];
+    | null
+  whereToWatch?: string[]
+  whereToRead?: string[]
+  whereToListen?: string[]
 }
 
 const SuggestedToMe = () => {
@@ -41,8 +41,7 @@ const SuggestedToMe = () => {
       id: "1",
       title: "The Shawshank Redemption",
       type: "movie",
-      imageUrl:
-        "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
       year: "1994",
       creator: "Frank Darabont",
       description:
@@ -59,8 +58,7 @@ const SuggestedToMe = () => {
       id: "2",
       title: "To Kill a Mockingbird",
       type: "book",
-      imageUrl:
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
       year: "1960",
       creator: "Harper Lee",
       description:
@@ -77,8 +75,7 @@ const SuggestedToMe = () => {
       id: "3",
       title: "Attack on Titan",
       type: "anime",
-      imageUrl:
-        "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
       year: "2013",
       creator: "Hajime Isayama",
       description:
@@ -95,8 +92,7 @@ const SuggestedToMe = () => {
       id: "4",
       title: "Bohemian Rhapsody",
       type: "song",
-      imageUrl:
-        "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
       year: "1975",
       creator: "Queen",
       description:
@@ -109,110 +105,112 @@ const SuggestedToMe = () => {
       suggestedAt: "2023-06-01T11:20:00Z",
       whereToListen: ["Spotify", "Apple Music", "YouTube Music"],
     },
-  ];
-  const [activeTab, setActiveTab] = useState("all");
-  const [suggestions, setSuggestions] =
-    useState<ContentItem[]>(mockSuggestions);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<ContentItem[]>(
-    activeTab === "all"
-      ? suggestions
-      : suggestions.filter((item) => item.type === activeTab)
-  );
-  // Mock data - in a real app, this would come from an API
-  React.useEffect(() => {
-    getSuggestedToYou().then((res) => {
-      if (res.success) {
-        setSuggestions(res.data);
-      } else {
-        setSuggestions(mockSuggestions);
-      }
-      console.log(res);
-    });
-  }, []);
+  ]
 
-  React.useEffect(() => {
-    setFilteredSuggestions(
-      activeTab === "all"
-        ? suggestions
-        : suggestions.filter((item) => item.type === activeTab)
-    );
-    console.log("filtered Suggestions: ", filteredSuggestions);
-  }, [activeTab, suggestions]);
+  const [activeTab, setActiveTab] = useState("all")
+  const [suggestions, setSuggestions] = useState<ContentItem[]>([])
+  const [filteredSuggestions, setFilteredSuggestions] = useState<ContentItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Filter suggestions when tab or suggestions change
+  useEffect(() => {
+    setFilteredSuggestions(activeTab === "all" ? suggestions : suggestions.filter((item) => item.type === activeTab))
+    console.log("filtered Suggestions: ", filteredSuggestions)
+  }, [activeTab, suggestions])
+
+  // Fetch suggestions on component mount
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      setIsLoading(true)
+      try {
+        const res = await getSuggestedToYou()
+        if (res.success) {
+          setSuggestions(res.data)
+        } else {
+          setSuggestions(mockSuggestions)
+        }
+      } catch (error) {
+        console.error("Error fetching suggestions:", error)
+        setSuggestions(mockSuggestions)
+      } finally {
+        // Add a small delay to make the loading state more noticeable for better UX
+        setTimeout(() => {
+          setIsLoading(false)
+        }, 800)
+      }
+    }
+
+    fetchSuggestions()
+  }, [])
 
   const handleMarkAsWatched = (id: string) => {
     setSuggestions((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const status = getContentSpecificWatchedStatus(
-            item.type
-          ) as ContentItem["status"];
-          return { ...item, status };
+          const status = getContentSpecificWatchedStatus(item.type) as ContentItem["status"]
+          return { ...item, status }
         }
-        return item;
-      })
-    );
-  };
+        return item
+      }),
+    )
+  }
 
   const handleMarkAsWatching = (id: string) => {
     setSuggestions((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const status = getContentSpecificWatchingStatus(
-            item.type
-          ) as ContentItem["status"];
-          return { ...item, status };
+          const status = getContentSpecificWatchingStatus(item.type) as ContentItem["status"]
+          return { ...item, status }
         }
-        return item;
-      })
-    );
-  };
+        return item
+      }),
+    )
+  }
 
   const handleAddToWatchlist = (id: string) => {
     setSuggestions((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const status = getContentSpecificListStatus(
-            item.type
-          ) as ContentItem["status"];
-          return { ...item, status };
+          const status = getContentSpecificListStatus(item.type) as ContentItem["status"]
+          return { ...item, status }
         }
-        return item;
-      })
-    );
-  };
+        return item
+      }),
+    )
+  }
 
   const getContentSpecificListStatus = (type: string): string => {
     switch (type) {
       case "book":
-        return "readlist";
+        return "readlist"
       case "song":
-        return "listenlist";
+        return "listenlist"
       default:
-        return "watchlist";
+        return "watchlist"
     }
-  };
+  }
 
   const getContentSpecificWatchedStatus = (type: string): string => {
     switch (type) {
       case "book":
-        return "finished";
+        return "finished"
       case "song":
-        return "listened";
+        return "listened"
       default:
-        return "watched";
+        return "watched"
     }
-  };
+  }
 
   const getContentSpecificWatchingStatus = (type: string): string => {
     switch (type) {
       case "book":
-        return "reading";
+        return "reading"
       case "song":
-        return "listening";
+        return "listening"
       default:
-        return "watching";
+        return "watching"
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -232,11 +230,12 @@ const SuggestedToMe = () => {
             handleMarkAsWatched={handleMarkAsWatched}
             handleMarkAsWatching={handleMarkAsWatching}
             handleAddToWatchlist={handleAddToWatchlist}
+            isLoading={isLoading}
           />
         </div>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default SuggestedToMe;
+export default SuggestedToMe

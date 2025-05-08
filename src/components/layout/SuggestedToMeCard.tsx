@@ -5,6 +5,7 @@ import {
   Bookmark,
   BookOpen,
   CheckCircle,
+  Clapperboard,
   Clock,
   Film,
   Heart,
@@ -18,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useState } from "react";
 import CommentBox from "../reusables/CommentBox";
+import { motion } from "framer-motion";
 
 function SuggestedToMeCard({
   item,
@@ -39,6 +41,8 @@ function SuggestedToMeCard({
     switch (type) {
       case "movie":
         return <Film className="h-5 w-5" />;
+      case "series":
+        return <Clapperboard className="h-5 w-5" />;
       case "book":
         return <BookOpen className="h-5 w-5" />;
       case "anime":
@@ -53,6 +57,7 @@ function SuggestedToMeCard({
         return <Film className="h-5 w-5" />;
     }
   };
+
   const getRouteForType = (type: string, id: string) => {
     switch (type) {
       case "movie":
@@ -100,247 +105,263 @@ function SuggestedToMeCard({
   };
 
   return (
-    <Card
-      key={item.id}
-      className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -5 }}
     >
-      <div className="flex flex-col h-full relative">
-        {item.imageUrl && (
-          <div
-            className="w-full h-40 bg-muted"
-            onClick={() =>
-              navigate(getRouteForType(item.type, item?.contentId || item.id))
-            }
-          >
-            <img
-              src={item.imageUrl}
-              alt={item.title}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        )}
-        <CardContent className="flex-1 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
-                {getIconForType(item.type)}
-              </div>
-              <span className="text-xs font-medium text-primary capitalize">
-                {item.type}
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {new Date(item.suggestedAt).toLocaleDateString()}
-            </span>
-          </div>
-          <h3
-            className="font-semibold text-lg mb-1 line-clamp-1 text-foreground"
-            onClick={() =>
-              navigate(getRouteForType(item.type, item?.contentId || item.id))
-            }
-          >
-            {item.title}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-2">
-            {item.creator} • {item.year}
-          </p>
-          <p
-            className="text-sm line-clamp-2 mb-4 text-foreground"
-            dangerouslySetInnerHTML={{
-              __html: item.description || "No description available.",
-            }}
-          ></p>
-
-          {/* Status indicator */}
-          {item.status && (
-            <div className="absolute top-2 right-2 z-10">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  item.status === "watched" ||
-                  item.status === "finished" ||
-                  item.status === "listened"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                    : item.status === "watching" ||
-                      item.status === "reading" ||
-                      item.status === "listening"
-                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                    : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                }`}
-              >
-                {item.status === "watched" ||
-                item.status === "finished" ||
-                item.status === "listened" ? (
-                  <>
-                    <CheckCircle className="mr-1 h-3 w-3" />
-                    {getContentSpecificStatusLabel(item.status, item.type)}
-                  </>
-                ) : item.status === "watching" ||
-                  item.status === "reading" ||
-                  item.status === "listening" ? (
-                  <>
-                    <Clock className="mr-1 h-3 w-3" />
-                    {getContentSpecificStatusLabel(item.status, item.type)}
-                  </>
-                ) : item.status === "watchlist" ? (
-                  <>
-                    <Bookmark className="mr-1 h-3 w-3" />
-                    In Watchlist
-                  </>
-                ) : item.status === "readlist" ? (
-                  <>
-                    <Bookmark className="mr-1 h-3 w-3" />
-                    In Reading List
-                  </>
-                ) : (
-                  <>
-                    <Bookmark className="mr-1 h-3 w-3" />
-                    In Listening List
-                  </>
-                )}
-              </span>
+      <Card
+        key={item.id}
+        className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
+      >
+        <div className="flex flex-col h-full relative">
+          {item.imageUrl && (
+            <div
+              className="w-full h-40 bg-muted"
+              onClick={() =>
+                navigate(getRouteForType(item.type, item?.contentId || item.id))
+              }
+            >
+              <img
+                src={item.imageUrl || "/placeholder.svg"}
+                alt={item.title}
+                className="h-full w-full object-cover"
+              />
             </div>
           )}
-
-          {/* Action buttons */}
-          <div className="flex items-center justify-between mb-4 gap-2">
-            <Button
-              variant={
-                item.status === "finished" ||
-                item.status === "listened" ||
-                item.status === "watched"
-                  ? "default"
-                  : "outline"
-              }
-              size="sm"
-              className={`rounded-full text-xs flex-1 ${
-                item.status === "finished" ||
-                item.status === "listened" ||
-                item.status === "watched"
-                  ? "bg-primary text-white"
-                  : ""
-              }`}
-              onClick={() => handleMarkAsWatched(item.id)}
-            >
-              <CheckCircle className="h-3 w-3 mr-1" />
-              {item.type === "book"
-                ? "Finished"
-                : item.type === "song"
-                ? "Listened"
-                : "Watched"}
-            </Button>
-
-            <Button
-              variant={
-                item.status === "reading" ||
-                item.status === "listening" ||
-                item.status === "watching"
-                  ? "default"
-                  : "outline"
-              }
-              size="sm"
-              className={`rounded-full text-xs flex-1 ${
-                item.status === "reading" ||
-                item.status === "listening" ||
-                item.status === "watching"
-                  ? "bg-primary text-white"
-                  : ""
-              }`}
-              onClick={() => handleMarkAsWatching(item.id)}
-            >
-              <Clock className="h-3 w-3 mr-1" />
-              {item.type === "book"
-                ? "Reading"
-                : item.type === "song"
-                ? "Listening"
-                : "Watching"}
-            </Button>
-
-            <Button
-              variant={
-                item.status === "readlist" ||
-                item.status === "listenlist" ||
-                item.status === "watchlist"
-                  ? "default"
-                  : "outline"
-              }
-              size="sm"
-              className={`rounded-full text-xs flex-1 ${
-                item.status === "readlist" ||
-                item.status === "listenlist" ||
-                item.status === "watchlist"
-                  ? "bg-primary text-white"
-                  : ""
-              }`}
-              onClick={() => handleAddToWatchlist(item.id)}
-            >
-              <Bookmark className="h-3 w-3 mr-1" />
-              {item.type === "book"
-                ? "Reading List"
-                : item.type === "song"
-                ? "Listening List"
-                : "Watchlist"}
-            </Button>
-          </div>
-
-          {/* Social media style interaction buttons */}
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full p-2 h-auto"
-              onClick={() => toggleWatchList(item.id)}
-            >
-              <Heart
-                className={`h-4 w-4 ${
-                  isFavorite ? "text-red-500" : "text-muted-foreground"
-                }`}
-                fill={isFavorite ? "red" : "none"}
-              />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full p-2 h-auto"
-              onClick={() => setOpenCommentBox(!openCommentBox)}
-            >
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <CommentBox
-              open={openCommentBox}
-              onOpenChange={setOpenCommentBox}
-              onComplete={handleComment}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full p-2 h-auto"
-            >
-              <Share2 className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </div>
-
-          <div className="flex items-center pt-3 border-t border-border">
-            <span className="text-xs font-medium text-foreground mr-2">
-              Suggested by:
-            </span>
-            <div className="flex items-center">
-              <Avatar className="h-5 w-5 mr-1 ring-1 ring-primary/20">
-                <AvatarImage
-                  src={item?.suggestedBy?.avatar}
-                  alt={item?.suggestedBy?.name}
-                />
-                <AvatarFallback className="bg-primary-100 text-primary-800">
-                  {item?.suggestedBy?.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs font-medium text-foreground">
-                {item?.suggestedBy?.name}
+          <CardContent className="flex-1 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
+                  {getIconForType(item.type)}
+                </div>
+                <span className="text-xs font-medium text-primary capitalize">
+                  {item.type}
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {new Date(item.suggestedAt).toLocaleDateString()}
               </span>
             </div>
-          </div>
-        </CardContent>
-      </div>
-    </Card>
+            <h3
+              className="font-semibold text-lg mb-1 line-clamp-1 text-foreground"
+              onClick={() =>
+                navigate(getRouteForType(item.type, item?.contentId || item.id))
+              }
+            >
+              {item.title}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-2">
+              {item.creator} • {item.year}
+            </p>
+            <p
+              className="text-sm line-clamp-2 mb-4 text-foreground"
+              dangerouslySetInnerHTML={{
+                __html: item.description || "No description available.",
+              }}
+            ></p>
+
+            {/* Status indicator */}
+            {item.status && (
+              <div className="absolute top-2 right-2 z-10">
+                <motion.span
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    item.status === "watched" ||
+                    item.status === "finished" ||
+                    item.status === "listened"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                      : item.status === "watching" ||
+                        item.status === "reading" ||
+                        item.status === "listening"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                  }`}
+                >
+                  {item.status === "watched" ||
+                  item.status === "finished" ||
+                  item.status === "listened" ? (
+                    <>
+                      <CheckCircle className="mr-1 h-3 w-3" />
+                      {getContentSpecificStatusLabel(item.status, item.type)}
+                    </>
+                  ) : item.status === "watching" ||
+                    item.status === "reading" ||
+                    item.status === "listening" ? (
+                    <>
+                      <Clock className="mr-1 h-3 w-3" />
+                      {getContentSpecificStatusLabel(item.status, item.type)}
+                    </>
+                  ) : item.status === "watchlist" ? (
+                    <>
+                      <Bookmark className="mr-1 h-3 w-3" />
+                      In Watchlist
+                    </>
+                  ) : item.status === "readlist" ? (
+                    <>
+                      <Bookmark className="mr-1 h-3 w-3" />
+                      In Reading List
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="mr-1 h-3 w-3" />
+                      In Listening List
+                    </>
+                  )}
+                </motion.span>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <Button
+                variant={
+                  item.status === "finished" ||
+                  item.status === "listened" ||
+                  item.status === "watched"
+                    ? "default"
+                    : "outline"
+                }
+                size="sm"
+                className={`rounded-full text-xs flex-1 ${
+                  item.status === "finished" ||
+                  item.status === "listened" ||
+                  item.status === "watched"
+                    ? "bg-primary text-white"
+                    : ""
+                }`}
+                onClick={() => handleMarkAsWatched(item.id)}
+              >
+                <CheckCircle className="h-3 w-3 mr-1" />
+                {item.type === "book"
+                  ? "Finished"
+                  : item.type === "song"
+                  ? "Listened"
+                  : "Watched"}
+              </Button>
+
+              <Button
+                variant={
+                  item.status === "reading" ||
+                  item.status === "listening" ||
+                  item.status === "watching"
+                    ? "default"
+                    : "outline"
+                }
+                size="sm"
+                className={`rounded-full text-xs flex-1 ${
+                  item.status === "reading" ||
+                  item.status === "listening" ||
+                  item.status === "watching"
+                    ? "bg-primary text-white"
+                    : ""
+                }`}
+                onClick={() => handleMarkAsWatching(item.id)}
+              >
+                <Clock className="h-3 w-3 mr-1" />
+                {item.type === "book"
+                  ? "Reading"
+                  : item.type === "song"
+                  ? "Listening"
+                  : "Watching"}
+              </Button>
+
+              <Button
+                variant={
+                  item.status === "readlist" ||
+                  item.status === "listenlist" ||
+                  item.status === "watchlist"
+                    ? "default"
+                    : "outline"
+                }
+                size="sm"
+                className={`rounded-full text-xs flex-1 ${
+                  item.status === "readlist" ||
+                  item.status === "listenlist" ||
+                  item.status === "watchlist"
+                    ? "bg-primary text-white"
+                    : ""
+                }`}
+                onClick={() => handleAddToWatchlist(item.id)}
+              >
+                <Bookmark className="h-3 w-3 mr-1" />
+                {item.type === "book"
+                  ? "Reading List"
+                  : item.type === "song"
+                  ? "Listening List"
+                  : "Watchlist"}
+              </Button>
+            </div>
+
+            {/* Social media style interaction buttons */}
+            <div className="flex items-center justify-between mb-4">
+              <motion.div whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full p-2 h-auto"
+                  onClick={() => toggleWatchList(item.id)}
+                >
+                  <Heart
+                    className={`h-4 w-4 ${
+                      isFavorite ? "text-red-500" : "text-muted-foreground"
+                    }`}
+                    fill={isFavorite ? "red" : "none"}
+                  />
+                </Button>
+              </motion.div>
+              <motion.div whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full p-2 h-auto"
+                  onClick={() => setOpenCommentBox(!openCommentBox)}
+                >
+                  <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </motion.div>
+              <CommentBox
+                open={openCommentBox}
+                onOpenChange={setOpenCommentBox}
+                onComplete={handleComment}
+              />
+              <motion.div whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full p-2 h-auto"
+                >
+                  <Share2 className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </motion.div>
+            </div>
+
+            <div className="flex items-center pt-3 border-t border-border">
+              <span className="text-xs font-medium text-foreground mr-2">
+                Suggested by:
+              </span>
+              <div className="flex items-center">
+                <Avatar className="h-5 w-5 mr-1 ring-1 ring-primary/20">
+                  <AvatarImage
+                    src={item?.suggestedBy?.avatar || "/placeholder.svg"}
+                    alt={item?.suggestedBy?.name}
+                  />
+                  <AvatarFallback className="bg-primary-100 text-primary-800">
+                    {item?.suggestedBy?.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-medium text-foreground">
+                  {item?.suggestedBy?.name}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </div>
+      </Card>
+    </motion.div>
   );
 }
 

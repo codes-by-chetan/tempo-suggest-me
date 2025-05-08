@@ -8,8 +8,9 @@ import React, {
 } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/lib/auth-context";
+import config from "@/config/env.config";
 
-const API_BASE_URL = "http://192.168.0.39:3200";
+const API_BASE_URL = config.SOCKET_URL;
 
 interface SocketContextType {
   socket: Socket | null;
