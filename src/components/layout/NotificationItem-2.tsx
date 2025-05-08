@@ -333,6 +333,7 @@ const FollowedYouNotification = ({
       onMarkAsRead={onMarkAsRead}
     >
       {/* No additional actions for now */}
+      <></>
     </BaseNotificationItem>
   );
 };
@@ -348,6 +349,7 @@ const GenericNotification = ({
       onMarkAsRead={onMarkAsRead}
     >
       {/* No additional actions for now */}
+      <></>
     </BaseNotificationItem>
   );
 };

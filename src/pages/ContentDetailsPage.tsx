@@ -125,21 +125,42 @@ const ContentDetailsPage = () => {
   const isSeriesRoute = useMatch("/series/:id");
   const isBookRoute = useMatch("/books/:id");
   const isMusicRoute = useMatch("/music/:id");
-  const stateContentDetails = location.state?.contentDetails as DisplayContent | undefined;
+  const stateContentDetails = location.state?.contentDetails as
+    | DisplayContent
+    | undefined;
 
   const [content, setContent] = useState<DisplayContent | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showFullCast, setShowFullCast] = useState<boolean>(false);
-
+  const getPublisher = (isBookData: any, item: any) => {
+    if (isBookData) {
+      if (typeof (item as BookDetails).publisher === "object") {
+        return item.publisher.name as string;
+      } else {
+        return item.publisher as string;
+      }
+    }
+    return undefined;
+  };
   const normalizeContent = (
-    data: DisplayContent | MovieDetails | SeriesDetails | BookDetails | MusicDetails,
+    data:
+      | DisplayContent
+      | MovieDetails
+      | SeriesDetails
+      | BookDetails
+      | MusicDetails,
     isFromApi: boolean,
     contentType: "movie" | "series" | "book" | "music"
   ): DisplayContent => {
     if (isFromApi) {
-      const item = data as MovieDetails | SeriesDetails | BookDetails | MusicDetails;
-      const isBookData = !!(item as BookDetails).author && !!(item as BookDetails).coverImage;
+      const item = data as
+        | MovieDetails
+        | SeriesDetails
+        | BookDetails
+        | MusicDetails;
+      const isBookData =
+        !!(item as BookDetails).author && !!(item as BookDetails).coverImage;
 
       return {
         id: item._id || (item.references?.tmdbId ?? ""),
@@ -164,17 +185,31 @@ const ContentDetailsPage = () => {
         status: null,
         whereToConsume: isBookData
           ? [
-              ...(item as BookDetails).availableOn?.bookstores?.map((b: any) => b.name) || [],
-              ...(item as BookDetails).availableOn?.ebooks?.map((e: any) => e.name) || [],
-              ...(item as BookDetails).availableOn?.audiobooks?.map((a: any) => a.name) || [],
+              ...((item as BookDetails).availableOn?.bookstores?.map(
+                (b: any) => b.name
+              ) || []),
+              ...((item as BookDetails).availableOn?.ebooks?.map(
+                (e: any) => e.name
+              ) || []),
+              ...((item as BookDetails).availableOn?.audiobooks?.map(
+                (a: any) => a.name
+              ) || []),
             ].filter(Boolean).length > 0
             ? [
-                ...(item as BookDetails).availableOn?.bookstores?.map((b: any) => b.name) || [],
-                ...(item as BookDetails).availableOn?.ebooks?.map((e: any) => e.name) || [],
-                ...(item as BookDetails).availableOn?.audiobooks?.map((a: any) => a.name) || [],
+                ...((item as BookDetails).availableOn?.bookstores?.map(
+                  (b: any) => b.name
+                ) || []),
+                ...((item as BookDetails).availableOn?.ebooks?.map(
+                  (e: any) => e.name
+                ) || []),
+                ...((item as BookDetails).availableOn?.audiobooks?.map(
+                  (a: any) => a.name
+                ) || []),
               ].filter(Boolean)
             : ["Amazon", "Barnes & Noble", "Local Library"]
-          : (item.availableOn?.streaming?.map((s: any) => s.platform) || []).filter(Boolean).length > 0
+          : (
+              item.availableOn?.streaming?.map((s: any) => s.platform) || []
+            ).filter(Boolean).length > 0
           ? item.availableOn?.streaming?.map((s: any) => s.platform) || []
           : contentType === "music"
           ? ["Spotify", "Apple Music", "YouTube Music"]
@@ -187,29 +222,39 @@ const ContentDetailsPage = () => {
         awards: item.awards,
         boxOffice: (item as MovieDetails).boxOffice,
         production: {
-          companies: (item as MovieDetails | SeriesDetails).production?.companies || [],
+          companies:
+            (item as MovieDetails | SeriesDetails).production?.companies || [],
         },
         keywords: (item as MovieDetails | SeriesDetails).keywords || [],
         language: isBookData
           ? (item as BookDetails).language
-          : Array.isArray((item as MovieDetails | SeriesDetails | MusicDetails).language)
-          ? (item as MovieDetails | SeriesDetails | MusicDetails).language.join(", ")
+          : Array.isArray(
+              (item as MovieDetails | SeriesDetails | MusicDetails).language
+            )
+          ? (item as MovieDetails | SeriesDetails | MusicDetails).language.join(
+              ", "
+            )
           : (item as MovieDetails | SeriesDetails | MusicDetails).language,
         country: (item as MovieDetails | SeriesDetails).country,
         seasons: (item as SeriesDetails).seasons,
         authors: isBookData
           ? (item as BookDetails).author?.map((a) => a.name).join(", ")
           : undefined,
-        publisher: isBookData
-          ? (item as BookDetails).publisher?.name || (item as BookDetails).publisher
-          : undefined,
+        publisher: getPublisher(isBookData, item),
         pages: isBookData ? (item as BookDetails).pages : undefined,
         isbn: isBookData ? (item as BookDetails).isbn : undefined,
-        artists: contentType === "music" && !isBookData
-          ? (item as MusicDetails).artists?.map((a) => a.name).join(", ")
-          : undefined,
-        album: contentType === "music" && !isBookData ? (item as MusicDetails).album : undefined,
-        duration: contentType === "music" && !isBookData ? (item as MusicDetails).duration : undefined,
+        artists:
+          contentType === "music" && !isBookData
+            ? (item as MusicDetails).artists?.map((a) => a.name).join(", ")
+            : undefined,
+        album:
+          contentType === "music" && !isBookData
+            ? (item as MusicDetails).album
+            : undefined,
+        duration:
+          contentType === "music" && !isBookData
+            ? (item as MusicDetails).duration
+            : undefined,
       };
     }
     return {
@@ -238,7 +283,13 @@ const ContentDetailsPage = () => {
 
   useEffect(() => {
     if (stateContentDetails) {
-      setContent(normalizeContent(stateContentDetails, false, stateContentDetails.type as any));
+      setContent(
+        normalizeContent(
+          stateContentDetails,
+          false,
+          stateContentDetails.type as any
+        )
+      );
       return;
     }
 
@@ -273,7 +324,7 @@ const ContentDetailsPage = () => {
           response = await getMusicDetails(id); // Temporary workaround due to backend returning book data
           if (response.success && response.data) {
             setContent(normalizeContent(response.data, true, "music")); // Treat as book for now
-            console.log(response.data)
+            console.log(response.data);
           } else {
             setError(response.message || "Failed to fetch music details");
           }
@@ -288,7 +339,14 @@ const ContentDetailsPage = () => {
     };
 
     fetchContent();
-  }, [id, stateContentDetails, isMovieRoute, isSeriesRoute, isBookRoute, isMusicRoute]);
+  }, [
+    id,
+    stateContentDetails,
+    isMovieRoute,
+    isSeriesRoute,
+    isBookRoute,
+    isMusicRoute,
+  ]);
 
   if (loading) {
     return (
@@ -296,7 +354,11 @@ const ContentDetailsPage = () => {
         <Navbar />
         <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
           <div className="py-6">
-            <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
+            <Button
+              variant="ghost"
+              className="mb-4"
+              onClick={() => navigate(-1)}
+            >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
             <div className="text-center py-12">
@@ -314,13 +376,18 @@ const ContentDetailsPage = () => {
         <Navbar />
         <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
           <div className="py-6">
-            <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
+            <Button
+              variant="ghost"
+              className="mb-4"
+              onClick={() => navigate(-1)}
+            >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
             <div className="text-center py-12">
               <h2 className="text-2xl font-bold">Content not found</h2>
               <p className="text-muted-foreground mt-2">
-                {error || "The content you're looking for doesn't exist or couldn't be loaded."}
+                {error ||
+                  "The content you're looking for doesn't exist or couldn't be loaded."}
               </p>
             </div>
           </div>
@@ -352,7 +419,10 @@ const ContentDetailsPage = () => {
     }
   };
 
-  const getContentSpecificStatusLabel = (status: string | null, type: string): string => {
+  const getContentSpecificStatusLabel = (
+    status: string | null,
+    type: string
+  ): string => {
     if (!status) return "Not Started";
     if (status === "watchlist") return "In Watchlist";
     if (status === "readlist") return "In Reading List";
@@ -443,19 +513,28 @@ const ContentDetailsPage = () => {
                     content.status === "listened" ? (
                       <>
                         <CheckCircle className="mr-1 h-4 w-4" />
-                        {getContentSpecificStatusLabel(content.status, content.type)}
+                        {getContentSpecificStatusLabel(
+                          content.status,
+                          content.type
+                        )}
                       </>
                     ) : content.status === "watching" ||
                       content.status === "reading" ||
                       content.status === "listening" ? (
                       <>
                         <Clock className="mr-1 h-4 w-4" />
-                        {getContentSpecificStatusLabel(content.status, content.type)}
+                        {getContentSpecificStatusLabel(
+                          content.status,
+                          content.type
+                        )}
                       </>
                     ) : (
                       <>
                         <Bookmark className="mr-1 h-4 w-4" />
-                        {getContentSpecificStatusLabel(content.status, content.type)}
+                        {getContentSpecificStatusLabel(
+                          content.status,
+                          content.type
+                        )}
                       </>
                     )}
                   </span>
@@ -464,7 +543,9 @@ const ContentDetailsPage = () => {
 
               {/* Where to watch/read/listen */}
               <div className="mt-6 bg-card rounded-lg p-4 shadow-sm">
-                <h3 className="font-medium text-lg mb-3">{getWhereToConsumeLabel()}</h3>
+                <h3 className="font-medium text-lg mb-3">
+                  {getWhereToConsumeLabel()}
+                </h3>
                 <div className="space-y-2">
                   {content.whereToConsume?.length ? (
                     content.whereToConsume.map((place, index) => (
@@ -478,7 +559,9 @@ const ContentDetailsPage = () => {
                       </a>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground">Not available</p>
+                    <p className="text-sm text-muted-foreground">
+                      Not available
+                    </p>
                   )}
                 </div>
               </div>
@@ -490,7 +573,9 @@ const ContentDetailsPage = () => {
                 <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
                   {getIconForType(content.type)}
                 </div>
-                <span className="text-sm font-medium text-primary capitalize">{content.type}</span>
+                <span className="text-sm font-medium text-primary capitalize">
+                  {content.type}
+                </span>
               </div>
 
               <h1 className="text-3xl font-bold mb-2">{content.title}</h1>
@@ -504,7 +589,9 @@ const ContentDetailsPage = () => {
                   content.duration && formatDuration(content.duration),
                   content.language,
                   content.country,
-                  typeof content.publisher === "string" ? content.publisher : content.publisher?.name,
+                  typeof content.publisher === "string"
+                    ? content.publisher
+                    : content.publisher?.name,
                   content.isbn && `ISBN: ${content.isbn}`,
                   content.album,
                   content.pages && `${content.pages} pages`,
@@ -514,24 +601,28 @@ const ContentDetailsPage = () => {
               </p>
 
               {/* Seasons (for series) */}
-              {content.type === "series" && content.seasons && content.seasons.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-lg">Seasons</h3>
-                  <div className="mt-2">
-                    <p>
-                      {content.seasons.length} Season{content.seasons.length > 1 ? "s" : ""}
-                    </p>
-                    <ul className="list-disc pl-5 mt-2">
-                      {content.seasons.map((season, index) => (
-                        <li key={index}>
-                          Season {season.seasonNumber}: {season.episodeCount} Episode
-                          {season.episodeCount > 1 ? "s" : ""}
-                        </li>
-                      ))}
-                    </ul>
+              {content.type === "series" &&
+                content.seasons &&
+                content.seasons.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="font-medium text-lg">Seasons</h3>
+                    <div className="mt-2">
+                      <p>
+                        {content.seasons.length} Season
+                        {content.seasons.length > 1 ? "s" : ""}
+                      </p>
+                      <ul className="list-disc pl-5 mt-2">
+                        {content.seasons.map((season, index) => (
+                          <li key={index}>
+                            Season {season.seasonNumber}: {season.episodeCount}{" "}
+                            Episode
+                            {season.episodeCount > 1 ? "s" : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Genres */}
               {content.genres && content.genres.length > 0 && (
@@ -539,7 +630,10 @@ const ContentDetailsPage = () => {
                   <h3 className="font-medium text-lg">Genres</h3>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {content.genres.map((genre, index) => (
-                      <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-accent text-sm rounded-full"
+                      >
                         {genre}
                       </span>
                     ))}
@@ -568,7 +662,8 @@ const ContentDetailsPage = () => {
                     <Award className="h-5 w-5" /> Awards
                   </h3>
                   <div className="mt-2">
-                    {content.awards.oscars?.wins || content.awards.oscars?.nominations ? (
+                    {content.awards.oscars?.wins ||
+                    content.awards.oscars?.nominations ? (
                       <p>
                         Oscars: {content.awards.oscars.wins} wins,{" "}
                         {content.awards.oscars.nominations} nominations
@@ -578,7 +673,8 @@ const ContentDetailsPage = () => {
                     )}
                     {(content.awards.wins || content.awards.nominations) && (
                       <p>
-                        Total: {content.awards.wins} wins, {content.awards.nominations} nominations
+                        Total: {content.awards.wins} wins,{" "}
+                        {content.awards.nominations} nominations
                       </p>
                     )}
                     {content.awards.awardsDetails?.length ? (
@@ -588,7 +684,9 @@ const ContentDetailsPage = () => {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No additional award details</p>
+                      <p className="text-sm text-muted-foreground">
+                        No additional award details
+                      </p>
                     )}
                   </div>
                 </div>
@@ -605,7 +703,10 @@ const ContentDetailsPage = () => {
                       <p>Budget: {formatCurrency(content.boxOffice.budget)}</p>
                     )}
                     {content.boxOffice.grossWorldwide && (
-                      <p>Gross Worldwide: {formatCurrency(content.boxOffice.grossWorldwide)}</p>
+                      <p>
+                        Gross Worldwide:{" "}
+                        {formatCurrency(content.boxOffice.grossWorldwide)}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -619,7 +720,10 @@ const ContentDetailsPage = () => {
                   </h3>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {content.production.companies.map((company, index) => (
-                      <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-accent text-sm rounded-full"
+                      >
                         {company.name}
                       </span>
                     ))}
@@ -635,7 +739,10 @@ const ContentDetailsPage = () => {
                   </h3>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {content.keywords.map((keyword, index) => (
-                      <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-accent text-sm rounded-full"
+                      >
                         {keyword}
                       </span>
                     ))}
@@ -646,9 +753,12 @@ const ContentDetailsPage = () => {
               {/* Description */}
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-2">Description</h2>
-                <p className="text-foreground" dangerouslySetInnerHTML={{
+                <p
+                  className="text-foreground"
+                  dangerouslySetInnerHTML={{
                     __html: content.description || "No description available.",
-                  }}></p>
+                  }}
+                ></p>
               </div>
 
               {/* Cast */}
@@ -656,22 +766,28 @@ const ContentDetailsPage = () => {
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold mb-2">Cast</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {content.cast.slice(0, showFullCast ? undefined : 10).map((actor, index) => (
-                      <div key={index} className="flex items-center">
-                        <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20 cursor-pointer">
-                          <AvatarImage
-                            src={actor.person?.profileImage?.url}
-                            alt={actor.person?.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <AvatarFallback>{actor.person?.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{actor.person?.name}</p>
-                          <p className="text-sm text-muted-foreground">as {actor?.character}</p>
+                    {content.cast
+                      .slice(0, showFullCast ? undefined : 10)
+                      .map((actor, index) => (
+                        <div key={index} className="flex items-center">
+                          <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20 cursor-pointer">
+                            <AvatarImage
+                              src={actor.person?.profileImage?.url}
+                              alt={actor.person?.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <AvatarFallback>
+                              {actor.person?.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{actor.person?.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              as {actor?.character}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                   {content.cast.length > 10 && (
                     <Button
@@ -687,13 +803,25 @@ const ContentDetailsPage = () => {
 
               {/* Social media style interaction buttons */}
               <div className="flex items-center gap-4 mb-6">
-                <Button variant="outline" size="sm" className="rounded-full gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-2"
+                >
                   <Heart className="h-4 w-4" /> Like
                 </Button>
-                <Button variant="outline" size="sm" className="rounded-full gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-2"
+                >
                   <MessageCircle className="h-4 w-4" /> Comment
                 </Button>
-                <Button variant="outline" size="sm" className="rounded-full gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-2"
+                >
                   <Share2 className="h-4 w-4" /> Share
                 </Button>
               </div>
@@ -706,8 +834,13 @@ const ContentDetailsPage = () => {
                   <h2 className="text-lg font-semibold mb-3">Suggested by</h2>
                   <div className="flex items-center">
                     <Avatar className="h-10 w-10 mr-3 ring-2 ring-primary/20">
-                      <AvatarImage src={content.suggestedBy.avatar} alt={content.suggestedBy.name} />
-                      <AvatarFallback>{content.suggestedBy.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage
+                        src={content.suggestedBy.avatar}
+                        alt={content.suggestedBy.name}
+                      />
+                      <AvatarFallback>
+                        {content.suggestedBy.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-medium">{content.suggestedBy.name}</p>
@@ -731,10 +864,17 @@ const ContentDetailsPage = () => {
                         className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-3 transition-colors"
                       >
                         <Avatar className="h-6 w-6 mr-2 ring-1 ring-primary/20">
-                          <AvatarImage src={recipient.avatar} alt={recipient.name} />
-                          <AvatarFallback>{recipient.name.charAt(0)}</AvatarFallback>
+                          <AvatarImage
+                            src={recipient.avatar}
+                            alt={recipient.name}
+                          />
+                          <AvatarFallback>
+                            {recipient.name.charAt(0)}
+                          </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm font-medium">{recipient.name}</span>
+                        <span className="text-sm font-medium">
+                          {recipient.name}
+                        </span>
                       </div>
                     ))}
                   </div>

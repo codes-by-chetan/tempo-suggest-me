@@ -78,7 +78,7 @@ export interface BookDetails {
   year: number;
   cover: Poster;
   authors: Person[];
-  publisher: string;
+  publisher?: string | { name: string; [key: string]: any };
   isbn: string;
   genres: string[];
   plot: string;
