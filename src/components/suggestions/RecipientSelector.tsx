@@ -227,7 +227,7 @@ const RecipientSelector = ({
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarImage
-                    src={user.profile.avatar.url}
+                    src={user.profile?.avatar?.url}
                     alt={user.fullNameString}
                   />
                   <AvatarFallback>
