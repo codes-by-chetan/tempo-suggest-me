@@ -7,6 +7,7 @@ import { useAuth } from "./lib/auth-context";
 import AuthService from "./services/auth.service";
 import NotificationsPage from "./pages/NotificationsPage";
 import ContentDetailsForm from "./components/suggestions/ContentDetailsForm";
+import SuggestionDetails from "./pages/SuggestionDetailsPage";
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
 const MySuggestions = lazy(() => import("./pages/my-suggestions"));
@@ -62,6 +63,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/suggested-to-me" element={<SuggestedToMe />} />
+          <Route
+            path="/suggested-to-me/suggestion/:suggestionId"
+            element={<SuggestionDetails />}
+          />
           <Route path="/my-suggestions" element={<MySuggestions />} />
           <Route path="/my-watchlist" element={<MyWatchlist />} />
           <Route path="/profile/:id?" element={<Profile />} />

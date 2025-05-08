@@ -13,15 +13,41 @@ import {
 import { Button } from "@/components/ui/button";
 import SuggestionFlow from "@/components/suggestions/SuggestionFlow";
 import { CustomTabsList } from "@/components/layout/CustomTabsList";
-import { mockMySuggestions } from "@/data/mySuggestions";
+import { ContentItem, mockMySuggestions } from "@/data/mySuggestions";
 import MySuggestionCard from "@/components/layout/MySuggestion";
+import {
+  getSuggestedByYou,
+  suggestContent,
+} from "@/services/suggestion.service";
 
 const MySuggestions = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [isSuggestionFlowOpen, setIsSuggestionFlowOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<ContentItem[]>([]);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<ContentItem[]>(
+    activeTab === "all"
+      ? suggestions
+      : suggestions.filter((item) => item.type === activeTab)
+  );
   useEffect(() => {
-    console.log("activeTab", activeTab);
+    setFilteredSuggestions(
+      activeTab === "all"
+        ? suggestions
+        : suggestions.filter((item) => item.type === activeTab)
+    );
+    console.log("filtered Suggestions: ", filteredSuggestions);
+  }, [activeTab, suggestions]);
+
+  useEffect(() => {
+    getSuggestedByYou().then((res) => {
+      if (res.success) {
+        setSuggestions(res.data);
+      } else {
+        setSuggestions(mockMySuggestions);
+      }
+      console.log(res);
+    });
   }, [activeTab]);
   // Helper functions for content-specific status labels
   const getContentSpecificStatusLabel = (
@@ -44,11 +70,6 @@ const MySuggestions = () => {
 
   // Mock data - in a real app, this would come from an API
 
-  const filteredSuggestions =
-    activeTab === "all"
-      ? mockMySuggestions
-      : mockMySuggestions.filter((item) => item.type === activeTab);
-
   const getIconForType = (type: string) => {
     switch (type) {
       case "movie":
@@ -68,8 +89,11 @@ const MySuggestions = () => {
     }
   };
 
-  const handleSuggestionComplete = (data: any) => {
+  const handleSuggestionComplete = async (data: any) => {
     console.log("Suggestion completed:", data);
+    await suggestContent(data).then((res) => {
+      console.log(res);
+    });
     setIsSuggestionFlowOpen(false);
     // In a real app, this would send the suggestion to the backend
   };

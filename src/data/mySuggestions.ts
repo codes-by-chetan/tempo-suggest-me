@@ -1,5 +1,6 @@
 export interface ContentItem {
     id: string;
+    contentId?:string;
     title: string;
     type: string;
     imageUrl?: string;

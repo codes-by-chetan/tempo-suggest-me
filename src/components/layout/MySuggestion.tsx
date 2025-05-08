@@ -23,9 +23,6 @@ import LikeCommentShare from "../reusables/LikeCommentShare";
 function MySuggestionCard({ item }) {
   const navigate = useNavigate();
 
-
-  
-
   const getIconForType = (type: string) => {
     switch (type) {
       case "movie":
@@ -44,7 +41,27 @@ function MySuggestionCard({ item }) {
         return <Film className="h-5 w-5" />;
     }
   };
-
+  const getRouteForType = (type: string, id: string) => {
+    switch (type) {
+      case "movie":
+        return `/movies/${id}`;
+      case "series":
+        return `/series/${id}`;
+      case "book":
+        return `/books/${id}`;
+      case "music":
+      case "albums":
+        return `/music/${id}`;
+      case "video":
+        return `/videos/${id}`;
+      case "people":
+        return `/people/${id}`;
+      case "users":
+        return `/profile/${id}`;
+      default:
+        return "#";
+    }
+  };
   const getContentSpecificStatusLabel = (
     status: string,
     type: string
@@ -63,7 +80,6 @@ function MySuggestionCard({ item }) {
     }
   };
 
-
   return (
     <Card
       key={item.id}
@@ -74,9 +90,7 @@ function MySuggestionCard({ item }) {
           <div
             className="w-full h-40 bg-muted"
             onClick={() =>
-              navigate(`/content/${item.id}`, {
-                state: { contentDetails: item },
-              })
+              navigate(getRouteForType(item.type, item?.contentId || item.id))
             }
           >
             <img
@@ -152,9 +166,7 @@ function MySuggestionCard({ item }) {
           <h3
             className="font-semibold text-lg mb-1 line-clamp-1"
             onClick={() =>
-              navigate(`/content/${item.id}`, {
-                state: { contentDetails: item },
-              })
+              navigate(getRouteForType(item.type, item?.contentId || item.id))
             }
           >
             {item.title}
@@ -162,9 +174,14 @@ function MySuggestionCard({ item }) {
           <p className="text-sm text-muted-foreground mb-2">
             {item.creator} • {item.year}
           </p>
-          <p className="text-sm line-clamp-2 mb-4">{item.description}</p>
+          <p
+            className="text-sm line-clamp-2 mb-4"
+            dangerouslySetInnerHTML={{
+              __html: item.description || "No description available.",
+            }}
+          ></p>
 
-          <LikeCommentShare/>
+          <LikeCommentShare />
           <div className="flex flex-col pt-3 border-t border-border">
             <span className="text-xs font-medium text-foreground mb-2">
               Suggested to:

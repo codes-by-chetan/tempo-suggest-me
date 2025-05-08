@@ -273,6 +273,7 @@ const ContentDetailsPage = () => {
           response = await getMusicDetails(id); // Temporary workaround due to backend returning book data
           if (response.success && response.data) {
             setContent(normalizeContent(response.data, true, "music")); // Treat as book for now
+            console.log(response.data)
           } else {
             setError(response.message || "Failed to fetch music details");
           }
@@ -645,7 +646,9 @@ const ContentDetailsPage = () => {
               {/* Description */}
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-2">Description</h2>
-                <p className="text-foreground">{content.description || "No description available."}</p>
+                <p className="text-foreground" dangerouslySetInnerHTML={{
+                    __html: content.description || "No description available.",
+                  }}></p>
               </div>
 
               {/* Cast */}

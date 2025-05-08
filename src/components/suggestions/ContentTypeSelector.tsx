@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Film, BookOpen, Tv, Music, Youtube, Instagram } from "lucide-react";
+import { Film, BookOpen, Tv, Music, Youtube, Instagram, Clapperboard } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface ContentType {
@@ -24,6 +24,12 @@ const ContentTypeSelector = ({
       id: "movie",
       name: "Movies",
       icon: <Film className="h-8 w-8" />,
+      description: "Suggest a film to watch",
+    },
+    {
+      id: "series",
+      name: "Series",
+      icon: <Clapperboard className="h-8 w-8" />,
       description: "Suggest a film to watch",
     },
     {

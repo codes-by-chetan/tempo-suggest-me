@@ -181,17 +181,25 @@ const ContentSearch = ({
       }
       globalSearch({ searchTerm: term, searchType: contentType }).then(
         (response) => {
-          console.log("search res: ",response.data.results[contentType].data);
-            const normalizedResults = response.data.results[contentType].data.map((item: any) => ({
-            id: item.tmdbId || item._id || item?.imdbId,
-            title: item.title,
-            type: contentType,
-            imageUrl: item.poster?.url || item.poster || "",
-            year: item.year || "",
-            creator: item.director?.join(", ") || "",
-            description: item.plot || "",
-            }));
-            setSearchResults(normalizedResults);
+          console.log("search res: ", response.data.results[contentType].data);
+          const normalizedResults = response.data.results[contentType].data.map(
+            (item: any) => ({
+              id:
+                item._id ||
+                item?.imdbId ||
+                item?.tmdbId ||
+                item?.spotifyId ||
+                item?.openLibraryId ||
+                item?.googleBooksId,
+              title: item.title,
+              type: contentType,
+              imageUrl: item.poster?.url || item.poster || "",
+              year: item.year || "",
+              creator: item.director?.join(", ") || "",
+              description: item.plot || "",
+            })
+          );
+          setSearchResults(normalizedResults);
         }
       );
       // Simulate a search API call

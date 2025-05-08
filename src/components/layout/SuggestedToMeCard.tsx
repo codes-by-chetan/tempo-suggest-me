@@ -33,7 +33,7 @@ function SuggestedToMeCard({
   const handleComment = ({ note }: { note?: string }) => {
     // Logic to handle comment submission
     console.log("Comment submitted:", note);
-  }
+  };
 
   const getIconForType = (type: string) => {
     switch (type) {
@@ -51,6 +51,27 @@ function SuggestedToMeCard({
         return <Instagram className="h-5 w-5" />;
       default:
         return <Film className="h-5 w-5" />;
+    }
+  };
+  const getRouteForType = (type: string, id: string) => {
+    switch (type) {
+      case "movie":
+        return `/movies/${id}`;
+      case "series":
+        return `/series/${id}`;
+      case "book":
+        return `/books/${id}`;
+      case "music":
+      case "albums":
+        return `/music/${id}`;
+      case "video":
+        return `/videos/${id}`;
+      case "people":
+        return `/people/${id}`;
+      case "users":
+        return `/profile/${id}`;
+      default:
+        return "#";
     }
   };
 
@@ -88,9 +109,7 @@ function SuggestedToMeCard({
           <div
             className="w-full h-40 bg-muted"
             onClick={() =>
-              navigate(`/content/${item.id}`, {
-                state: { contentDetails: item },
-              })
+              navigate(getRouteForType(item.type, item?.contentId || item.id))
             }
           >
             <img
@@ -117,9 +136,7 @@ function SuggestedToMeCard({
           <h3
             className="font-semibold text-lg mb-1 line-clamp-1 text-foreground"
             onClick={() =>
-              navigate(`/content/${item.id}`, {
-                state: { contentDetails: item },
-              })
+              navigate(getRouteForType(item.type, item?.contentId || item.id))
             }
           >
             {item.title}
@@ -127,9 +144,12 @@ function SuggestedToMeCard({
           <p className="text-sm text-muted-foreground mb-2">
             {item.creator} • {item.year}
           </p>
-          <p className="text-sm line-clamp-2 mb-4 text-foreground">
-            {item.description}
-          </p>
+          <p
+            className="text-sm line-clamp-2 mb-4 text-foreground"
+            dangerouslySetInnerHTML={{
+              __html: item.description || "No description available.",
+            }}
+          ></p>
 
           {/* Status indicator */}
           {item.status && (
@@ -285,7 +305,11 @@ function SuggestedToMeCard({
             >
               <MessageCircle className="h-4 w-4 text-muted-foreground" />
             </Button>
-            <CommentBox open={openCommentBox} onOpenChange={setOpenCommentBox} onComplete={handleComment} />
+            <CommentBox
+              open={openCommentBox}
+              onOpenChange={setOpenCommentBox}
+              onComplete={handleComment}
+            />
             <Button
               variant="ghost"
               size="sm"

@@ -108,7 +108,7 @@ const BaseNotificationItem = ({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 p-3 hover:bg-accent/50 transition-colors cursor-pointer rounded-md",
+        "flex min-w-[90%] items-start gap-3 p-3 hover:bg-accent/50 transition-colors cursor-pointer rounded-md",
         !notification.read && "bg-primary/5 dark:bg-primary/10"
       )}
       onClick={handleClick}
@@ -280,9 +280,7 @@ const SuggestedContentNotification = ({
           transition={{ duration: 0.2 }}
         >
           <Button
-            variant="default"
-            size="sm"
-            className="text-xs"
+            className="w-22 h-6  !p-2 text-xs "
             onClick={() => {
               navigate(notification?.actionUrl);
             }}
@@ -297,8 +295,7 @@ const SuggestedContentNotification = ({
         >
           <Button
             variant="outline"
-            size="sm"
-            className="text-xs"
+            className="w-22 h-6  !p-2 text-xs"
             onClick={() => {
               console.log("content details : ", notification);
               console.log(

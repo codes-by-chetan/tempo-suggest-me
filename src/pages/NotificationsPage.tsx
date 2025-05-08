@@ -344,7 +344,7 @@ const NotificationsPage = () => {
                   (notification) => (
                     <div
                       key={notification._id}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 min-w-full"
                     >
                       <NotificationItem2
                         notification={{

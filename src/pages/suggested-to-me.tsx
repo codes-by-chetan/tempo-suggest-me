@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { CustomTabsList } from "@/components/layout/CustomTabsList";
 import SuggestedToMeCard from "@/components/layout/SuggestedToMeCard";
+import { getSuggestedToYou } from "@/services/suggestion.service";
 
 interface ContentItem {
   id: string;
+  contentId?: string;
   title: string;
   type: string;
   imageUrl?: string;
@@ -118,7 +120,14 @@ const SuggestedToMe = () => {
   );
   // Mock data - in a real app, this would come from an API
   React.useEffect(() => {
-    setSuggestions(mockSuggestions);
+    getSuggestedToYou().then((res) => {
+      if (res.success) {
+        setSuggestions(res.data);
+      } else {
+        setSuggestions(mockSuggestions);
+      }
+      console.log(res);
+    });
   }, []);
 
   React.useEffect(() => {
@@ -127,14 +136,13 @@ const SuggestedToMe = () => {
         ? suggestions
         : suggestions.filter((item) => item.type === activeTab)
     );
-    console.log("filtered Suggestions: ", filteredSuggestions)
+    console.log("filtered Suggestions: ", filteredSuggestions);
   }, [activeTab, suggestions]);
 
   const handleMarkAsWatched = (id: string) => {
     setSuggestions((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          
           const status = getContentSpecificWatchedStatus(
             item.type
           ) as ContentItem["status"];
