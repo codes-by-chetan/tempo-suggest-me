@@ -145,7 +145,7 @@ const RecipientSelector = ({
             >
               <Avatar className="h-6 w-6">
                 <AvatarImage
-                  src={recipient.profile.avatar.url}
+                  src={recipient.profile?.avatar?.url}
                   alt={recipient.name}
                 />
                 <AvatarFallback>
@@ -178,7 +178,7 @@ const RecipientSelector = ({
                 <div className="flex items-center gap-3">
                   <Avatar>
                     <AvatarImage
-                      src={user.profile.avatar.url}
+                      src={user.profile?.avatar?.url}
                       alt={user.fullNameString}
                     />
                     <AvatarFallback>
