@@ -43,7 +43,6 @@ interface Notification {
   };
 }
 
-
 const NotificationsPage = () => {
   const { notifications, markAsRead, dismiss } = useNotifications();
   const [currentPage, setCurrentPage] = useState({
@@ -168,6 +167,7 @@ const NotificationsPage = () => {
                             }
                           : undefined,
                         metadata: notification.metadata,
+                        ...notification,
                       }}
                       onMarkAsRead={() => markAsRead(notification._id)}
                     />
@@ -268,6 +268,7 @@ const NotificationsPage = () => {
                             }
                           : undefined,
                         metadata: notification.metadata,
+                        ...notification,
                       }}
                       onMarkAsRead={() => markAsRead(notification._id)}
                     />
@@ -380,6 +381,7 @@ const NotificationsPage = () => {
                               }
                             : undefined,
                           metadata: notification.metadata,
+                          ...notification,
                         }}
                         onMarkAsRead={() => markAsRead(notification._id)}
                       />

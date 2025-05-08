@@ -30,7 +30,7 @@ const Home = () => {
     // Navigate to suggestor's suggestions page
     console.log("Viewing suggestions from:", suggestor.name);
     // In a real app, this would navigate to a different route
-    // navigate(`/suggestor/${suggestor.id}`);
+    // navigate(`/suggestor/${suggestor.id}`);  
   };
 
   const handleSuggestionComplete = async (data: any) => {

@@ -202,6 +202,23 @@ const SearchResultsPopup = ({
             </motion.div>
           ) : globalResults && Object.keys(globalResults).length > 0 ? (
             <>
+              {peopleResults?.data && peopleResults.data.length > 0 && (
+                <motion.div
+                  key="people-results"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                >
+                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground capitalize flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Users
+                  </div>
+                  {peopleResults.data.map((item) =>
+                    renderResultItem(item, "users")
+                  )}
+                </motion.div>
+              )}
               <motion.div
                 key="global-results"
                 variants={containerVariants}
@@ -221,23 +238,6 @@ const SearchResultsPopup = ({
                   ) : null
                 )}
               </motion.div>
-              {peopleResults?.data && peopleResults.data.length > 0 && (
-                <motion.div
-                  key="people-results"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                >
-                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground capitalize flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Users
-                  </div>
-                  {peopleResults.data.map((item) =>
-                    renderResultItem(item, "users")
-                  )}
-                </motion.div>
-              )}
             </>
           ) : peopleResults?.data && peopleResults.data.length > 0 ? (
             <motion.div

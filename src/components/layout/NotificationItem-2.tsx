@@ -39,8 +39,9 @@ interface Notification {
     followRequestId: string;
     _id: string;
     id: string;
-    [key: string]: any
-  }
+    [key: string]: any;
+  };
+  [key: string]: any;
 }
 
 interface NotificationItemProps {
@@ -168,11 +169,12 @@ const FollowRequestNotification = ({
   const handleAccept = () => {
     console.log(`Accept follow request for ${notification.user?.id}`);
     // TODO: Add API call for accept
-    userService.acceptFollowRequest(notification.metadata.followRequestId).then((res)=>{
-      if(res.success){
-        
-      }
-    })
+    userService
+      .acceptFollowRequest(notification.metadata.followRequestId)
+      .then((res) => {
+        if (res.success) {
+        }
+      });
   };
 
   const handleReject = () => {
@@ -244,12 +246,81 @@ const SuggestedContentNotification = ({
   notification,
   onMarkAsRead,
 }: NotificationItemProps) => {
+  const navigate = useNavigate();
+  const getRouteForType = (type: string, contentId: string) => {
+    switch (type) {
+      case "Movie":
+        return `/movies/${contentId}`;
+      case "Series":
+        return `/series/${contentId}`;
+      case "Book":
+        return `/books/${contentId}`;
+      case "Music":
+      case "albums":
+        return `/music/${contentId}`;
+      case "Video":
+        return `/videos/${contentId}`;
+      case "People":
+        return `/people/${contentId}`;
+      case "Users":
+        return `/profile/${contentId}`;
+      default:
+        return "#";
+    }
+  };
   return (
     <BaseNotificationItem
       notification={notification}
       onMarkAsRead={onMarkAsRead}
     >
-      {/* No additional actions for now */}
+      <div className="flex gap-2 mt-2">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Button
+            variant="default"
+            size="sm"
+            className="text-xs"
+            onClick={() => {
+              navigate(notification?.actionUrl);
+            }}
+          >
+            View Suggestion
+          </Button>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2, delay: 0.1 }}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => {
+              console.log("content details : ", notification);
+              console.log(
+                "navigating to : ",
+                getRouteForType(
+                  notification?.relatedContent?.contentType,
+                  notification?.relatedContent?.content
+                )
+              );
+
+              navigate(
+                getRouteForType(
+                  notification?.relatedContent?.contentType,
+                  notification?.relatedContent?.content
+                )
+              );
+            }}
+          >
+            View Content
+          </Button>
+        </motion.div>
+      </div>
     </BaseNotificationItem>
   );
 };
