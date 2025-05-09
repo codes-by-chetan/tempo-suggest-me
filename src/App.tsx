@@ -18,6 +18,7 @@ const Login = lazy(() => import("./pages/auth/login"));
 const Signup = lazy(() => import("./pages/auth/signup"));
 const ContentDetailsPage = lazy(() => import("./pages/ContentDetailsPage"));
 const BookDetailsPage = lazy(() => import("./pages/BookDetailsPage"));
+const ChatPage = lazy(() => import("./pages/chat"));
 
 // Explore pages
 const ExploreTrending = lazy(() => import("./pages/explore/Trending"));
@@ -83,6 +84,8 @@ function App() {
           <Route path="/explore/trending" element={<ExploreTrending />} />
           <Route path="/explore/friends" element={<ExploreFriends />} />
           <Route path="/explore/recommended" element={<ExploreRecommended />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:chatId" element={<ChatPage />} />
           <Route
             path="/add-content/:contentType"
             element={
