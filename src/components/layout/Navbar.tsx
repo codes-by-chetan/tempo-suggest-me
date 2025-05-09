@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -11,19 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Home,
-  User,
-  BookMarked,
-  LogOut,
-  Menu,
-  X,
-  Bell,
-  Search,
-  Check,
-  BookOpenCheck,
-  MessageCircle,
-} from "lucide-react";
+import { Bell, Search, Check, Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/lib/auth-context";
 import NotificationItem from "./NotificationItem";
@@ -66,7 +54,6 @@ const Navbar = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
     useNotifications();
   const navigate = useNavigate();
-  const location = useLocation();
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const desktopSearchRef = useRef<HTMLDivElement>(null);
@@ -143,10 +130,6 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
   // Handle input focus to ensure typing and open popup
   const handleInputFocus = (isDesktop: boolean) => {
     if (isDesktop) {
@@ -162,72 +145,10 @@ const Navbar = () => {
     <nav className="bg-card dark:bg-card border-b border-border fixed w-full z-50 top-0 left-0 shadow-social dark:shadow-social-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          {/* Logo and desktop navigation */}
+          {/* Logo */}
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <AppName />
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-1">
-              <Link
-                to="/"
-                className={cn(
-                  "px-3 py-2 text-sm font-medium flex items-center transition-colors",
-                  isActive("/")
-                    ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
-                )}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Home
-              </Link>
-              <Link
-                to="/suggested-to-me"
-                className={cn(
-                  "px-3 py-2 text-sm font-medium flex items-center transition-colors",
-                  isActive("/suggested-to-me")
-                    ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
-                )}
-              >
-                <BookOpenCheck className="mr-2 h-4 w-4" />
-                Suggested to Me
-              </Link>
-              <Link
-                to="/my-suggestions"
-                className={cn(
-                  "px-3 py-2 text-sm font-medium flex items-center transition-colors",
-                  isActive("/my-suggestions")
-                    ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
-                )}
-              >
-                <User className="mr-2 h-4 w-4" />
-                My Suggestions
-              </Link>
-              <Link
-                to="/my-watchlist"
-                className={cn(
-                  "block px-3 py-2 text-base font-medium",
-                  isActive("/my-watchlist")
-                    ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
-                )}
-              >
-                <BookMarked className="inline-block mr-2 h-5 w-5" />
-                My Watchlist
-              </Link>
-              <Link
-                to="/chat"
-                className={cn(
-                  "block px-3 py-2 text-base font-medium",
-                  isActive("/chat") || location.pathname.startsWith("/chat/")
-                    ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                    : "text-foreground/70 hover:bg-accent hover:text-foreground",
-                )}
-              >
-                <MessageCircle className="inline-block mr-2 h-5 w-5" />
-                Messages
-              </Link>
             </div>
           </div>
 
@@ -489,118 +410,8 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="pt-2 pb-3 space-y-1 px-4">
-          <Link
-            to="/"
-            className={cn(
-              "block px-3 py-2 text-base font-medium",
-              isActive("/")
-                ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
-            )}
-          >
-            <Home className="inline-block mr-2 h-5 w-5" />
-            Home
-          </Link>
-          <Link
-            to="/suggested-to-me"
-            className={cn(
-              "block px-3 py-2 text-base font-medium",
-              isActive("/suggested-to-me")
-                ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
-            )}
-          >
-            <BookOpenCheck className="inline-block mr-2 h-5 w-5" />
-            Suggested to Me
-          </Link>
-          <Link
-            to="/my-suggestions"
-            className={cn(
-              "block px-3 py-2 text-base font-medium",
-              isActive("/my-suggestions")
-                ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
-            )}
-          >
-            <User className="inline-block mr-2 h-5 w-5" />
-            My Suggestions
-          </Link>
-          <Link
-            to="/my-watchlist"
-            className={cn(
-              "block px-3 py-2 text-base font-medium",
-              isActive("/my-watchlist")
-                ? "bg-primary-50 text-primary dark:bg-primary-900 dark:text-primary-300"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground",
-            )}
-          >
-            <BookMarked className="inline-block mr-2 h-5 w-5" />
-            My Watchlist
-          </Link>
-        </div>
-
-        {/* Mobile profile section */}
-        {isAuthenticated && user ? (
-          <div className="pt-4 pb-3 border-t border-border">
-            <div className="flex items-center px-4">
-              <div className="flex-shrink-0">
-                <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                  {user?.avatar ? (
-                    <AvatarImage
-                      src={user.avatar.url}
-                      alt={user.fullNameString}
-                    />
-                  ) : (
-                    <AvatarFallback className="bg-primary-100 text-primary-800">
-                      {user.fullName.firstName.charAt(0)}
-                      {user.fullName.lastName.charAt(0)}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-              </div>
-              <div className="ml-3">
-                <div className="text-base font-medium">
-                  {user.fullNameString}
-                </div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  {user.email}
-                </div>
-              </div>
-              <div className="ml-auto">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full relative"
-                  onClick={() => setNotificationsOpen(true)}
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </Button>
-              </div>
-            </div>
-            <div className="mt-3 space-y-1 px-4">
-              <Link
-                to="/profile"
-                className="block px-3 py-2 rounded-md text-base font-medium text-foreground/70 hover:bg-accent hover:text-foreground"
-              >
-                <User className="inline-block mr-2 h-5 w-5" />
-                Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-destructive hover:bg-destructive/10"
-              >
-                <LogOut className="inline-block mr-2 h-5 w-5" />
-                Logout
-              </button>
-            </div>
-          </div>
-        ) : (
+        {/* Mobile login/signup buttons */}
+        {!isAuthenticated && (
           <div className="pt-4 pb-3 border-t border-border">
             <div className="flex flex-col space-y-2 px-4">
               <Button variant="outline" className="rounded-full" asChild>

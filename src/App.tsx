@@ -8,6 +8,8 @@ import AuthService from "./services/auth.service";
 import NotificationsPage from "./pages/NotificationsPage";
 import ContentDetailsForm from "./components/suggestions/ContentDetailsForm";
 import SuggestionDetails from "./pages/SuggestionDetailsPage";
+import Navbar from "./components/layout/Navbar";
+import Sidebar from "./components/layout/Sidebar";
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
 const MySuggestions = lazy(() => import("./pages/my-suggestions"));
@@ -61,53 +63,60 @@ function App() {
       }
     >
       <>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/suggested-to-me" element={<SuggestedToMe />} />
-          <Route
-            path="/suggested-to-me/suggestion/:suggestionId"
-            element={<SuggestionDetails />}
-          />
-          <Route path="/my-suggestions" element={<MySuggestions />} />
-          <Route path="/my-watchlist" element={<MyWatchlist />} />
-          <Route path="/profile/:id?" element={<Profile />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/content/:id" element={<ContentDetailsPage />} />
-          <Route path="/movies/:id" element={<ContentDetailsPage />} />
-          <Route path="/series/:id" element={<ContentDetailsPage />} />
-          <Route path="/books/:id" element={<BookDetailsPage />} />
-          <Route path="/music/:id" element={<ContentDetailsPage />} />
-          <Route path="/videos/:id" element={<ContentDetailsPage />} />
-          <Route path="/explore/trending" element={<ExploreTrending />} />
-          <Route path="/explore/friends" element={<ExploreFriends />} />
-          <Route path="/explore/recommended" element={<ExploreRecommended />} />
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/chat/:chatId" element={<ChatPage />} />
-          <Route
-            path="/add-content/:contentType"
-            element={
-              <div className="container mx-auto py-8">
-                <ContentDetailsForm
-                  onSubmit={(data) => {
-                    // getToast("success", "Content added successfully!");
-                    window.history.back();
-                  }}
-                  onBack={() => window.history.back()}
-                />
-              </div>
-            }
-          />
-          <Route path="*" element={<ErrorPage />} />
+        <Navbar />
+        <Sidebar />
+        <div className="md:ml-16 pt-16 pb-16 md:pb-0 min-h-screen">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/suggested-to-me" element={<SuggestedToMe />} />
+            <Route
+              path="/suggested-to-me/suggestion/:suggestionId"
+              element={<SuggestionDetails />}
+            />
+            <Route path="/my-suggestions" element={<MySuggestions />} />
+            <Route path="/my-watchlist" element={<MyWatchlist />} />
+            <Route path="/profile/:id?" element={<Profile />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/content/:id" element={<ContentDetailsPage />} />
+            <Route path="/movies/:id" element={<ContentDetailsPage />} />
+            <Route path="/series/:id" element={<ContentDetailsPage />} />
+            <Route path="/books/:id" element={<BookDetailsPage />} />
+            <Route path="/music/:id" element={<ContentDetailsPage />} />
+            <Route path="/videos/:id" element={<ContentDetailsPage />} />
+            <Route path="/explore/trending" element={<ExploreTrending />} />
+            <Route path="/explore/friends" element={<ExploreFriends />} />
+            <Route
+              path="/explore/recommended"
+              element={<ExploreRecommended />}
+            />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat/:chatId" element={<ChatPage />} />
+            <Route
+              path="/add-content/:contentType"
+              element={
+                <div className="container mx-auto py-8">
+                  <ContentDetailsForm
+                    onSubmit={(data) => {
+                      // getToast("success", "Content added successfully!");
+                      window.history.back();
+                    }}
+                    onBack={() => window.history.back()}
+                  />
+                </div>
+              }
+            />
+            <Route path="*" element={<ErrorPage />} />
 
-          {/* Allow Tempo routes */}
-          {import.meta.env.VITE_TEMPO === "true" && (
-            <Route path="/tempobook/*" />
-          )}
-        </Routes>
-        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+            {/* Allow Tempo routes */}
+            {import.meta.env.VITE_TEMPO === "true" && (
+              <Route path="/tempobook/*" />
+            )}
+          </Routes>
+          {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+        </div>
       </>
     </Suspense>
   );

@@ -201,9 +201,7 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <main className="max-w-7xl mx-auto pt-16 h-[calc(100vh-64px)]">
+      <main className="max-w-7xl mx-auto h-[calc(100vh-64px)]">
         <div className="grid grid-cols-12 h-full">
           {/* Chat Sidebar */}
           <div className="col-span-3 border-r border-border">
