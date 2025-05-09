@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "@/components/layout/Navbar";
 import ChatSidebar from "@/components/chat/ChatSidebar";
 import ChatHeader from "@/components/chat/ChatHeader";
 import ChatMessages from "@/components/chat/ChatMessages";
@@ -26,7 +25,7 @@ const ChatPage: React.FC = () => {
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(
-    chatId || null,
+    chatId || null
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [showInfo, setShowInfo] = useState(false);
@@ -73,8 +72,8 @@ const ChatPage: React.FC = () => {
         // Update unread count in chats list
         setChats((prevChats) =>
           prevChats.map((chat) =>
-            chat.id === selectedChatId ? { ...chat, unreadCount: 0 } : chat,
-          ),
+            chat.id === selectedChatId ? { ...chat, unreadCount: 0 } : chat
+          )
         );
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -93,24 +92,26 @@ const ChatPage: React.FC = () => {
 
     const handleNewMessage = (newMessage: Message) => {
       // If the message is for the current chat, add it to messages
-      if (selectedChatId === newMessage.chatId) {
+      if (selectedChatId === newMessage?.chatId) {
         setMessages((prev) => [...prev, newMessage]);
       }
 
       // Update the chat's last message and unread count
       setChats((prevChats) =>
         prevChats.map((chat) => {
-          if (chat.id === newMessage.chatId) {
+          if (chat.id === newMessage?.chatId) {
             return {
               ...chat,
               lastMessage: newMessage,
               unreadCount:
-                selectedChatId === newMessage.chatId ? 0 : chat.unreadCount + 1,
+                selectedChatId === newMessage?.chatId
+                  ? 0
+                  : chat.unreadCount + 1,
               updatedAt: newMessage.timestamp,
             };
           }
           return chat;
-        }),
+        })
       );
     };
 
@@ -140,8 +141,8 @@ const ChatPage: React.FC = () => {
                 lastMessage: newMessage,
                 updatedAt: newMessage.timestamp,
               }
-            : chat,
-        ),
+            : chat
+        )
       );
     } catch (error) {
       console.error("Error sending message:", error);
@@ -159,7 +160,7 @@ const ChatPage: React.FC = () => {
         selectedChatId,
         content,
         undefined,
-        suggestion,
+        suggestion
       );
 
       // Update messages
@@ -174,8 +175,8 @@ const ChatPage: React.FC = () => {
                 lastMessage: newMessage,
                 updatedAt: newMessage.timestamp,
               }
-            : chat,
-        ),
+            : chat
+        )
       );
     } catch (error) {
       console.error("Error sending suggestion:", error);
@@ -187,7 +188,7 @@ const ChatPage: React.FC = () => {
   const handleCreateChat = async (
     participantIds: string[],
     name?: string,
-    isGroup: boolean = false,
+    isGroup: boolean = false
   ) => {
     try {
       const newChat = await createChat(participantIds, name, isGroup);
@@ -200,72 +201,64 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="max-w-7xl mx-auto h-[calc(100vh-64px)]">
-        <div className="grid grid-cols-12 h-full">
-          {/* Chat Sidebar */}
-          <div className="col-span-3 border-r border-border">
-            <ChatSidebar
-              chats={chats}
-              selectedChatId={selectedChatId}
-              onSelectChat={setSelectedChatId}
-              onNewChat={() => setShowNewChatDialog(true)}
-              onNewGroup={() => setShowNewGroupDialog(true)}
-            />
-          </div>
+    <main className="max-w-7xl mx-auto h-full">
+      <div className="grid grid-cols-12 h-full">
+        {/* Chat Sidebar */}
+        <div className="col-span-3 border-r border-border">
+          <ChatSidebar
+            chats={chats}
+            selectedChatId={selectedChatId}
+            onSelectChat={setSelectedChatId}
+            onNewChat={() => setShowNewChatDialog(true)}
+            onNewGroup={() => setShowNewGroupDialog(true)}
+          />
+        </div>
 
-          {/* Chat Main Area */}
-          <div
-            className={`${showInfo ? "col-span-6" : "col-span-9"} flex flex-col`}
-          >
-            {selectedChat ? (
-              <>
-                <ChatHeader
-                  chat={selectedChat}
-                  onViewInfo={() => setShowInfo(!showInfo)}
-                />
-                <ChatMessages
-                  messages={messages}
-                  currentUserId={user?._id || "user1"}
-                />
-                <ChatInput
-                  onSendMessage={handleSendMessage}
-                  onSendSuggestion={handleSendSuggestion}
-                  isLoading={isLoading}
-                />
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold mb-2">
-                    Welcome to Chat
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Select a conversation or start a new one
-                  </p>
-                  <button
-                    className="text-primary hover:underline"
-                    onClick={() => setShowNewChatDialog(true)}
-                  >
-                    Start a new conversation
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Chat Info Sidebar */}
-          {showInfo && selectedChat && (
-            <div className="col-span-3">
-              <ChatInfo
+        {/* Chat Main Area */}
+        <div
+          className={`${showInfo ? "col-span-6" : "col-span-9"} flex flex-col`}
+        >
+          {selectedChat ? (
+            <>
+              <ChatHeader
                 chat={selectedChat}
-                onClose={() => setShowInfo(false)}
+                onViewInfo={() => setShowInfo(!showInfo)}
               />
+              <ChatMessages
+                messages={messages}
+                currentUserId={user?._id || "user1"}
+              />
+              <ChatInput
+                onSendMessage={handleSendMessage}
+                onSendSuggestion={handleSendSuggestion}
+                isLoading={isLoading}
+              />
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <h3 className="text-xl font-semibold mb-2">Welcome to Chat</h3>
+                <p className="text-muted-foreground mb-4">
+                  Select a conversation or start a new one
+                </p>
+                <button
+                  className="text-primary hover:underline"
+                  onClick={() => setShowNewChatDialog(true)}
+                >
+                  Start a new conversation
+                </button>
+              </div>
             </div>
           )}
         </div>
-      </main>
 
+        {/* Chat Info Sidebar */}
+        {showInfo && selectedChat && (
+          <div className="col-span-3">
+            <ChatInfo chat={selectedChat} onClose={() => setShowInfo(false)} />
+          </div>
+        )}
+      </div>
       {/* New Chat Dialog */}
       <NewChatDialog
         open={showNewChatDialog}
@@ -280,7 +273,7 @@ const ChatPage: React.FC = () => {
         onCreateChat={handleCreateChat}
         isGroup
       />
-    </div>
+    </main>
   );
 };
 

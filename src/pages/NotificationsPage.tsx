@@ -13,7 +13,6 @@ import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import { subDays, isAfter } from "date-fns";
 import NotificationItem2 from "@/components/layout/NotificationItem-2";
-import Navbar from "@/components/layout/Navbar";
 
 interface Notification {
   id: string;
@@ -109,10 +108,7 @@ const NotificationsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
         <div className="py-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Notifications</h1>
@@ -444,7 +440,6 @@ const NotificationsPage = () => {
           </div>
         </div>
       </main>
-    </div>
   );
 };
 

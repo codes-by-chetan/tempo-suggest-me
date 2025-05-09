@@ -1,15 +1,21 @@
-import { Suspense, lazy, useEffect, useState } from "react";
-import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
+import { Routes, Route, useRoutes } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
 import ErrorPage from "./components/errorPage";
-import { useAuth } from "./lib/auth-context";
-import AuthService from "./services/auth.service";
 import NotificationsPage from "./pages/NotificationsPage";
 import ContentDetailsForm from "./components/suggestions/ContentDetailsForm";
 import SuggestionDetails from "./pages/SuggestionDetailsPage";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
+import { ScrollArea } from "./components/ui/scroll-area";
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { SidebarProvider, useSidebar } from "./lib/sidebar-context";
+import DesktopSidebar from "./components/layout/DesktopSidebar";
+import MobileTabBar from "./components/layout/MobileTabBar";
+
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
 const MySuggestions = lazy(() => import("./pages/my-suggestions"));
@@ -27,45 +33,30 @@ const ExploreTrending = lazy(() => import("./pages/explore/Trending"));
 const ExploreFriends = lazy(() => import("./pages/explore/FriendActivity"));
 const ExploreRecommended = lazy(() => import("./pages/explore/Recommended"));
 
-function App() {
-  // const authProvider = useAuth();
-  // const authService = new AuthService();
-  // const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+function MainContent() {
+  const { collapsed } = useSidebar();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const tempoEnabled = import.meta.env.VITE_TEMPO === "true";
+  const tempoRoutes = tempoEnabled ? useRoutes(routes) : useRoutes([]);
 
-  //   useEffect(()=>{
-
-  //       authService.isAuthenticated().then((response)=>{
-
-  //           authProvider.refreshAuthState()
-
-  //       }).catch((_err)=>{
-  //         // setResult(false)
-  //         getToast("error", _err.message)
-  //       })
-
-  //   },[])
-  //   if (!result) {
-  //     authService.logout()
-  //   }
-  //   return result ? children : <Navigate to="/auth/login" />;
-  // };
-  // const CanAccess = ({ children }: { children: JSX.Element }) => {
-  //   if(isAuthenticated()) getToast("error", "user is already logged in")
-  //   return !isAuthenticated() ? children : <Navigate to="/" />;
-  // };
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [location]);
 
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center h-screen">
-          Loading...
-        </div>
-      }
-    >
-      <>
-        <Navbar />
-        <Sidebar />
-        <div className="md:ml-16 pt-16 pb-16 md:pb-0 min-h-screen">
+    <ScrollArea className="w-full h-full" ref={scrollRef}>
+      <motion.div
+        className=""
+        initial={false}
+        animate={{
+          marginLeft: collapsed ? "0.5rem" : "1rem",
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <main className="flex-1 pb-0 ">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/suggested-to-me" element={<SuggestedToMe />} />
@@ -111,14 +102,37 @@ function App() {
             <Route path="*" element={<ErrorPage />} />
 
             {/* Allow Tempo routes */}
-            {import.meta.env.VITE_TEMPO === "true" && (
-              <Route path="/tempobook/*" />
-            )}
+            {tempoEnabled && <Route path="/tempobook/*" />}
           </Routes>
-          {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-        </div>
-      </>
-    </Suspense>
+          {tempoRoutes}
+        </main>
+      </motion.div>
+    </ScrollArea>
+  );
+}
+
+function App() {
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-screen">
+            Loading...
+          </div>
+        }
+      >
+        <SidebarProvider>
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <Navbar />
+            <div className="flex flex-col md:flex-row overflow-y-auto w-full pt-2">
+              <DesktopSidebar />
+              <MainContent />
+              <MobileTabBar />
+            </div>
+          </div>
+        </SidebarProvider>
+      </Suspense>
+    </div>
   );
 }
 

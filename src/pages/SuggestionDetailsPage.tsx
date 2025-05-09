@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Film, Clapperboard, ArrowLeft } from "lucide-react";
 import { getSuggestionDetails } from "@/services/suggestion.service";
-import Navbar from "@/components/layout/Navbar";
 
 const SuggestionDetails = () => {
   const { suggestionId } = useParams(); // Extract suggestionId from route parameters
@@ -108,9 +107,7 @@ const SuggestionDetails = () => {
     plotLines.slice(0, 3).join(". ") + (plotLines.length > 3 ? "." : "");
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-0 px-4 sm:px-6 lg:px-8">
         <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
@@ -248,7 +245,6 @@ const SuggestionDetails = () => {
           </div>
         </div>
       </main>
-    </div>
   );
 };
 

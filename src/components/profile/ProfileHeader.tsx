@@ -162,7 +162,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   };
 
   return (
-    <div className="py-6 px-4 sm:px-6 bg-background">
+    <div className="pb-6 px-4 sm:px-6 bg-background">
       <div className="max-w-3xl mx-auto">
         {/* Profile picture and stats */}
         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">

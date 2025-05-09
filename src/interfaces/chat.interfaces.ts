@@ -8,6 +8,7 @@ export interface Message {
   isRead: boolean;
   attachments?: Attachment[];
   suggestion?: SuggestionPreview;
+  [key: string]: any;
 }
 
 export interface Attachment {

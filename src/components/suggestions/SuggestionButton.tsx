@@ -29,7 +29,7 @@ const SuggestionButton = ({
   }[position];
 
   return (
-    <div className={`fixed ${positionStyles} z-50 bg-background`}>
+    <div className={`fixed ${positionStyles} z-50`}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

@@ -1,6 +1,5 @@
 import  { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/layout/Navbar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -150,10 +149,7 @@ const Trending = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
           <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -168,7 +164,6 @@ const Trending = () => {
           </div>
         </div>
       </main>
-    </div>
   );
 };
 

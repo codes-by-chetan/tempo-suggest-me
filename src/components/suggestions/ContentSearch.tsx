@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import debounce from "lodash/debounce";
 import { log } from "console";
 import { globalSearch } from "@/services/search.service";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface ContentSearchProps {
   contentType?: string;
@@ -260,34 +261,36 @@ const ContentSearch = ({
         )}
 
         {searchResults?.length > 0 && (
-          <div className="mt-2 border rounded-md max-h-[300px] overflow-y-auto">
-            {searchResults.map((result) => (
-              <div
-                key={result.id}
-                className="flex items-start p-3 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b last:border-b-0"
-                onClick={() => handleSelectContent(result)}
-              >
-                {result.imageUrl && (
-                  <div className="flex-shrink-0 mr-3">
-                    <img
-                      src={result.imageUrl}
-                      alt={result.title}
-                      className="w-12 h-16 object-cover rounded"
-                    />
+          <ScrollArea>
+            <div className="mt-2 border rounded-md max-h-[300px]">
+              {searchResults.map((result) => (
+                <div
+                  key={result.id}
+                  className="flex items-start p-3 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b last:border-b-0"
+                  onClick={() => handleSelectContent(result)}
+                >
+                  {result.imageUrl && (
+                    <div className="flex-shrink-0 mr-3">
+                      <img
+                        src={result.imageUrl}
+                        alt={result.title}
+                        className="w-12 h-16 object-cover rounded"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-medium">{result.title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {result.creator} • {result.year}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {result.description}
+                    </p>
                   </div>
-                )}
-                <div>
-                  <h3 className="font-medium">{result.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {result.creator} • {result.year}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {result.description}
-                  </p>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollArea>
         )}
 
         {searchQuery?.length > 2 &&

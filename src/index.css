@@ -40,10 +40,10 @@
 
   .dark {
     /* Dark theme - social media inspired */
-    --background: 222.2 47.4% 11.2%;
+    --background: 222.2 45.4% 9.2%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 47.4% 13.5%;
+    --card: 222.2 60.4% 13.5%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 47.4% 13.5%;

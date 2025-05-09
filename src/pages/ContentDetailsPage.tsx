@@ -5,7 +5,6 @@ import {
   useNavigate,
   useMatch,
 } from "react-router-dom";
-import Navbar from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import {
   Film,
@@ -350,9 +349,7 @@ const ContentDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+        <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <Button
               variant="ghost"
@@ -366,15 +363,12 @@ const ContentDetailsPage = () => {
             </div>
           </div>
         </main>
-      </div>
     );
   }
 
   if (error || !content) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+        <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <Button
               variant="ghost"
@@ -392,7 +386,6 @@ const ContentDetailsPage = () => {
             </div>
           </div>
         </main>
-      </div>
     );
   }
 
@@ -467,9 +460,7 @@ const ContentDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="max-w-7xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
           <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -884,7 +875,6 @@ const ContentDetailsPage = () => {
           </div>
         </div>
       </main>
-    </div>
   );
 };
 

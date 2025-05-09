@@ -134,7 +134,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </div>
 
         <TabsContent value={activeTab} className="mt-0 flex-1">
-          <ScrollArea className="h-[calc(100vh-220px)]">
+          <ScrollArea className="h-[calc(100vh-235px)]">
             <div className="p-2">
               {filteredChats.length > 0 ? (
                 filteredChats.map((chat) => (

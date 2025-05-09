@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,6 +41,7 @@ const Profile = () => {
 
   const refreshDetails = useCallback(async () => {
     setIsLoading(true);
+    authProvider.refreshAuthState();
     const response = id
       ? await userService.getUserProfileById(id)
       : await userService.getUserProfile();
@@ -58,7 +58,7 @@ const Profile = () => {
 
   useEffect(() => {
     refreshDetails();
-  }, [refreshDetails]);
+  }, []);
 
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +79,7 @@ const Profile = () => {
 
   // Loading UI Component
   const LoadingSkeleton = () => (
-    <div className="max-w-4xl mx-auto pt-20 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-4xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center space-x-4 mb-8">
         <Skeleton className="h-24 w-24 rounded-full" />
         <div className="space-y-2 flex-1">
@@ -105,7 +105,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div
