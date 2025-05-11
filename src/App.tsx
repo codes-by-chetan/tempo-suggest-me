@@ -16,6 +16,7 @@ import { SidebarProvider, useSidebar } from "./lib/sidebar-context";
 import DesktopSidebar from "./components/layout/DesktopSidebar";
 import MobileTabBar from "./components/layout/MobileTabBar";
 import MusicDetailsPage from "./pages/MusicDetailsPage";
+import ChatConversation from "./pages/chat/conversation";
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
@@ -84,8 +85,8 @@ function MainContent() {
               path="/explore/recommended"
               element={<ExploreRecommended />}
             />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/chat/:chatId" element={<ChatPage />} />
+            <Route path="/chat" element={<ChatPage />} children={<Route path="/chat/:chatId" element={<ChatConversation />} />} />
+            
             <Route
               path="/add-content/:contentType"
               element={

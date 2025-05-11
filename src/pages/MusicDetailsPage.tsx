@@ -165,6 +165,7 @@ const MusicDetailsPage = () => {
                 {content.availableOn.spotify ? (
                   <a
                     href={content.availableOn.spotify.link}
+                    target="_blank"
                     className="flex items-center justify-between p-2 hover:bg-accent rounded-md transition-colors"
                   >
                     <div className="flex items-center gap-2">
