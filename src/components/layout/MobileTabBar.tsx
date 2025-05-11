@@ -68,7 +68,7 @@ const MobileTabBar = () => {
           )}
         >
           <User className="h-5 w-5" />
-          <span className="text-xs mt-1">My Suggestions</span>
+          <span className="text-xs !text-center mt-1">My Suggestions</span>
         </Link>
 
         <Link

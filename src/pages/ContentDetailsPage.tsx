@@ -349,7 +349,7 @@ const ContentDetailsPage = () => {
 
   if (loading) {
     return (
-        <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
+        <main className="w-full mx-auto pb-[10vh] pt-0 px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <Button
               variant="ghost"

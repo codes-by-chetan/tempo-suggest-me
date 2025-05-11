@@ -200,7 +200,7 @@ const MyWatchlist = () => {
   };
 
   return (
-    <main className="w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8">
+    <main className="w-full mx-auto pb-[10vh] pt-0 px-4 sm:px-6 lg:px-8">
       <div className="py-6">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-foreground">

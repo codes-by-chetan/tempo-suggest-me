@@ -213,7 +213,7 @@ const SuggestedToMe = () => {
   }
 
   return (
-      <main className="w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8">
+      <main className="w-full mx-auto pt-0 pb-[10vh] px-4 sm:px-6 lg:px-8">
         <div className="py-6">
           <h1 className="text-3xl font-bold text-foreground mb-8">
             <span className="text-primary">Suggested</span> to Me

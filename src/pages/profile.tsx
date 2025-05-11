@@ -125,7 +125,7 @@ const Profile = () => {
             animate="animate"
             exit="exit"
             transition={{ duration: 0.3 }}
-            className="max-w-4xl w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8"
+            className="max-w-4xl w-full mx-auto pt-0 pb-[10vh] px-4 sm:px-6 lg:px-8"
           >
             <ProfileHeader
               userData={userData}
