@@ -218,7 +218,7 @@ const ContentDetailsPage = () => {
         cast: (item as MovieDetails | SeriesDetails).cast,
         rated: (item as MovieDetails | SeriesDetails).rated,
         ratings: (item as MovieDetails | SeriesDetails).ratings,
-        awards: item.awards,
+        awards: item.awards as any,
         boxOffice: (item as MovieDetails).boxOffice,
         production: {
           companies:
@@ -233,7 +233,7 @@ const ContentDetailsPage = () => {
           ? (item as MovieDetails | SeriesDetails | MusicDetails).language.join(
               ", "
             )
-          : (item as MovieDetails | SeriesDetails | MusicDetails).language,
+          : (item as MovieDetails | SeriesDetails | MusicDetails).language as any,
         country: (item as MovieDetails | SeriesDetails).country,
         seasons: (item as SeriesDetails).seasons,
         authors: isBookData
@@ -248,11 +248,11 @@ const ContentDetailsPage = () => {
             : undefined,
         album:
           contentType === "music" && !isBookData
-            ? (item as MusicDetails).album
+            ? (item as MusicDetails).album as any
             : undefined,
         duration:
           contentType === "music" && !isBookData
-            ? (item as MusicDetails).duration
+            ? (item as MusicDetails).duration as any
             : undefined,
       };
     }
@@ -276,7 +276,7 @@ const ContentDetailsPage = () => {
           ? ["Spotify", "Apple Music", "YouTube Music"]
           : ["Netflix", "Hulu", "Amazon Prime"]),
       genres: data.genres,
-      language: data.language,
+      language: data.language as any,
     };
   };
 

@@ -115,10 +115,10 @@ const ChatPage: React.FC = () => {
       );
     };
 
-    socket.on("new_message", handleNewMessage);
+    socket?.on("new_message", handleNewMessage);
 
     return () => {
-      socket.off("new_message", handleNewMessage);
+      socket?.off("new_message", handleNewMessage);
     };
   }, [socket, selectedChatId]);
 
@@ -201,7 +201,7 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <main className="max-w-7xl mx-auto h-full">
+    <main className="w-full mx-auto h-full">
       <div className="grid grid-cols-12 h-full">
         {/* Chat Sidebar */}
         <div className="col-span-3 border-r border-border">

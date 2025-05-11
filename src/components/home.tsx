@@ -48,7 +48,7 @@ const Home = () => {
   }
 
   return (
-    <main className="max-w-7xl  pt-0  px-4">
+    <main className="w-full pt-0  px-4">
       <div className="py-6">
         <h1 className="text-3xl font-bold text-foreground mb-8 flex gap-2">
           Welcome to

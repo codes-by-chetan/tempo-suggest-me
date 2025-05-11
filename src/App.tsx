@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { SidebarProvider, useSidebar } from "./lib/sidebar-context";
 import DesktopSidebar from "./components/layout/DesktopSidebar";
 import MobileTabBar from "./components/layout/MobileTabBar";
+import MusicDetailsPage from "./pages/MusicDetailsPage";
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
@@ -47,7 +48,7 @@ function MainContent() {
   }, [location]);
 
   return (
-    <ScrollArea className="w-full h-full" ref={scrollRef}>
+    <ScrollArea className="w-full md:min-h-full  h-[82%]" ref={scrollRef}>
       <motion.div
         className=""
         initial={false}
@@ -56,7 +57,7 @@ function MainContent() {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <main className="flex-1 pb-0 ">
+        <main className="flex items-center justify-center pb-0 my-auto">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/suggested-to-me" element={<SuggestedToMe />} />
@@ -75,7 +76,7 @@ function MainContent() {
             <Route path="/movies/:id" element={<ContentDetailsPage />} />
             <Route path="/series/:id" element={<ContentDetailsPage />} />
             <Route path="/books/:id" element={<BookDetailsPage />} />
-            <Route path="/music/:id" element={<ContentDetailsPage />} />
+            <Route path="/music/:id" element={<MusicDetailsPage />} />
             <Route path="/videos/:id" element={<ContentDetailsPage />} />
             <Route path="/explore/trending" element={<ExploreTrending />} />
             <Route path="/explore/friends" element={<ExploreFriends />} />
@@ -113,7 +114,7 @@ function MainContent() {
 
 function App() {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex   bg-background ">
       <Suspense
         fallback={
           <div className="flex items-center justify-center h-screen">
@@ -122,11 +123,13 @@ function App() {
         }
       >
         <SidebarProvider>
-          <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex flex-col flex-1 h-screen max-h-svh  overflow-hidden md:overflow-auto">
             <Navbar />
-            <div className="flex flex-col md:flex-row overflow-y-auto w-full pt-2">
+            <div className="flex flex-col md:flex-row !w-full min-h-[92vh] max-h-[92vh]   pt-2">
               <DesktopSidebar />
-              <MainContent />
+              <div className="w-full max-h-[100%]">
+                <MainContent />
+              </div>
               <MobileTabBar />
             </div>
           </div>

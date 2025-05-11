@@ -1,24 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  MapPin,
-  Calendar,
-  Settings,
-  Camera,
-  CheckCircle2,
-  VerifiedIcon,
-} from "lucide-react";
+import { MapPin, Calendar, Settings } from "lucide-react";
 import { UserProfileData } from "@/interfaces/user.interface";
 import ProfilePictureUploader from "./ProfilePictureUploader";
 import UserService from "@/services/user.service";
 import { useNavigate } from "react-router-dom";
 import VerifiedBadgeIcon from "./VerifiedBadgeIcon";
 import { useSocket } from "@/lib/socket-context";
-import { any } from "zod";
-import { log } from "console";
 
-// Interface for ProfileHeaderProps
 interface ProfileHeaderProps {
   userData: UserProfileData | null;
   accountHolder?: boolean;
@@ -40,78 +30,62 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   accountHolder = true,
   refreshProfile = () => {},
 }) => {
-  const [isFollowing, setIsFollowing] = useState<string | null>(null); // null, "accepted", "pending"
+  const [isFollowing, setIsFollowing] = useState<string | null>(null);
   const [showUploader, setShowUploader] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-
   const [followsYou, setFollowsYou] = useState<{ [key: string]: any } | null>(
     null
   );
+
   const userService = new UserService();
   const navigate = useNavigate();
   const { socket } = useSocket();
-  socket.on("followAccepted", (data: any) => {
-    console.log("Follow request accepted :", data);
+
+  socket?.on("followAccepted", (data: any) => {
     if (data.following === userData.id) {
       setIsFollowing("Accepted");
       followingCount += 1;
     }
   });
-  socket.on("followedYou", (data: any) => {
-    console.log("Followed You :", data);
+  socket?.on("followedYou", (data: any) => {
     if (data.follower === userData.id) {
       setFollowsYou(data);
       FollowersCount += 1;
     }
   });
-  socket.on("unFollowedYou", (data: any) => {
-    console.log("UnFollowed You :", data);
+  socket?.on("unFollowedYou", (data: any) => {
     if (data.follower === userData.id) {
       setFollowsYou(null);
       FollowersCount -= 1;
     }
   });
+
   const handleAccept = () => {
-    console.log(`Accept follow request for ${userData._id}`);
-    // TODO: Add API call for accept
     userService.acceptFollowRequest(followsYou._id).then((res) => {
-      if (res.success) {
-        setFollowsYou(res.data);
-      }
+      if (res.success) setFollowsYou(res.data);
     });
   };
-  // Check follow status if not account holder and user is logged in
+
   useEffect(() => {
     const checkFollowStatus = async () => {
       const token = userService.getAccessToken();
       if (!accountHolder && token && userData?.id) {
         try {
           const response = await userService.getRelation(userData.id);
-          if (response.success && response.data) {
-            console.log(response);
-            setIsFollowing(response.data.status || null); // "accepted" or "pending"
-          } else {
-            setIsFollowing(null);
-          }
+          setIsFollowing(response.data.status || null);
         } catch (error) {
-          console.error("Error checking follow status:", error);
           setIsFollowing(null);
         }
         await userService.getFollowsYou(userData.id).then((res) => {
-          if (res.success) {
-            setFollowsYou(res.data);
-            console.log(res.data);
-          }
+          if (res.success) setFollowsYou(res.data);
         });
       }
     };
     checkFollowStatus();
   }, [accountHolder, userData?.id]);
-  console.log(userData);
-  // Handle profile picture submission
+
   const handleImageSubmit = async (formData: FormData) => {
     setIsUploading(true);
-
     try {
       await userService.updateUserProfilePicture(formData);
       refreshProfile();
@@ -123,36 +97,28 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     }
   };
 
-  // Handle follow/unfollow/withdraw actions
   const handleFollowToggle = async () => {
     const token = userService.getAccessToken();
     if (!token) {
       navigate("/login");
       return;
     }
-
     try {
       if (isFollowing === "Accepted") {
-        // Unfollow user (assuming API supports DELETE or similar)
         await userService.unFollowUser(userData?.id!).then((res) => {
           if (res.success) {
             setIsFollowing(null);
-            console.log("Unfollowed user:", userData?.fullNameString);
             followingCount -= 1;
           }
-        }); // Assuming followUser toggles
+        });
       } else if (isFollowing === "Pending") {
-        // Withdraw follow request (assuming API supports this)
         await userService.unFollowUser(userData?.id!).then((res) => {
           setIsFollowing(null);
-          console.log("Withdrew follow request for:", userData?.fullNameString);
-        }); // Assuming same endpoint toggles
+        });
       } else {
-        // Follow user
         const res = await userService.followUser(userData?.id!);
         if (res.success) {
           setIsFollowing(res.data.status || "pending");
-          console.log("Followed user:", res);
           followingCount += 1;
         }
       }
@@ -162,13 +128,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   };
 
   return (
-    <div className="pb-6 px-4 sm:px-6 bg-background">
-      <div className="max-w-3xl mx-auto">
-        {/* Profile picture and stats */}
-        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-          {/* Profile picture with camera icon */}
-          <div className="relative flex-shrink-0 items-center">
-            <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-2 border-gray-200 rounded-full">
+    <div className="px-4 py-3 sm:px-0 sm:pb-6 bg-background">
+      <div className="max-w-3xl mx-auto flex-col">
+        {/* Profile picture and stats container */}
+        <div className="flex flex-row items-start gap-4 sm:gap-6">
+          {/* Profile picture */}
+          <div className="relative flex-shrink-0">
+            <Avatar className="h-[77px] w-[77px] sm:h-32 sm:w-32 border-2 border-gray-200 rounded-full">
               {userData?.profile?.avatar ? (
                 <AvatarImage
                   src={userData?.profile?.avatar?.url}
@@ -176,13 +142,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   className="rounded-full"
                 />
               ) : (
-                <AvatarFallback className="text-4xl text-primary-800 font-bold bg-gray-200">
+                <AvatarFallback className="text-3xl sm:text-4xl text-primary-800 font-bold bg-gray-200">
                   {userData?.fullName.firstName.charAt(0)}
                   {userData?.fullName.lastName.charAt(0)}
                 </AvatarFallback>
               )}
             </Avatar>
-            {/* Integrated Profile Picture Uploader */}
             {accountHolder && (
               <ProfilePictureUploader
                 onImageSubmit={handleImageSubmit}
@@ -195,22 +160,23 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             )}
           </div>
 
-          {/* Stats and buttons */}
-          <div className="flex-1">
-            <div className="my-auto flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-semibold">
+          {/* Stats and buttons container */}
+          <div className="flex-1 flex flex-col">
+            {/* Username and settings */}
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <h1 className="text-base sm:text-xl font-semibold">
                   {userData?.fullNameString}
                 </h1>
                 {userData?.profile.isVerified && (
-                  <VerifiedBadgeIcon className="w-1 h-1" />
+                  <VerifiedBadgeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
               </div>
               {accountHolder ? (
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Button
                     variant="outline"
-                    className="h-8 text-sm border-gray-300 hover:bg-gray-100"
+                    className="hidden sm:flex h-8 text-sm border-gray-300 hover:bg-gray-100 justify-center items-center px-4"
                     onClick={onEditProfile}
                   >
                     Edit Profile
@@ -218,14 +184,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-6 w-6 sm:h-8 sm:w-8"
                     onClick={onOpenSettings || onEditProfile}
                   >
                     <Settings className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-col">
+                <div className="hidden sm:flex sm:flex-col">
                   <Button
                     variant={isFollowing === "Accepted" ? "outline" : "default"}
                     className={`h-8 text-sm ${
@@ -233,8 +199,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         ? "border-gray-300 text-gray-700 hover:bg-gray-100"
                         : isFollowing === "Pending"
                         ? "border-gray-300 bg-slate-500 text-white hover:bg-slate-700"
-                        : "bg-primary-700 text-white hover:bg-primary-800"
-                    }`}
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    } justify-center items-center px-4`}
                     onClick={handleFollowToggle}
                   >
                     {isFollowing === "Accepted"
@@ -244,64 +210,133 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                       : "Follow"}
                   </Button>
                   {isFollowing === "Pending" && (
-                    <span className="text-green-500 text-xs  w-full text-center">
+                    <span className="text-green-500 text-xs w-full text-center">
                       Requested
                     </span>
                   )}
                   {followsYou?.status === "Accepted" && (
-                    <span className="text-green-500 text-xs  w-full text-center">
+                    <span className="text-gray-600 text-xs text-center">
                       Follows You
                     </span>
                   )}
                   {followsYou?.status === "Pending" && (
                     <>
-                      <span className="text-foreground text-xs  w-full text-center">
-                        Requested to Follows You
+                      <span className="text-gray-600 text-xs text-center">
+                        Requested to Follow You
                       </span>
+                      <Button
+                        variant="default"
+                        className="w-full h-[30px] text-sm bg-blue-500 text-white hover:bg-blue-600 font-medium justify-center items-center px-4"
+                        onClick={handleAccept}
+                      >
+                        Accept
+                      </Button>
                     </>
-                  )}
-                  {followsYou?.status === "Pending" && (
-                    <Button
-                      variant={"default"}
-                      className={
-                        "h-8 text-sm bg-primary-700 text-white hover:bg-primary-800"
-                      }
-                      onClick={handleAccept}
-                    >
-                      Accept
-                    </Button>
                   )}
                 </div>
               )}
             </div>
 
             {/* Stats row */}
-            <div className="flex gap-6 mb-3">
+            <div className="flex justify-between sm:gap-6 mb-2 sm:mb-3">
               <div className="text-center">
-                <span className="font-semibold">{postsCount}</span>
-                <span className="text-sm text-gray-600 ml-1">Posts</span>
+                <span className="font-semibold text-sm sm:text-base">
+                  {postsCount}
+                </span>
+                <span className="text-xs sm:text-sm text-gray-600 ml-1">
+                  Posts
+                </span>
               </div>
               <div className="text-center">
-                <span className="font-semibold">{FollowersCount}</span>
-                <span className="text-sm text-gray-600 ml-1">Followers</span>
+                <span className="font-semibold text-sm sm:text-base">
+                  {FollowersCount}
+                </span>
+                <span className="text-xs sm:text-sm text-gray-600 ml-1">
+                  Followers
+                </span>
               </div>
               <div className="text-center">
-                <span className="font-semibold">{followingCount}</span>
-                <span className="text-sm text-gray-600 ml-1">Following</span>
+                <span className="font-semibold text-sm sm:text-base">
+                  {followingCount}
+                </span>
+                <span className="text-xs sm:text-sm text-gray-600 ml-1">
+                  Following
+                </span>
               </div>
             </div>
 
-            {/* Bio and details */}
-            <div className="mt-4">
-              <p className="font-medium text-sm">{userData?.fullNameString}</p>
-              <p className="text-sm text-gray-600">{userData?.profile?.bio}</p>
-              <div className="flex items-center mt-2">
-                <MapPin className="h-4 w-4 mr-1 text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  {userData?.profile?.location}
-                </span>
+            {/* Buttons for mobile */}
+            {accountHolder ? (
+              <Button
+                variant="outline"
+                className="w-full sm:hidden h-[30px] text-sm border-gray-200 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium justify-center items-center px-4"
+                onClick={onEditProfile}
+              >
+                Edit Profile
+              </Button>
+            ) : (
+              <div className="flex sm:hidden flex-col gap-1">
+                <Button
+                  variant={isFollowing === "Accepted" ? "outline" : "default"}
+                  className={`w-full h-[30px] text-sm ${
+                    isFollowing === "Accepted"
+                      ? "border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      : isFollowing === "Pending"
+                      ? "border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  } font-medium justify-center items-center px-4`}
+                  onClick={handleFollowToggle}
+                >
+                  {isFollowing === "Accepted"
+                    ? "Unfollow"
+                    : isFollowing === "Pending"
+                    ? "Withdraw"
+                    : "Follow"}
+                </Button>
+                {isFollowing === "Pending" && (
+                  <span className="text-green-500 text-xs text-center">
+                    Requested
+                  </span>
+                )}
+                {followsYou?.status === "Accepted" && (
+                  <span className="text-gray-600 text-xs text-center">
+                    Follows You
+                  </span>
+                )}
+                {followsYou?.status === "Pending" && (
+                  <>
+                    <span className="text-gray-600 text-xs text-center">
+                      Requested to Follow You
+                    </span>
+                    <Button
+                      variant="default"
+                      className="w-full h-[30px] text-sm bg-blue-500 text-white hover:bg-blue-600 font-medium justify-center items-center px-4"
+                      onClick={handleAccept}
+                    >
+                      Accept
+                    </Button>
+                  </>
+                )}
               </div>
-              <div className="flex items-center mt-1">
+            )}
+
+            {/* Bio and details */}
+            <div className="mt-2 hidden sm:mt-4 sm:block">
+              <p className="font-medium text-sm">
+                {userData?.profile?.displayName}
+              </p>
+              <p className="text-sm text-gray-600 leading-tight">
+                {userData?.profile?.bio}
+              </p>
+              {userData?.profile?.location && (
+                <div className="flex items-center mt-0.5 sm:mt-2">
+                  <MapPin className="h-4 w-4 mr-1 text-gray-500" />
+                  <span className="text-sm text-gray-600">
+                    {userData?.profile?.location}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center mt-0.5 sm:mt-1">
                 <Calendar className="h-4 w-4 mr-1 text-gray-500" />
                 <span className="text-sm text-gray-600">
                   Joined{" "}
@@ -313,9 +348,29 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             </div>
           </div>
         </div>
+        <div className="mt-2 sm:mt-4 sm:hidden">
+          <p className="font-medium text-sm">{userData?.fullNameString}</p>
+          <p className="text-sm text-gray-600 leading-tight">
+            {userData?.profile?.bio}
+          </p>
+          <div className="flex items-center mt-0.5 sm:mt-2">
+            <MapPin className="h-4 w-4 mr-1 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              {userData?.profile?.location}
+            </span>
+          </div>
+          <div className="flex items-center mt-0.5 sm:mt-1">
+            <Calendar className="h-4 w-4 mr-1 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              Joined{" "}
+              {userData?.createdAt
+                ? new Date(userData.createdAt).toLocaleDateString()
+                : ""}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Profile Picture Uploader Dialog */}
       {showUploader && (
         <ProfilePictureUploader
           onImageSubmit={handleImageSubmit}

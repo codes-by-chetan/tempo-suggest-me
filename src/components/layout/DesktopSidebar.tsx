@@ -53,7 +53,7 @@ const DesktopSidebar = () => {
   return (
     <motion.div
       className={cn(
-        "hidden md:flex flex-col h-screen-[80%]  m-2 bg-card border-r border-border rounded-lg transition-colors relative",
+        "hidden md:flex flex-col min-h-[90%] !my-auto  m-2 bg-card border-r border-border rounded-lg transition-colors relative",
         collapsed ? "w-14" : "w-56"
       )}
       initial={false}

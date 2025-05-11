@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +21,7 @@ import { Friend, myFriendsArray } from "@/data/myFriends";
 import UserService from "@/services/user.service";
 import { UserProfileData } from "@/interfaces/user.interface";
 import { useAuth } from "@/lib/auth-context";
-import { motion, AnimatePresence } from "framer-motion"; // Add framer-motion
+import { motion, AnimatePresence } from "framer-motion";
 
 const Profile = () => {
   const userService = new UserService();
@@ -125,7 +125,7 @@ const Profile = () => {
             animate="animate"
             exit="exit"
             transition={{ duration: 0.3 }}
-            className="max-w-4xl mx-auto pt-20 px-4 sm:px-6 lg:px-8"
+            className="max-w-4xl w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8"
           >
             <ProfileHeader
               userData={userData}
@@ -167,22 +167,24 @@ const Profile = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="profile" className="mt-0">
-                <div className="grid grid-cols-3 gap-1 md:gap-4">
+              <TabsContent value="profile" className="mt-0 w-full">
+                <div className="grid grid-cols-3 gap-1 md:gap-4 w-full">
                   {posts?.map((post) => (
-                    <PostCard
-                      key={post.id}
-                      id={post.id}
-                      imageUrl={post.imageUrl}
-                      likes={post.likes}
-                      comments={post.comments}
-                      caption={post.caption}
-                      onClick={() => handlePostClick(post.id)}
-                    />
+                    <div key={post.id} className="w-full aspect-square">
+                      <PostCard
+                        id={post.id}
+                        imageUrl={post.imageUrl}
+                        likes={post.likes}
+                        comments={post.comments}
+                        caption={post.caption}
+                        onClick={() => handlePostClick(post.id)}
+                        
+                      />
+                    </div>
                   ))}
                 </div>
                 {posts?.length === 0 && (
-                  <div className="text-center py-12">
+                  <div className="text-center py-12 w-full">
                     <p className="text-muted-foreground">No posts yet.</p>
                     <Button variant="outline" className="mt-4">
                       Create your first post
@@ -191,8 +193,8 @@ const Profile = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="friends" className="mt-0">
-                <Card>
+              <TabsContent value="friends" className="mt-0 w-full">
+                <Card className="w-full">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Friends</CardTitle>
                     <Button variant="outline" size="sm">
@@ -201,11 +203,11 @@ const Profile = () => {
                     </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                       {friends?.map((friend) => (
                         <div
                           key={friend.id}
-                          className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/10"
+                          className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/10 min-w-full box-border"
                         >
                           <div className="flex items-center">
                             <Avatar className="h-10 w-10 mr-3">
@@ -250,14 +252,14 @@ const Profile = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="saved" className="mt-0">
-                <div className="mb-6">
+              <TabsContent value="saved" className="mt-0 w-full">
+                <div className="mb-6 w-full">
                   <h2 className="text-xl font-semibold mb-4">Saved Items</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                     {savedItems?.map((item) => (
                       <Card
                         key={item.id}
-                        className="overflow-hidden cursor-pointer hover:shadow-md transition-all"
+                        className="overflow-hidden cursor-pointer hover:shadow-md transition-all min-w-full box-border"
                         onClick={() => handleSavedItemClick(item.id)}
                       >
                         <div
@@ -297,7 +299,7 @@ const Profile = () => {
                           <p className="text-sm text-muted-foreground">
                             {item.creator} • {item.year}
                           </p>
-                          <div className="mt-4 w-[100%] flex justify-center">
+                          <div className="mt-4 flex justify-center">
                             <Button
                               className="w-full"
                               onClick={() =>
@@ -314,7 +316,7 @@ const Profile = () => {
                     ))}
                   </div>
                   {savedItems?.length === 0 && (
-                    <div className="text-center py-12 bg-muted/20 rounded-lg">
+                    <div className="text-center py-12 bg-muted/20 rounded-lg w-full">
                       <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">
                         No saved items yet.

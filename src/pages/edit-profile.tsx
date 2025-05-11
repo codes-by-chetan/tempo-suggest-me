@@ -188,7 +188,7 @@ const EditProfile: React.FC = () => {
 
   return (
 
-      <main className="max-w-4xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
+      <main className="w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8">
         <Button
           variant="ghost"
           className="mb-6"

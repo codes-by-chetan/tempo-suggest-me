@@ -97,29 +97,6 @@ export interface BookDetails {
   [key: string]: any;
 }
 
-export interface MusicDetails {
-  _id: string;
-  title: string;
-  slug: string;
-  year: number;
-  cover: Poster;
-  artists: Person[];
-  album: string;
-  genres: string[];
-  duration: number;
-  references: References;
-  ratings: Ratings;
-  awards: Awards;
-  keywords: string[];
-  availableOn: AvailableOn;
-  isVerified: boolean;
-  isActive: boolean;
-  deleted: boolean;
-  createdAt: string;
-  updatedAt: string;
-  [key: string]: any;
-}
-
 interface Season {
   seasonNumber: number;
   episodeCount: number;
@@ -225,6 +202,155 @@ interface Person {
 interface Poster {
   url: string;
   publicId: string;
+  [key: string]: any;
+}
+
+export interface MusicDetails {
+  _id: string;
+  title: string;
+  slug: string;
+  artist: Artist;
+  featuredArtists: Artist[];
+  album: Album;
+  recordLabel: RecordLabel;
+  musicVideo: null;
+  productionCompanies: ProductionCompany[];
+  releaseYear: number;
+  duration: string;
+  genres: any[];
+  mood: any[];
+  language: null;
+  formats: any[];
+  writers: any[];
+  producers: any[];
+  engineers: any[];
+  remixes: any[];
+  spotifyId: string;
+  availableOn: MusicAvailableOn;
+  awards: MusicAwards;
+  ratings: MusicRatings;
+  isVerified: boolean;
+  isActive: boolean;
+  createdBy: null;
+  updatedBy: null;
+  deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  [key: string]: any;
+}
+
+interface MusicRatings {
+  userReviews: any[];
+  [key: string]: any;
+}
+
+interface MusicAwards {
+  grammys: Grammys;
+  billboardMusicAwards: Grammys;
+  wins: number;
+  nominations: number;
+  [key: string]: any;
+}
+
+interface Grammys {
+  wins: number;
+  nominations: number;
+  [key: string]: any;
+}
+
+interface MusicAvailableOn {
+  spotify: Spotify;
+  [key: string]: any;
+}
+
+interface Spotify {
+  plays: string;
+  link: string;
+  [key: string]: any;
+}
+
+interface ProductionCompany {
+  _id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  createdBy: null;
+  updatedBy: null;
+  deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  [key: string]: any;
+}
+
+interface RecordLabel {
+  _id: string;
+  name: string;
+  slug: string;
+  subsidiaries: any[];
+  artists: any[];
+  albums: any[];
+  distributors: any[];
+  productionCompanies: any[];
+  isActive: boolean;
+  createdBy: null;
+  updatedBy: null;
+  deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  [key: string]: any;
+}
+
+interface Album {
+  _id: string;
+  title: string;
+  slug: string;
+  releaseYear: number;
+  coverImage: CoverImage;
+  recordLabel: string;
+  genres: any[];
+  productionCompanies: any[];
+  distributors: any[];
+  tracks: any[];
+  isActive: boolean;
+  createdBy: null;
+  updatedBy: null;
+  deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  [key: string]: any;
+}
+
+interface CoverImage {
+  url: string;
+  publicId: string;
+  [key: string]: any;
+}
+
+interface Artist {
+  _id: string;
+  name: string;
+  slug: string;
+  biography: string;
+  profileImage: ProfileImage;
+  professions: string[];
+  isActive: boolean;
+  createdBy: null;
+  updatedBy: null;
+  deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  [key: string]: any;
+}
+
+interface ProfileImage {
+  publicId: string;
+  url: string;
+  _id: string;
   [key: string]: any;
 }
 

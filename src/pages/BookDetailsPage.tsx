@@ -124,7 +124,7 @@ const BookDetailsPage = () => {
 
   if (loading) {
     return (
-      <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
+      <main className="w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
           <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -139,7 +139,7 @@ const BookDetailsPage = () => {
 
   if (error || !book) {
     return (
-      <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
+      <main className="w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
           <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -157,7 +157,7 @@ const BookDetailsPage = () => {
   }
 
   return (
-    <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
+    <main className="w-full mx-auto pt-0 px-4 sm:px-6 lg:px-8">
       <div className="py-6">
         <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
