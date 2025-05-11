@@ -125,9 +125,9 @@ function App() {
         <SidebarProvider>
           <div className="flex flex-col flex-1 h-screen max-h-svh  overflow-hidden md:overflow-auto">
             <Navbar />
-            <div className="flex flex-col md:flex-row !w-full min-h-[92vh] max-h-[92vh]   pt-2">
+            <div className="flex flex-col md:flex-row !w-full min-h-[92vh] max-h-[99vh]   pt-2">
               <DesktopSidebar />
-              <div className="w-full max-h-[100%]">
+              <div className="w-full min-h-[100%] max-h-[100%]">
                 <MainContent />
               </div>
               <MobileTabBar />
