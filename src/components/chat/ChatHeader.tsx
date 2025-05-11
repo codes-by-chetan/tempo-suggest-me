@@ -1,7 +1,7 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Info, Phone, Video, MoreVertical } from "lucide-react";
+import { Info, Phone, Video, MoreVertical, Users } from "lucide-react";
 import { Chat } from "@/interfaces/chat.interfaces";
 import {
   DropdownMenu,
@@ -48,7 +48,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+    <div className="flex items-center justify-between p-4 border-b border-border bg-card w-full">
       <div className="flex items-center">
         <Avatar className="h-10 w-10">
           <AvatarImage src={getChatAvatar()} />
@@ -56,16 +56,27 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
             {getInitials(getChatName())}
           </AvatarFallback>
         </Avatar>
-        <div className="ml-3">
-          <h3 className="font-medium">{getChatName()}</h3>
-          <p className="text-xs text-muted-foreground">{getOnlineStatus()}</p>
+        <div className="ml-3 overflow-hidden">
+          <h3 className="font-medium truncate">{getChatName()}</h3>
+          <p className="text-xs text-muted-foreground flex items-center">
+            {chat.type === "group" && <Users className="h-3 w-3 mr-1" />}
+            {getOnlineStatus()}
+          </p>
         </div>
       </div>
-      <div className="flex items-center space-x-1">
-        <Button variant="ghost" size="icon" className="rounded-full">
+      <div className="flex items-center space-x-1 flex-shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full hidden sm:flex"
+        >
           <Phone className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full hidden sm:flex"
+        >
           <Video className="h-4 w-4" />
         </Button>
         <Button

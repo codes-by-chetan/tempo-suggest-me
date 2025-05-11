@@ -51,7 +51,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   });
 
   return (
-    <ScrollArea className="h-[calc(100vh-235px)] px-4 py-2">
+    <ScrollArea className="h-[calc(100vh-235px)] md:h-[calc(100vh-235px)] lg:h-[calc(100vh-235px)] px-4 py-2 overflow-y-auto">
       {Object.entries(groupedMessages).map(([date, dateMessages]) => (
         <div key={date} className="mb-6">
           <div className="flex justify-center mb-4">
