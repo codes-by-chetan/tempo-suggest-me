@@ -77,16 +77,30 @@
   }
   body {
     @apply bg-background text-foreground;
-    
   }
 }
-body::-webkit-scrollbar { 
-  display: none !important;  /* Safari and Chrome */
+
+@layer components {
+  .toast-success {
+    @apply border-green-500 bg-green-50 dark:bg-green-900/20;
+  }
+
+  .toast-error {
+    @apply border-red-500 bg-red-50 dark:bg-red-900/20;
+  }
+
+  .toast-info {
+    @apply border-blue-500 bg-blue-50 dark:bg-blue-900/20;
+  }
+
+  .toast-warning {
+    @apply border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20;
+  }
+}
+body::-webkit-scrollbar {
+  display: none !important; /* Safari and Chrome */
 }
 
-.hide-scroll::-webkit-scrollbar { 
-  display: none !important;  /* Safari and Chrome */
+.hide-scroll::-webkit-scrollbar {
+  display: none !important; /* Safari and Chrome */
 }
-
-
-

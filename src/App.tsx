@@ -1,4 +1,6 @@
 import { Suspense, lazy, useState, useEffect, useRef } from "react";
+import { LoadingSpinner } from "./components/ui/spinner";
+import { Toaster } from "./components/ui/toaster";
 import { Routes, Route, useRoutes } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
@@ -148,13 +150,8 @@ function App() {
   }, []);
   return (
     <div className="flex   bg-background ">
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-screen">
-            Loading...
-          </div>
-        }
-      >
+      <Toaster />
+      <Suspense fallback={<LoadingSpinner />}>
         <SidebarProvider>
           <div className="flex hide-scroll flex-col flex-1 h-screen max-h-svh  overflow-hidden md:overflow-auto">
             <Navbar />
