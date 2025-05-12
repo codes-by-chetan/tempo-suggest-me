@@ -92,7 +92,7 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
         );
       }
     });
-  });
+  },[]);
 
   useEffect(() => {
     setFilteredUsers(

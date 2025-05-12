@@ -5,6 +5,7 @@ import NewChatDialog from "@/components/chat/NewChatDialog";
 import { useAuth } from "@/lib/auth-context";
 import { useSocket } from "@/lib/socket-context";
 import { useChat } from "@/lib/chat-context";
+import api from "@/services/api.service";
 
 const ChatPage: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
@@ -19,21 +20,21 @@ const ChatPage: React.FC = () => {
   const handleCreateChat = async (
     participantIds: string[],
     name?: string,
-    isGroup: boolean = false,
+    isGroup: boolean = false
   ) => {
     try {
-      const response = await fetch("/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const response = await api.post(
+        "/chats",
+
+        {
           participants: participantIds,
           groupName: name,
           chatType: isGroup ? "group" : "private",
           createdBy: user._id,
-        }),
-      });
-      if (!response.ok) throw new Error("Failed to create chat");
-      const newChat = await response.json();
+        }
+      );
+      if (!response.status) throw new Error("Failed to create chat");
+      const newChat = await response.data.data
       navigate(`/chat/${newChat._id}`);
     } catch (error) {
       console.error("Error creating chat:", error);
