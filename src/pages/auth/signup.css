@@ -45,9 +45,9 @@ li.country:hover {
 }
 
 .dark .intl-tel-input .form-control {
-  background-color: #0f172a;
+  background-color: var(--primary);
   color: #ffffff;
-  border-color: #4b5563;
+  border-color: #56575841;
 }
 
 .dark .intl-tel-input .form-control:focus {

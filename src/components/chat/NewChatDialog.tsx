@@ -112,7 +112,7 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-description="new-chat-dialog">
         <DialogHeader>
           <DialogTitle>
             {isGroup ? "Create Group Chat" : "New Message"}

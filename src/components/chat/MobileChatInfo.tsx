@@ -38,7 +38,7 @@ const MobileChatInfo: React.FC<MobileChatInfoProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 h-[80vh] max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-md p-0 h-[80vh] max-h-[80vh] flex flex-col" aria-describedby="mobile-chat-info">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-lg font-semibold">
             {chat.type === "group" ? "Group Info" : "Contact Info"}

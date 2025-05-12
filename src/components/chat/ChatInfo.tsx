@@ -42,8 +42,8 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
         </Button>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-6 flex flex-col items-center">
+      <ScrollArea className="flex-1 max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-120px)] lg:max-h-[calc(100vh-120px)]">
+        <div className="p-6 flex flex-col items-center pb-[20vh]">
           <Avatar className="h-24 w-24">
             <AvatarImage
               src={

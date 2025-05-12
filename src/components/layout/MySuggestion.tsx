@@ -29,7 +29,7 @@ function MySuggestionCard({ item }) {
         return <BookOpen className="h-5 w-5" />;
       case "anime":
         return <Tv className="h-5 w-5" />;
-      case "song":
+      case "music":
         return <Music className="h-5 w-5" />;
       case "youtube":
         return <Youtube className="h-5 w-5" />;

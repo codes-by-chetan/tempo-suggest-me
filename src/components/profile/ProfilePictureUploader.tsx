@@ -222,7 +222,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-description="profile-picture-dialog">
           <DialogHeader>
             <DialogTitle>Update Profile Picture</DialogTitle>
           </DialogHeader>

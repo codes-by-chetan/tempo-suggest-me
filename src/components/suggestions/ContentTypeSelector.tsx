@@ -38,15 +38,15 @@ const ContentTypeSelector = ({
       icon: <BookOpen className="h-8 w-8" />,
       description: "Recommend a good read",
     },
+    // {
+    //   id: "anime",
+    //   name: "Anime",
+    //   icon: <Tv className="h-8 w-8" />,
+    //   description: "Share an anime series",
+    // },
     {
-      id: "anime",
-      name: "Anime",
-      icon: <Tv className="h-8 w-8" />,
-      description: "Share an anime series",
-    },
-    {
-      id: "songs",
-      name: "Songs",
+      id: "music",
+      name: "Music",
       icon: <Music className="h-8 w-8" />,
       description: "Suggest a track to listen to",
     },

@@ -34,7 +34,7 @@ export const CustomTabsList = ({
     { value: "series", label: "Series", icon: Clapperboard },
     { value: "book", label: "Books", icon: BookOpen },
     // { value: "anime", label: "Anime", icon: Tv },
-    { value: "song", label: "Songs", icon: Music },
+    { value: "music", label: "Music", icon: Music },
     { value: "youtube", label: "Videos", icon: Youtube },
   ];
 

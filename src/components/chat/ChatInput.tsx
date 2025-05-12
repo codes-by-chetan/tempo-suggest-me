@@ -167,7 +167,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         open={showSuggestionDialog}
         onOpenChange={setShowSuggestionDialog}
       >
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px]" aria-description="chat-input">
           <DialogHeader>
             <DialogTitle>Share a Suggestion</DialogTitle>
           </DialogHeader>

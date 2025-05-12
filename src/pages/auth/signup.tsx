@@ -102,8 +102,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-3xl">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-3xl border-none">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">
             <AppName />
@@ -320,7 +320,7 @@ const Signup = () => {
                 control={form.control}
                 name="terms"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4 border">
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4 border border-primary">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
