@@ -159,7 +159,7 @@ const NotificationsPage = () => {
                               fullName: notification.sender.fullName,
                               fullNameString:
                                 notification.sender.fullNameString,
-                              avatar: notification.sender.avatar?.url || null,
+                              avatar: notification.sender.avatar?.url || notification.sender?.profile?.avatar?.url || null,
                             }
                           : undefined,
                         metadata: notification.metadata,
@@ -260,7 +260,7 @@ const NotificationsPage = () => {
                               fullNameString:
                                 notification.sender.fullNameString ||
                                 `${notification.sender.fullName.firstName} ${notification.sender.fullName.lastName}`,
-                              avatar: notification.sender.avatar?.url || null,
+                              avatar: notification.sender.avatar?.url || notification.sender?.profile?.avatar?.url || null,
                             }
                           : undefined,
                         metadata: notification.metadata,
@@ -373,7 +373,7 @@ const NotificationsPage = () => {
                                 fullNameString:
                                   notification.sender.fullNameString ||
                                   `${notification.sender.fullName.firstName} ${notification.sender.fullName.lastName}`,
-                                avatar: notification.sender.avatar?.url || null,
+                                avatar: notification.sender.avatar?.url || notification.sender?.profile?.avatar?.url || null,
                               }
                             : undefined,
                           metadata: notification.metadata,
