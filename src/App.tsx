@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState, useEffect, useRef } from "react";
 import { Routes, Route, useRoutes } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
@@ -9,7 +9,6 @@ import SuggestionDetails from "./pages/SuggestionDetailsPage";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
 import { ScrollArea } from "./components/ui/scroll-area";
-import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SidebarProvider, useSidebar } from "./lib/sidebar-context";
@@ -17,6 +16,8 @@ import DesktopSidebar from "./components/layout/DesktopSidebar";
 import MobileTabBar from "./components/layout/MobileTabBar";
 import MusicDetailsPage from "./pages/MusicDetailsPage";
 import ChatConversation from "./pages/chat/conversation";
+import MobileChatConversation from "./pages/chat/mobile-conversation";
+import DesktopChatConversation from "./pages/chat/desktop-conversation";
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
@@ -41,6 +42,16 @@ function MainContent() {
   const location = useLocation();
   const tempoEnabled = import.meta.env.VITE_TEMPO === "true";
   const tempoRoutes = tempoEnabled ? useRoutes(routes) : useRoutes([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -85,8 +96,19 @@ function MainContent() {
               path="/explore/recommended"
               element={<ExploreRecommended />}
             />
-            <Route path="/chat" element={<ChatPage />} children={<Route path="/chat/:chatId" element={<ChatConversation />} />} />
-            
+            <Route path="/chat" element={<ChatPage />}>
+              <Route
+                path=":chatId"
+                element={
+                  isMobile ? (
+                    <MobileChatConversation />
+                  ) : (
+                    <DesktopChatConversation />
+                  )
+                }
+              />
+            </Route>
+
             <Route
               path="/add-content/:contentType"
               element={
@@ -114,6 +136,16 @@ function MainContent() {
 }
 
 function App() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <div className="flex   bg-background ">
       <Suspense

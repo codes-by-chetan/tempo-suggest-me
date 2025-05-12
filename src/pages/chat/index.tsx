@@ -6,6 +6,8 @@ import { Chat } from "@/interfaces/chat.interfaces";
 import { getChats, createChat } from "@/services/chat.service";
 import { useAuth } from "@/lib/auth-context";
 import { useSocket } from "@/lib/socket-context";
+import DesktopChatConversation from "./desktop-conversation";
+import MobileChatConversation from "./mobile-conversation";
 
 const ChatPage: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
@@ -78,6 +80,19 @@ const ChatPage: React.FC = () => {
     navigate(`/chat/${chatId}`);
   };
 
+  // Determine if we're on a small screen (mobile or tablet)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Add window resize listener to update isMobile
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <main className="w-full pb-[10vh] md:pb-0 mx-auto h-full">
       {!chatId ? (
@@ -92,7 +107,7 @@ const ChatPage: React.FC = () => {
           />
         </div>
       ) : (
-        // Chat Conversation View - Outlet will render the conversation component
+        // Render different conversation components based on screen size and pass context directly
         <Outlet context={{ chats, setChats }} />
       )}
 
