@@ -28,7 +28,7 @@ export const Spinner = ({ size = "md", className }: SpinnerProps) => {
 export const LoadingSpinner = () => {
   return (
     <Dialog open={true}>
-      <DialogContent className="bg-background/80 backdrop-blur-sm border-none shadow-none flex items-center justify-center">
+      <DialogContent className="bg-none backdrop-blur-sm border-none shadow-none flex items-center justify-center">
         <div className="flex flex-col items-center justify-center gap-4">
           <Spinner size="lg" />
           <p className="text-sm text-muted-foreground animate-pulse">

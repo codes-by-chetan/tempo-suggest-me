@@ -149,7 +149,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             <Mic className="h-5 w-5" />
           </Button>
           <Button
-            variant="primary"
+            variant="default"
             size="icon"
             className={cn(
               "rounded-full",
