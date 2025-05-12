@@ -81,10 +81,12 @@
   }
 }
 body::-webkit-scrollbar { 
-  display: none;  /* Safari and Chrome */
+  display: none !important;  /* Safari and Chrome */
 }
 
-
+.hide-scroll::-webkit-scrollbar { 
+  display: none !important;  /* Safari and Chrome */
+}
 
 
 

@@ -124,7 +124,7 @@ function App() {
         }
       >
         <SidebarProvider>
-          <div className="flex flex-col flex-1 h-screen max-h-svh  overflow-hidden md:overflow-auto">
+          <div className="flex hide-scroll flex-col flex-1 h-screen max-h-svh  overflow-hidden md:overflow-auto">
             <Navbar />
             <div className="flex flex-col md:flex-row !w-full min-h-[105vh] max-h-[105vh] md:min-h-[92vh] md:max-h-[100vh]   pt-2 ">
               <DesktopSidebar />
