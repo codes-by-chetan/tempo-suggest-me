@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/auth-context";
 
 interface ChatHeaderProps {
   chat: Chat;
@@ -17,16 +18,19 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
+  const { user } = useAuth();
+
   const getChatName = () => {
-    if (chat.type === "group") return chat.name;
-    const otherParticipant = chat.participants.find((p) => p.id !== "user1");
-    return otherParticipant?.name || "Unknown";
+    if (chat.chatType === "group") return chat.groupName || "Unnamed Group";
+    const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+    return otherParticipant?.fullName || "Unknown";
   };
 
   const getChatAvatar = () => {
-    if (chat.type === "group") return chat.avatar;
-    const otherParticipant = chat.participants.find((p) => p.id !== "user1");
-    return otherParticipant?.avatar;
+    // Mock avatar since it's not in the schema
+    if (chat.chatType === "group") return "";
+    const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+    return otherParticipant ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherParticipant.fullName}` : "";
   };
 
   const getInitials = (name: string) => {
@@ -38,12 +42,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
   };
 
   const getOnlineStatus = () => {
-    if (chat.type === "group") {
-      const onlineCount = chat.participants.filter((p) => p.isOnline).length;
-      return `${onlineCount} online`;
+    // Mock online status since it's not in the schema
+    if (chat.chatType === "group") {
+      return `${chat.participants.length} members`;
     } else {
-      const otherParticipant = chat.participants.find((p) => p.id !== "user1");
-      return otherParticipant?.isOnline ? "Online" : "Offline";
+      const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+      return otherParticipant ? "Online" : "Offline"; // Mocked
     }
   };
 
@@ -59,7 +63,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
         <div className="ml-3 overflow-hidden">
           <h3 className="font-medium truncate">{getChatName()}</h3>
           <p className="text-xs text-muted-foreground flex items-center">
-            {chat.type === "group" && <Users className="h-3 w-3 mr-1" />}
+            {chat.chatType === "group" && <Users className="h-3 w-3 mr-1" />}
             {getOnlineStatus()}
           </p>
         </div>
@@ -97,7 +101,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
             <DropdownMenuItem>Mute notifications</DropdownMenuItem>
             <DropdownMenuItem>Search</DropdownMenuItem>
             <DropdownMenuSeparator />
-            {chat.type === "group" ? (
+            {chat.chatType === "group" ? (
               <>
                 <DropdownMenuItem>Add members</DropdownMenuItem>
                 <DropdownMenuItem>Leave group</DropdownMenuItem>

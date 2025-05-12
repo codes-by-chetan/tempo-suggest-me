@@ -1,14 +1,29 @@
+export interface Chat {
+  _id: string;
+  chatType: "private" | "group";
+  participants: { _id: string; fullName: string }[];
+  groupName?: string;
+  createdAt: string;
+  updatedAt?: string;
+  unreadCount?: number;
+  lastMessage?: Message;
+}
+
 export interface Message {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  content: string;
-  timestamp: string;
-  isRead: boolean;
-  attachments?: Attachment[];
-  suggestion?: SuggestionPreview;
-  [key: string]: any;
+  _id: string;
+  chat: string;
+  sender: { _id: string; fullName: string };
+  content: string; // Decrypted content
+  createdAt: string;
+  readBy: { user: string; readAt: string }[];
+  suggestion?: {
+    id: string;
+    title: string;
+    type: string;
+    imageUrl: string;
+    creator: string;
+    year: string;
+  };
 }
 
 export interface Attachment {
@@ -29,18 +44,7 @@ export interface SuggestionPreview {
   year?: string;
 }
 
-export interface Chat {
-  id: string;
-  type: "direct" | "group";
-  name?: string; // For group chats
-  avatar?: string; // For group chats or direct chat with user avatar
-  participants: ChatParticipant[];
-  lastMessage?: Message;
-  unreadCount: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+
 
 export interface ChatParticipant {
   id: string;

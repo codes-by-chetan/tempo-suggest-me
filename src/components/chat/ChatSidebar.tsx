@@ -8,6 +8,7 @@ import { Search, Plus, Users, UserPlus } from "lucide-react";
 import { Chat } from "@/interfaces/chat.interfaces";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/lib/auth-context";
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -24,23 +25,25 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onNewChat,
   onNewGroup,
 }) => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
   // Filter chats based on search term and active tab
+  console.log(chats)
   const filteredChats = chats
     .filter((chat) => {
       // Filter by search term
       if (searchTerm) {
-        if (chat.type === "direct") {
+        if (chat.chatType === "private") {
           const otherParticipant = chat.participants.find(
-            (p) => p.id !== "user1",
+            (p) => p._id !== user._id,
           );
-          return otherParticipant?.name
+          return otherParticipant?.fullName
             .toLowerCase()
             .includes(searchTerm.toLowerCase());
         } else {
-          return chat.name?.toLowerCase().includes(searchTerm.toLowerCase());
+          return chat.groupName?.toLowerCase().includes(searchTerm.toLowerCase());
         }
       }
       return true;
@@ -48,21 +51,22 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     .filter((chat) => {
       // Filter by tab
       if (activeTab === "all") return true;
-      if (activeTab === "direct") return chat.type === "direct";
-      if (activeTab === "groups") return chat.type === "group";
+      if (activeTab === "private") return chat.chatType === "private";
+      if (activeTab === "groups") return chat.chatType === "group";
       return true;
     });
 
   const getChatName = (chat: Chat) => {
-    if (chat.type === "group") return chat.name;
-    const otherParticipant = chat.participants.find((p) => p.id !== "user1");
-    return otherParticipant?.name || "Unknown";
+    if (chat.chatType === "group") return chat.groupName || "Unnamed Group";
+    const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+    return otherParticipant?.fullName || "Unknown";
   };
 
   const getChatAvatar = (chat: Chat) => {
-    if (chat.type === "group") return chat.avatar;
-    const otherParticipant = chat.participants.find((p) => p.id !== "user1");
-    return otherParticipant?.avatar;
+    // Mock avatar
+    if (chat.chatType === "group") return "";
+    const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+    return otherParticipant ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherParticipant.fullName}` : "";
   };
 
   const getInitials = (name: string) => {
@@ -128,7 +132,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         <div className="px-4 pt-2">
           <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="direct">Direct</TabsTrigger>
+            <TabsTrigger value="private">Direct</TabsTrigger>
             <TabsTrigger value="groups">Groups</TabsTrigger>
           </TabsList>
         </div>
@@ -139,12 +143,12 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               {filteredChats.length > 0 ? (
                 filteredChats.map((chat) => (
                   <div
-                    key={chat.id}
+                    key={chat._id}
                     className={cn(
                       "flex items-center p-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors",
-                      selectedChatId === chat.id && "bg-accent",
+                      selectedChatId === chat._id && "bg-accent",
                     )}
-                    onClick={() => onSelectChat(chat.id)}
+                    onClick={() => onSelectChat(chat._id)}
                   >
                     <div className="relative">
                       <Avatar className="h-12 w-12">
@@ -153,14 +157,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           {getInitials(getChatName(chat))}
                         </AvatarFallback>
                       </Avatar>
-                      {chat.type === "direct" && (
+                      {chat.chatType === "private" && (
                         <span
                           className={cn(
                             "absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background",
-                            chat.participants.find((p) => p.id !== "user1")
-                              ?.isOnline
-                              ? "bg-green-500"
-                              : "bg-gray-400",
+                            "bg-green-500", // Mocked
                           )}
                         />
                       )}
@@ -171,12 +172,12 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           {getChatName(chat)}
                         </h3>
                         <span className="text-xs text-muted-foreground">
-                          {formatTime(chat.updatedAt)}
+                          {formatTime(chat.updatedAt || chat.createdAt)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-xs text-muted-foreground truncate max-w-[180px]">
-                          {chat.lastMessage?.content}
+                          {chat.lastMessage?.content || "No messages yet"}
                         </p>
                         {chat.unreadCount > 0 && (
                           <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">

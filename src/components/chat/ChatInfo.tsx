@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Bell, BellOff, Trash2, UserPlus, Users } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/lib/auth-context";
 
 interface ChatInfoProps {
   chat: Chat;
@@ -15,6 +16,8 @@ interface ChatInfoProps {
 }
 
 const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
+  const { user } = useAuth();
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -31,11 +34,22 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
     }
   };
 
+  const getChatAvatar = () => {
+    // Mock avatar since it's not in the schema
+    if (chat.chatType === "group") return "";
+    const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+    return otherParticipant ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherParticipant.fullName}` : "";
+  };
+
+  const getParticipantAvatar = (fullName: string) => {
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${fullName}`;
+  };
+
   return (
     <div className="w-full h-full flex flex-col border-l border-border">
       <div className="p-4 border-b border-border flex items-center justify-between">
         <h2 className="text-lg font-semibold">
-          {chat.type === "group" ? "Group Info" : "Contact Info"}
+          {chat.chatType === "group" ? "Group Info" : "Contact Info"}
         </h2>
         <Button variant="ghost" size="sm" onClick={onClose}>
           Close
@@ -45,40 +59,31 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
       <ScrollArea className="flex-1 max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-120px)] lg:max-h-[calc(100vh-120px)]">
         <div className="p-6 flex flex-col items-center pb-[20vh]">
           <Avatar className="h-24 w-24">
-            <AvatarImage
-              src={
-                chat.type === "group"
-                  ? chat.avatar
-                  : chat.participants.find((p) => p.id !== "user1")?.avatar
-              }
-            />
+            <AvatarImage src={getChatAvatar()} />
             <AvatarFallback className="text-2xl bg-primary/10 text-primary">
               {getInitials(
-                chat.type === "group"
-                  ? chat.name || ""
-                  : chat.participants.find((p) => p.id !== "user1")?.name || "",
+                chat.chatType === "group"
+                  ? chat.groupName || ""
+                  : chat.participants.find((p) => p._id !== user._id)?.fullName || "",
               )}
             </AvatarFallback>
           </Avatar>
 
           <h3 className="text-xl font-semibold mt-4">
-            {chat.type === "group"
-              ? chat.name
-              : chat.participants.find((p) => p.id !== "user1")?.name}
+            {chat.chatType === "group"
+              ? chat.groupName || "Unnamed Group"
+              : chat.participants.find((p) => p._id !== user._id)?.fullName || "Unknown"}
           </h3>
 
-          {chat.type === "direct" && (
+          {chat.chatType === "private" && (
             <p className="text-sm text-muted-foreground">
-              {chat.participants.find((p) => p.id !== "user1")?.isOnline
-                ? "Online"
-                : "Offline"}
+              Online {/* Mocked */}
             </p>
           )}
 
-          {chat.type === "group" && (
+          {chat.chatType === "group" && (
             <p className="text-sm text-muted-foreground">
-              {chat.participants.length} members ·{" "}
-              {chat.participants.filter((p) => p.isOnline).length} online
+              {chat.participants.length} members
             </p>
           )}
 
@@ -127,7 +132,7 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
             <Separator />
 
             {/* Members (for group chats) */}
-            {chat.type === "group" && (
+            {chat.chatType === "group" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium">Members</h4>
@@ -139,28 +144,27 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
                 <div className="space-y-2">
                   {chat.participants.map((participant) => (
                     <div
-                      key={participant.id}
+                      key={participant._id}
                       className="flex items-center justify-between py-2"
                     >
                       <div className="flex items-center">
                         <Avatar className="h-8 w-8 mr-2">
-                          <AvatarImage src={participant.avatar} />
+                          <AvatarImage src={getParticipantAvatar(participant.fullName)} />
                           <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                            {getInitials(participant.name)}
+                            {getInitials(participant.fullName)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="text-sm font-medium">
-                            {participant.name}
-                            {participant.id === "user1" && " (You)"}
+                            {participant.fullName}
+                            {participant._id === user._id && " (You)"}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {participant.isAdmin ? "Admin" : "Member"} ·{" "}
-                            {participant.isOnline ? "Online" : "Offline"}
+                            Member · Online {/* Mocked */}
                           </p>
                         </div>
                       </div>
-                      {participant.id !== "user1" && (
+                      {participant._id !== user._id && (
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -175,7 +179,7 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
 
             {/* Created date */}
             <div className="text-center text-xs text-muted-foreground">
-              {chat.type === "group" ? "Group" : "Chat"} created on{" "}
+              {chat.chatType === "group" ? "Group" : "Chat"} created on{" "}
               {formatDate(chat.createdAt)}
             </div>
 
@@ -183,7 +187,7 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ chat, onClose }) => {
             <div className="pt-4">
               <Button variant="destructive" className="w-full" size="sm">
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete {chat.type === "group" ? "Group" : "Chat"}
+                Delete {chat.chatType === "group" ? "Group" : "Chat"}
               </Button>
             </div>
           </div>

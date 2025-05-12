@@ -17,7 +17,6 @@ import { SidebarProvider, useSidebar } from "./lib/sidebar-context";
 import DesktopSidebar from "./components/layout/DesktopSidebar";
 import MobileTabBar from "./components/layout/MobileTabBar";
 import MusicDetailsPage from "./pages/MusicDetailsPage";
-import ChatConversation from "./pages/chat/conversation";
 import MobileChatConversation from "./pages/chat/mobile-conversation";
 import DesktopChatConversation from "./pages/chat/desktop-conversation";
 

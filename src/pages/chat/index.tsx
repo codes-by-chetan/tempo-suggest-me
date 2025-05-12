@@ -2,65 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Outlet } from "react-router-dom";
 import ChatSidebar from "@/components/chat/ChatSidebar";
 import NewChatDialog from "@/components/chat/NewChatDialog";
-import { Chat } from "@/interfaces/chat.interfaces";
-import { getChats, createChat } from "@/services/chat.service";
 import { useAuth } from "@/lib/auth-context";
 import { useSocket } from "@/lib/socket-context";
-import DesktopChatConversation from "./desktop-conversation";
-import MobileChatConversation from "./mobile-conversation";
+import { useChat } from "@/lib/chat-context";
 
 const ChatPage: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { socket } = useSocket();
+  const { chats, selectChat } = useChat();
 
-  const [chats, setChats] = useState<Chat[]>([]);
   const [showNewChatDialog, setShowNewChatDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
-
-  // Fetch chats on component mount
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const fetchedChats = await getChats();
-        setChats(fetchedChats);
-      } catch (error) {
-        console.error("Error fetching chats:", error);
-      }
-    };
-
-    fetchChats();
-  }, []);
-
-  // Listen for new messages from socket to update chat list
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleNewMessage = (newMessage: any) => {
-      // Update the chat's last message and unread count
-      setChats((prevChats) =>
-        prevChats.map((chat) => {
-          if (chat.id === newMessage?.chatId) {
-            return {
-              ...chat,
-              lastMessage: newMessage,
-              unreadCount:
-                chatId === newMessage?.chatId ? 0 : chat.unreadCount + 1,
-              updatedAt: newMessage.timestamp,
-            };
-          }
-          return chat;
-        }),
-      );
-    };
-
-    socket?.on("new_message", handleNewMessage);
-
-    return () => {
-      socket?.off("new_message", handleNewMessage);
-    };
-  }, [socket, chatId]);
 
   const handleCreateChat = async (
     participantIds: string[],
@@ -68,15 +22,26 @@ const ChatPage: React.FC = () => {
     isGroup: boolean = false,
   ) => {
     try {
-      const newChat = await createChat(participantIds, name, isGroup);
-      setChats([newChat, ...chats]);
-      navigate(`/chat/${newChat.id}`);
+      const response = await fetch("/api/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          participants: participantIds,
+          groupName: name,
+          chatType: isGroup ? "group" : "private",
+          createdBy: user._id,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to create chat");
+      const newChat = await response.json();
+      navigate(`/chat/${newChat._id}`);
     } catch (error) {
       console.error("Error creating chat:", error);
     }
   };
 
   const handleSelectChat = (chatId: string) => {
+    selectChat(chatId); // Use ChatContext's selectChat to load messages
     navigate(`/chat/${chatId}`);
   };
 
@@ -107,8 +72,8 @@ const ChatPage: React.FC = () => {
           />
         </div>
       ) : (
-        // Render different conversation components based on screen size and pass context directly
-        <Outlet context={{ chats, setChats }} />
+        // Render different conversation components based on screen size
+        <Outlet />
       )}
 
       {/* New Chat Dialog */}

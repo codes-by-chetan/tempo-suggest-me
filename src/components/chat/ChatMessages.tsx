@@ -40,10 +40,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       .toUpperCase();
   };
 
+  const getSenderAvatar = (fullName: string) => {
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${fullName}`;
+  };
+
   // Group messages by date
   const groupedMessages: { [date: string]: Message[] } = {};
   messages.forEach((message) => {
-    const date = format(new Date(message.timestamp), "MMMM d, yyyy");
+    const date = format(new Date(message.createdAt), "MMMM d, yyyy");
     if (!groupedMessages[date]) {
       groupedMessages[date] = [];
     }
@@ -61,14 +65,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           </div>
 
           {dateMessages.map((message, index) => {
-            const isCurrentUser = message.senderId === currentUserId;
+            const isCurrentUser = message.sender._id === currentUserId;
             const showAvatar =
               index === 0 ||
-              dateMessages[index - 1].senderId !== message.senderId;
+              dateMessages[index - 1].sender._id !== message.sender._id;
 
             return (
               <div
-                key={message.id}
+                key={message._id}
                 className={cn(
                   "flex mb-4",
                   isCurrentUser ? "justify-end" : "justify-start",
@@ -76,9 +80,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
               >
                 {!isCurrentUser && showAvatar && (
                   <Avatar className="h-8 w-8 mr-2 mt-1 flex-shrink-0">
-                    <AvatarImage src={message.senderAvatar} />
+                    <AvatarImage src={getSenderAvatar(message.sender.fullName)} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      {getInitials(message.senderName)}
+                      {getInitials(message.sender.fullName)}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -91,7 +95,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
                 >
                   {!isCurrentUser && showAvatar && (
                     <span className="text-xs text-muted-foreground mb-1">
-                      {message.senderName}
+                      {message.sender.fullName}
                     </span>
                   )}
 
@@ -142,7 +146,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
                       isCurrentUser ? "text-right" : "text-left",
                     )}
                   >
-                    {formatMessageTime(message.timestamp)}
+                    {formatMessageTime(message.createdAt)}
                   </span>
                 </div>
               </div>

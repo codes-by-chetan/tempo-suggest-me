@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import UserService from "@/services/user.service";
 
 interface NewChatDialogProps {
   open: boolean;
@@ -18,14 +19,14 @@ interface NewChatDialogProps {
   onCreateChat: (
     participantIds: string[],
     name?: string,
-    isGroup?: boolean,
+    isGroup?: boolean
   ) => void;
   isGroup?: boolean;
 }
 
 interface User {
-  id: string;
-  name: string;
+  _id: string;
+  fullName: string;
   avatar?: string;
   email?: string;
 }
@@ -39,48 +40,70 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [groupName, setGroupName] = useState("");
-
+  const userService = new UserService();
   // Mock users for demo purposes
   const mockUsers: User[] = [
     {
-      id: "user2",
-      name: "Emma Watson",
+      _id: "user2",
+      fullName: "Emma Watson",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
       email: "emma@example.com",
     },
     {
-      id: "user3",
-      name: "John Smith",
+      _id: "user3",
+      fullName: "John Smith",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
       email: "john@example.com",
     },
     {
-      id: "user4",
-      name: "Sophia Chen",
+      _id: "user4",
+      fullName: "Sophia Chen",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sophia",
       email: "sophia@example.com",
     },
     {
-      id: "user5",
-      name: "Michael Johnson",
+      _id: "user5",
+      fullName: "Michael Johnson",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
       email: "michael@example.com",
     },
     {
-      id: "user6",
-      name: "Alex Rodriguez",
+      _id: "user6",
+      fullName: "Alex Rodriguez",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=alex",
       email: "alex@example.com",
     },
   ];
 
-  const filteredUsers = mockUsers.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const [filteredUsers, setFilteredUsers] = useState(
+    mockUsers.filter((user) =>
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
+  useEffect(() => {
+    userService.getUserFriends().then((res) => {
+      if (res.success) {
+        setFilteredUsers(
+          res.data.map((user) => ({
+            _id: user._id,
+            fullName: user.fullNameString,
+            avatar: user?.profile?.avatar?.url,
+          }))
+        );
+      }
+    });
+  });
 
+  useEffect(() => {
+    setFilteredUsers(
+      mockUsers.filter((user) =>
+        user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [searchTerm]);
   const handleSelectUser = (user: User) => {
-    if (selectedUsers.some((u) => u.id === user.id)) {
-      setSelectedUsers(selectedUsers.filter((u) => u.id !== user.id));
+    if (selectedUsers.some((u) => u._id === user._id)) {
+      setSelectedUsers(selectedUsers.filter((u) => u._id !== user._id));
     } else {
       setSelectedUsers([...selectedUsers, user]);
     }
@@ -90,9 +113,9 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
     if (selectedUsers.length === 0) return;
 
     onCreateChat(
-      selectedUsers.map((user) => user.id),
+      selectedUsers.map((user) => user._id),
       isGroup ? groupName : undefined,
-      isGroup,
+      isGroup
     );
 
     // Reset state
@@ -144,16 +167,16 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
           <div className="flex flex-wrap gap-2 mt-2">
             {selectedUsers.map((user) => (
               <div
-                key={user.id}
+                key={user._id}
                 className="flex items-center gap-1 bg-accent rounded-full py-1 px-2"
               >
                 <Avatar className="h-5 w-5">
                   <AvatarImage src={user.avatar} />
                   <AvatarFallback className="text-[10px]">
-                    {getInitials(user.name)}
+                    {getInitials(user.fullName)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs">{user.name}</span>
+                <span className="text-xs">{user.fullName}</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -171,7 +194,7 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
           <div className="space-y-2">
             {filteredUsers.map((user) => (
               <div
-                key={user.id}
+                key={user._id}
                 className="flex items-center justify-between p-2 hover:bg-accent rounded-md cursor-pointer"
                 onClick={() => handleSelectUser(user)}
               >
@@ -179,11 +202,11 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.avatar} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      {getInitials(user.name)}
+                      {getInitials(user.fullName)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-sm font-medium">{user.fullName}</p>
                     {user.email && (
                       <p className="text-xs text-muted-foreground">
                         {user.email}
@@ -192,7 +215,7 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({
                   </div>
                 </div>
                 <Checkbox
-                  checked={selectedUsers.some((u) => u.id === user.id)}
+                  checked={selectedUsers.some((u) => u._id === user._id)}
                   onCheckedChange={() => handleSelectUser(user)}
                 />
               </div>
