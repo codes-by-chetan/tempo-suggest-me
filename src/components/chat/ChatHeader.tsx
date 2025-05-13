@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Info, Phone, Video, MoreVertical, Users } from "lucide-react";
-import { Chat } from "@/interfaces/chat.interfaces";
+import { Chat, Participant } from "@/interfaces/chat.interfaces";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth-context";
+import { formatDistanceToNow } from "date-fns";
 
 interface ChatHeaderProps {
   chat: Chat;
@@ -18,35 +19,60 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
+  const [chatPartner, setChatPartner] = useState<Participant | null>(null);
   const { user } = useAuth();
 
-  const getChatName = () => {
-    if (chat.chatType === "group") return chat.groupName || "Unnamed Group";
-    const otherParticipant = chat.participants.find((p) => p._id !== user._id);
-    return otherParticipant?.fullName || "Unknown";
+  const setChatData = useCallback(() => {
+    if (chat.chatType === "private") {
+      chat.participants.forEach((participant) => {
+        if (participant._id !== user._id) {
+          setChatPartner(participant);
+        }
+      });
+    }
+  }, [chat]);
+
+  useEffect(() => {
+    setChatData();
+  }, []);
+
+  const formatTime = (timestamp: string) => {
+    try {
+      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    } catch (error) {
+      return "";
+    }
   };
 
-  const getChatAvatar = () => {
-    // Mock avatar since it's not in the schema
-    if (chat.chatType === "group") return "";
-    const otherParticipant = chat.participants.find((p) => p._id !== user._id);
-    return otherParticipant ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherParticipant.fullName}` : "";
-  };
+  // const getChatName = () => {
+  //   if (chat.chatType === "group") return chat.groupName || "Unnamed Group";
+  //   const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+  //   return otherParticipant?.fullName || "Unknown";
+  // };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
+  // const getChatAvatar = () => {
+  //   // Mock avatar since it's not in the schema
+  //   if (chat.chatType === "group") return "";
+  //   const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+  //   return otherParticipant ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherParticipant.fullName}` : "";
+  // };
+
+  // const getInitials = (name: string) => {
+  //   return name
+  //     .split(" ")
+  //     .map((n) => n[0])
+  //     .join("")
+  //     .toUpperCase();
+  // };
 
   const getOnlineStatus = () => {
     // Mock online status since it's not in the schema
     if (chat.chatType === "group") {
       return `${chat.participants.length} members`;
     } else {
-      const otherParticipant = chat.participants.find((p) => p._id !== user._id);
+      const otherParticipant = chat.participants.find(
+        (p) => p._id !== user._id
+      );
       return otherParticipant ? "Online" : "Offline"; // Mocked
     }
   };
@@ -55,13 +81,14 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
     <div className="flex items-center justify-between p-4 border-b border-border bg-card w-full">
       <div className="flex items-center">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={getChatAvatar()} />
+          <AvatarImage src={chatPartner?.profile?.avatar?.url} />
           <AvatarFallback className="bg-primary/10 text-primary">
-            {getInitials(getChatName())}
+            {chatPartner?.fullName?.firstName.toLocaleUpperCase().charAt(0)}
+            {chatPartner?.fullName?.lastName.toLocaleUpperCase().charAt(0)}
           </AvatarFallback>
         </Avatar>
         <div className="ml-3 overflow-hidden">
-          <h3 className="font-medium truncate">{getChatName()}</h3>
+          <h3 className="font-medium truncate">{chatPartner?.fullNameString || chat?.groupName || "Unknown"}</h3>
           <p className="text-xs text-muted-foreground flex items-center">
             {chat.chatType === "group" && <Users className="h-3 w-3 mr-1" />}
             {getOnlineStatus()}

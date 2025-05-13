@@ -1,14 +1,46 @@
 export interface Chat {
   _id: string;
   chatType: "private" | "group";
-  participants: { _id: string; fullName: string }[];
+  participants: Participant[];
   groupName?: string;
   createdAt: string;
   updatedAt?: string;
   unreadCount?: number;
   lastMessage?: Message;
+  [key: string]: any;
+}
+export interface Participant {
+  _id: string;
+  fullName: FullName;
+  profile: Profile;
+  fullNameString: string;
+  id: string;
+  [key: string]: any;
 }
 
+interface Profile {
+  _id: string;
+  isVerified: boolean;
+  avatar: Avatar;
+  displayName?: string;
+  isComplete: boolean;
+  id: string;
+  [key: string]: any;
+}
+
+interface Avatar {
+  publicId: string;
+  url: string;
+  _id: string;
+  id: string;
+  [key: string]: any;
+}
+
+interface FullName {
+  firstName: string;
+  lastName: string;
+  _id: string;
+}
 export interface Message {
   _id: string;
   chat: string;
@@ -43,8 +75,6 @@ export interface SuggestionPreview {
   creator?: string;
   year?: string;
 }
-
-
 
 export interface ChatParticipant {
   id: string;

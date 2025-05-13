@@ -13,24 +13,25 @@ import {
   generateAndStoreKeyPair,
   retrievePrivateKey,
 } from "@/utils/keyManagement";
+import { Chat, Message } from "@/interfaces/chat.interfaces";
 
-// Types
-interface Chat {
-  _id: string;
-  chatType: "private" | "group";
-  participants: { _id: string; fullName: string }[];
-  groupName?: string;
-  createdAt: string;
-}
+// // Types
+// interface Chat {
+//   _id: string;
+//   chatType: "private" | "group";
+//   participants: { _id: string; fullName: string }[];
+//   groupName?: string;
+//   createdAt: string;
+// }
 
-interface Message {
-  _id: string;
-  chat: string;
-  sender: { _id: string; fullName: string };
-  content: string; // Decrypted content
-  createdAt: string;
-  readBy: { user: string; readAt: string }[];
-}
+// interface Message {
+//   _id: string;
+//   chat: string;
+//   sender: { _id: string; fullName: string };
+//   content: string; // Decrypted content
+//   createdAt: string;
+//   readBy: { user: string; readAt: string }[];
+// }
 
 interface ChatContextType {
   chats: Chat[];
@@ -174,8 +175,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const selectChat = useCallback(
     async (chatId: string) => {
       const chat = chats.find((c) => c._id === chatId);
+      console.log(selectedChat);
       if (!chat) return;
       setSelectedChat(chat);
+      
+      
       setPage(1);
       setHasMoreMessages(true);
       setMessages([]);

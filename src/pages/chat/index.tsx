@@ -34,7 +34,7 @@ const ChatPage: React.FC = () => {
         }
       );
       if (!response.status) throw new Error("Failed to create chat");
-      const newChat = await response.data.data
+      const newChat = await response.data.data;
       navigate(`/chat/${newChat._id}`);
     } catch (error) {
       console.error("Error creating chat:", error);
@@ -45,7 +45,11 @@ const ChatPage: React.FC = () => {
     selectChat(chatId); // Use ChatContext's selectChat to load messages
     navigate(`/chat/${chatId}`);
   };
-
+  useEffect(() => {
+    if (chatId) {
+      handleSelectChat(chatId);
+    }
+  },[]);
   // Determine if we're on a small screen (mobile or tablet)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
