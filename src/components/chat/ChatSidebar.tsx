@@ -30,7 +30,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [activeTab, setActiveTab] = useState("all");
 
   // Filter chats based on search term and active tab
-  console.log(chats)
+  console.log("chats : ",chats)
   const filteredChats = chats
     .filter((chat) => {
       // Filter by search term
@@ -70,11 +70,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   };
 
   const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+    return name?.split(" ")?.map((n) => n[0])
+      ?.join("")
+      ?.toUpperCase();
   };
 
   const formatTime = (timestamp: string) => {
