@@ -41,6 +41,7 @@ interface ChatContextType {
   selectChat: (chatId: string) => void;
   loadMoreMessages: () => void;
   sendMessage: (chatId: string, content: string) => void;
+  fetchChats: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -175,6 +176,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const selectChat = useCallback(
     async (chatId: string) => {
       const chat = chats.find((c) => c._id === chatId);
+      console.log(chats);
       console.log(selectedChat);
       if (!chat) return;
       setSelectedChat(chat);
@@ -318,6 +320,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     <ChatContext.Provider
       value={{
         chats,
+        fetchChats,
         selectedChat,
         messages,
         hasMoreMessages,

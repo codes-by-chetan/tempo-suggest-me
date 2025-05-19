@@ -23,17 +23,19 @@ export const generateAndStoreKeyPair = async (userId: string): Promise<string> =
     // Export public key to send to backend
     const publicKeyData = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
     const publicKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(publicKeyData)));
-
+    console.log("Public Key Base64:", publicKeyBase64);
+    console.log("Private Key Base64:", privateKeyBase64);
     // Store private key in IndexedDB
     const db = await openDB("my-app", 1, {
       upgrade(db) {
         db.createObjectStore("keys");
       },
     });
-    await db.put("keys", privateKeyBase64, `privateKey:${userId}`);
+    
 
     // Send public key to backend using axios (userId not needed in body, extracted from token)
-    await api.post("/user/keys", { publicKey: publicKeyBase64 });
+    await api.post("/user/keys/store/key/public", { publicKey: publicKeyBase64 });
+    await db.put("keys", privateKeyBase64, `privateKey:${userId}`);
 
     return publicKeyBase64;
   } catch (error) {

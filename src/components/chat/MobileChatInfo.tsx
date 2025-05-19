@@ -70,7 +70,7 @@ const MobileChatInfo: React.FC<MobileChatInfoProps> = ({
                 {getInitials(
                   chat.chatType === "group"
                     ? chat.groupName || ""
-                    : chat.participants.find((p) => p._id !== user._id)?.fullName || "",
+                    : chat.participants.find((p) => p._id !== user._id)?.fullNameString || "",
                 )}
               </AvatarFallback>
             </Avatar>
@@ -78,7 +78,7 @@ const MobileChatInfo: React.FC<MobileChatInfoProps> = ({
             <h3 className="text-xl font-semibold mt-4">
               {chat.chatType === "group"
                 ? chat.groupName || "Unnamed Group"
-                : chat.participants.find((p) => p._id !== user._id)?.fullName || "Unknown"}
+                : chat.participants.find((p) => p._id !== user._id)?.fullNameString || "Unknown"}
             </h3>
 
             {chat.chatType === "private" && (
@@ -159,14 +159,14 @@ const MobileChatInfo: React.FC<MobileChatInfoProps> = ({
                       >
                         <div className="flex items-center">
                           <Avatar className="h-8 w-8 mr-2">
-                            <AvatarImage src={getParticipantAvatar(participant.fullName)} />
+                            <AvatarImage src={getParticipantAvatar(participant?.profile?.avatar?.url)} />
                             <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                              {getInitials(participant.fullName)}
+                              {getInitials(participant?.fullName?.firstName)} {getInitials(participant?.fullName?.lastName)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="text-sm font-medium">
-                              {participant.fullName}
+                              {participant.fullNameString}
                               {participant._id === user._id && " (You)"}
                             </p>
                             <p className="text-xs text-muted-foreground">

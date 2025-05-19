@@ -12,7 +12,7 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { socket } = useSocket();
-  const { chats, selectChat } = useChat();
+  const { chats, selectChat, fetchChats } = useChat();
 
   const [showNewChatDialog, setShowNewChatDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
@@ -45,11 +45,18 @@ const ChatPage: React.FC = () => {
     selectChat(chatId); // Use ChatContext's selectChat to load messages
     navigate(`/chat/${chatId}`);
   };
-  useEffect(() => {
-    if (chatId) {
+  const initialise = async () => {
+    fetchChats().then(()=>{if (chatId) {
       handleSelectChat(chatId);
-    }
-  },[]);
+    }})
+    // if (chatId) {
+    //   handleSelectChat(chatId);
+    // }
+  };
+
+  useEffect(() => {
+    initialise();
+  }, []);
   // Determine if we're on a small screen (mobile or tablet)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 

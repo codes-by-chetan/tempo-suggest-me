@@ -119,21 +119,7 @@ export const createChat = async (
     id: `chat${Date.now()}`,
     type: isGroup ? "group" : "direct",
     name: isGroup ? name : undefined,
-    participants: [
-      {
-        id: "user1",
-        name: "Current User",
-        isOnline: true,
-        isAdmin: isGroup, // Current user is admin if creating a group
-      },
-      // In a real app, you would fetch participant details from the server
-      ...participantIds.map((id) => ({
-        id,
-        name: `User ${id}`,
-        isOnline: false,
-        isAdmin: false,
-      })),
-    ],
+    participants
     unreadCount: 0,
     isActive: true,
     createdAt: new Date().toISOString(),
