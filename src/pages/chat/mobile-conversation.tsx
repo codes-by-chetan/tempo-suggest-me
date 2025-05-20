@@ -8,15 +8,18 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useChat } from "@/lib/chat-context";
+import { useConversation } from "@/services/conversation.service";
 
 const MobileChatConversation: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { selectedChat, messages, sendMessage } = useChat();
-
+  const { chats } = useChat();
+  const { messages, hasMoreMessages, fetchMessages, sendMessage } = useConversation(chatId || "");
   const [showMobileInfo, setShowMobileInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const selectedChat = chats.find((chat) => chat._id === chatId);
 
   const handleSendMessage = async (content: string) => {
     if (!chatId || !content.trim()) return;
@@ -34,7 +37,7 @@ const MobileChatConversation: React.FC = () => {
     if (!chatId) return;
     try {
       setIsLoading(true);
-      await sendMessage(chatId, content); // Note: Suggestions might need backend support
+      await sendMessage(chatId, content); // Suggestions might need backend support
     } catch (error) {
       console.error("Error sending suggestion:", error);
     } finally {
@@ -42,12 +45,20 @@ const MobileChatConversation: React.FC = () => {
     }
   };
 
-  // Function to go back to chat list
+  const handleLoadMore = async () => {
+    if (!chatId || !hasMoreMessages) return;
+    try {
+      await fetchMessages(chatId, messages.length / 100 + 1);
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+    }
+  };
+
   const handleBackToList = () => {
     navigate("/chat");
   };
 
-  if (!selectedChat) {
+  if (!selectedChat || !chatId) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -85,6 +96,8 @@ const MobileChatConversation: React.FC = () => {
         <ChatMessages
           messages={messages}
           currentUserId={user?._id || "user1"}
+          onLoadMore={handleLoadMore}
+          hasMoreMessages={hasMoreMessages}
         />
       </div>
 

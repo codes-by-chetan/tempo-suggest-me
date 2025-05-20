@@ -1,20 +1,10 @@
-"use client";
+"use client"
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Film,
-  BookOpen,
-  Tv,
-  Music,
-  Youtube,
-  Plus,
-  Instagram,
-  Clapperboard,
-} from "lucide-react";
-import { useNavigate } from "react-router";
-import { Button } from "../ui/button";
-import { AnimatePresence, motion } from "framer-motion";
-import SuggestionPlaceholderCard from "./SuggestionPlaceholderCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Film, BookOpen, Music, Youtube, Plus, Clapperboard } from "lucide-react"
+import { Button } from "../ui/button"
+import { AnimatePresence, motion } from "framer-motion"
+import SuggestionPlaceholderCard from "./SuggestionPlaceholderCard"
 
 export const CustomTabsList = ({
   activeTab,
@@ -27,6 +17,9 @@ export const CustomTabsList = ({
   CustomCard,
   myWatchList = false,
   isLoading = false,
+  onToggleEmojiPicker,
+  onToggleCommentBox,
+  cardReactions,
 }) => {
   const tabs = [
     { value: "all", label: "All" },
@@ -36,20 +29,19 @@ export const CustomTabsList = ({
     // { value: "anime", label: "Anime", icon: Tv },
     { value: "music", label: "Music", icon: Music },
     { value: "youtube", label: "Videos", icon: Youtube },
-  ];
+  ]
 
   // Create an array of skeleton placeholders when loading
   const skeletonPlaceholders = Array(6)
     .fill(0)
-    .map((_, index) => <SuggestionPlaceholderCard key={`skeleton-${index}`} />);
+    .map((_, index) => <SuggestionPlaceholderCard key={`skeleton-${index}`} />)
 
   return (
     <Tabs
       defaultValue="all"
       value={activeTab}
       onValueChange={(value) => {
-        console.log("value :", value);
-        setActiveTab(value);
+        setActiveTab(value)
       }}
       className="w-full"
     >
@@ -94,6 +86,9 @@ export const CustomTabsList = ({
                     handleMarkAsWatched={handleMarkAsWatched}
                     handleMarkAsWatching={handleMarkAsWatching}
                     handleAddToWatchlist={handleAddToWatchlist}
+                    onToggleEmojiPicker={onToggleEmojiPicker}
+                    onToggleCommentBox={onToggleCommentBox}
+                    cardReactions={cardReactions}
                   />
                 </motion.div>
               ))
@@ -109,12 +104,9 @@ export const CustomTabsList = ({
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                   <Film className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-foreground">
-                  No suggestions yet
-                </h3>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">No suggestions yet</h3>
                 <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                  You don't have any suggestions in this category yet. Ask your
-                  friends to recommend something!
+                  You don't have any suggestions in this category yet. Ask your friends to recommend something!
                 </p>
                 <Button className="rounded-full gap-2">
                   <Plus className="h-4 w-4" />
@@ -126,7 +118,7 @@ export const CustomTabsList = ({
         </AnimatePresence>
       </TabsContent>
     </Tabs>
-  );
-};
+  )
+}
 
-export default CustomTabsList;
+export default CustomTabsList

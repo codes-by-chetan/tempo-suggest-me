@@ -1,41 +1,44 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
-import UserService from "@/services/user.service";
-import { searchPeople } from "@/services/search.service";
-import { useAuth } from "@/lib/auth-context";
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { Search, X } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Checkbox } from "@/components/ui/checkbox"
+import { cn } from "@/lib/utils"
+import UserService from "@/services/user.service"
+import { searchPeople } from "@/services/search.service"
+import { useAuth } from "@/lib/auth-context"
 
 export interface Recipient {
-  fullName: FullName;
-  profile: friendProfile;
-  [key: string]: any;
+  fullName: FullName
+  profile: friendProfile
+  [key: string]: any
 }
 interface friendProfile {
-  avatar: Avatar;
-  isVerified: boolean;
-  [key: string]: any;
+  avatar: Avatar
+  isVerified: boolean
+  [key: string]: any
 }
 interface Avatar {
-  publicId: string;
-  url: string;
-  [key: string]: any;
+  publicId: string
+  url: string
+  [key: string]: any
 }
 
 interface FullName {
-  firstName: string;
-  lastName: string;
-  [key: string]: any;
+  firstName: string
+  lastName: string
+  [key: string]: any
 }
 
 interface RecipientSelectorProps {
-  onSelect?: (recipients: Recipient[]) => void;
-  onBack?: () => void;
-  onComplete?: (recipients: Recipient[]) => void;
-  preSelectedRecipients?: Recipient[];
+  onSelect?: (recipients: Recipient[]) => void
+  onBack?: () => void
+  onComplete?: (recipients: Recipient[]) => void
+  preSelectedRecipients?: Recipient[]
+  hideButtons?: boolean // Add this prop
 }
 
 const RecipientSelector = ({
@@ -43,28 +46,27 @@ const RecipientSelector = ({
   onBack = () => {},
   onComplete = () => {},
   preSelectedRecipients = [],
+  hideButtons = false,
 }: RecipientSelectorProps) => {
-  const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>(
-    preSelectedRecipients
-  );
-  const [searchResults, setSearchResults] = useState<Recipient[]>([]);
+  const { user } = useAuth()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>(preSelectedRecipients)
+  const [searchResults, setSearchResults] = useState<Recipient[]>([])
 
   // Mock data for search results
-  const [users, setUsers] = useState<Recipient[]>([]);
-  const userService = new UserService();
+  const [users, setUsers] = useState<Recipient[]>([])
+  const userService = new UserService()
   // Filter users based on search query
   const searchPeoples = useCallback(async () => {
-    console.log("searchPeople : ", searchQuery);
+    console.log("searchPeople : ", searchQuery)
 
     if (searchQuery.trim() === "") {
-      setSearchResults([]);
-      return;
+      setSearchResults([])
+      return
     }
-    const peoples = (await searchPeople({ searchTerm: searchQuery })).data;
+    const peoples = (await searchPeople({ searchTerm: searchQuery })).data
     const filteredResults = peoples.data.filter((people) => {
-      if (people._id === user._id) return;
+      if (people._id === user._id) return
       return {
         _id: people._id,
         fullName: people.fullName,
@@ -74,44 +76,42 @@ const RecipientSelector = ({
           displayName: people.profile?.displayName || "",
         },
         fullNameString: people?.fullNameString || "",
-      };
-    });
+      }
+    })
 
-    setSearchResults(filteredResults);
-  }, [searchQuery]);
+    setSearchResults(filteredResults)
+  }, [searchQuery])
   useEffect(() => {
-    searchPeoples();
-  }, [searchQuery]);
+    searchPeoples()
+  }, [searchQuery])
   useEffect(() => {
     userService.getUserFriends().then((res) => {
       if (res.success) {
-        setUsers(res.data);
+        setUsers(res.data)
       }
-    });
-  }, []);
+    })
+  }, [])
 
   const handleSelectRecipient = (recipient: Recipient) => {
     if (!selectedRecipients.some((r) => r._id === recipient._id)) {
-      const newSelectedRecipients = [...selectedRecipients, recipient];
-      setSelectedRecipients(newSelectedRecipients);
-      onSelect(newSelectedRecipients);
+      const newSelectedRecipients = [...selectedRecipients, recipient]
+      setSelectedRecipients(newSelectedRecipients)
+      onSelect(newSelectedRecipients)
     }
-    setSearchQuery("");
-  };
+    setSearchQuery("")
+  }
 
   const handleRemoveRecipient = (id: string) => {
-    console.log(id);
-    const newSelectedRecipients = selectedRecipients.filter(
-      (r) => r._id !== id
-    );
-    setSelectedRecipients(newSelectedRecipients);
-    console.log(selectedRecipients);
-    onSelect(newSelectedRecipients);
-  };
+    console.log(id)
+    const newSelectedRecipients = selectedRecipients.filter((r) => r._id !== id)
+    setSelectedRecipients(newSelectedRecipients)
+    console.log(selectedRecipients)
+    onSelect(newSelectedRecipients)
+  }
 
   const handleComplete = () => {
-    onComplete(selectedRecipients);
-  };
+    onComplete(selectedRecipients)
+  }
 
   return (
     <div className="w-full bg-white dark:bg-muted p-6 rounded-lg shadow-sm flex flex-col gap-4">
@@ -128,8 +128,8 @@ const RecipientSelector = ({
           placeholder="Search for friends by name or email..."
           value={searchQuery}
           onChange={(e) => {
-            console.log(e.target.value);
-            setSearchQuery(e.target.value);
+            console.log(e.target.value)
+            setSearchQuery(e.target.value)
           }}
           className="pl-10"
         />
@@ -144,10 +144,7 @@ const RecipientSelector = ({
               className="flex items-center gap-2 bg-gray-100 dark:bg-muted-foreground rounded-full py-1 px-3"
             >
               <Avatar className="h-6 w-6">
-                <AvatarImage
-                  src={recipient.profile?.avatar?.url}
-                  alt={recipient.name}
-                />
+                <AvatarImage src={recipient.profile?.avatar?.url || "/placeholder.svg"} alt={recipient.name} />
                 <AvatarFallback>
                   {recipient.fullName.firstName.charAt(0)}
                   {recipient.fullName.lastName.charAt(0)}
@@ -177,10 +174,7 @@ const RecipientSelector = ({
               >
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage
-                      src={user.profile?.avatar?.url}
-                      alt={user.fullNameString}
-                    />
+                    <AvatarImage src={user.profile?.avatar?.url || "/placeholder.svg"} alt={user.fullNameString} />
                     <AvatarFallback>
                       {user.fullName.firstName.charAt(0)}
                       {user.fullName.lastName.charAt(0)}
@@ -188,11 +182,7 @@ const RecipientSelector = ({
                   </Avatar>
                   <div>
                     <p className="font-medium">{user.fullNameString}</p>
-                    {user.displayName && (
-                      <p className="text-sm text-gray-500">
-                        {user.displayName}
-                      </p>
-                    )}
+                    {user.displayName && <p className="text-sm text-gray-500">{user.displayName}</p>}
                   </div>
                 </div>
                 <Checkbox
@@ -216,20 +206,17 @@ const RecipientSelector = ({
                 "p-3 rounded-md flex items-center justify-between",
                 selectedRecipients.some((r) => r._id === user._id)
                   ? "bg-gray-100 dark:bg-gray-700"
-                  : "hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700"
+                  : "hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700",
               )}
               onClick={() => {
                 if (!selectedRecipients.some((r) => r.id === user.id)) {
-                  handleSelectRecipient(user);
+                  handleSelectRecipient(user)
                 }
               }}
             >
               <div className="flex items-center gap-3">
                 <Avatar>
-                  <AvatarImage
-                    src={user.profile?.avatar?.url}
-                    alt={user.fullNameString}
-                  />
+                  <AvatarImage src={user.profile?.avatar?.url || "/placeholder.svg"} alt={user.fullNameString} />
                   <AvatarFallback>
                     {user.fullName.firstName.charAt(0)}
                     {user.fullName.lastName.charAt(0)}
@@ -237,18 +224,16 @@ const RecipientSelector = ({
                 </Avatar>
                 <div>
                   <p className="font-medium">{user.fullNameString}</p>
-                  {user.displayName && (
-                    <p className="text-sm text-gray-500">{user.displayName}</p>
-                  )}
+                  {user.displayName && <p className="text-sm text-gray-500">{user.displayName}</p>}
                 </div>
               </div>
               <Checkbox
                 checked={selectedRecipients.some((r) => r._id === user._id)}
                 onCheckedChange={() => {
                   if (selectedRecipients.some((r) => r._id === user._id)) {
-                    handleRemoveRecipient(user._id);
+                    handleRemoveRecipient(user._id)
                   } else {
-                    handleSelectRecipient(user);
+                    handleSelectRecipient(user)
                   }
                 }}
               />
@@ -257,23 +242,20 @@ const RecipientSelector = ({
         </div>
       </div>
 
-      <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button
-          onClick={handleComplete}
-          disabled={selectedRecipients.length === 0}
-        >
-          {selectedRecipients.length === 0
-            ? "Select Recipients"
-            : `Send to ${selectedRecipients.length} ${
-                selectedRecipients.length === 1 ? "person" : "people"
-              }`}
-        </Button>
-      </div>
+      {!hideButtons && (
+        <div className="flex justify-between mt-6">
+          <Button variant="outline" onClick={onBack}>
+            Back
+          </Button>
+          <Button onClick={handleComplete} disabled={selectedRecipients.length === 0}>
+            {selectedRecipients.length === 0
+              ? "Select Recipients"
+              : `Send to ${selectedRecipients.length} ${selectedRecipients.length === 1 ? "person" : "people"}`}
+          </Button>
+        </div>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default RecipientSelector;
+export default RecipientSelector

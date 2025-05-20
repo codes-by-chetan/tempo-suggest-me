@@ -35,11 +35,13 @@ interface Notification {
 interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
+  closePopup?: ()=> void;
 }
 
 const NotificationItem = ({
   notification,
   onMarkAsRead,
+  closePopup,
 }: NotificationItemProps) => {
   const navigate = useNavigate();
   const getIconForContentType = (type?: string, notificationType?: string) => {
@@ -80,8 +82,12 @@ const NotificationItem = ({
     }
   };
   const handleUserClick = () => {
+    closePopup();
     if (notification.user?.id) {
       navigate(`/profile/${notification.user.id}`);
+    }
+    if (!notification.read) {
+      onMarkAsRead(notification.id);
     }
   }
   const handleClick = () => {

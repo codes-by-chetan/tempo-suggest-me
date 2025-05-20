@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react"
-import Navbar from "@/components/layout/Navbar"
+"use client"
+
+import { useState, useEffect, useRef } from "react"
 import { CustomTabsList } from "@/components/layout/CustomTabsList"
 import SuggestedToMeCard from "@/components/layout/SuggestedToMeCard"
 import { getSuggestedToYou } from "@/services/suggestion.service"
+import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
+import CommentBox from "@/components/reusables/CommentBox"
+
 
 interface ContentItem {
   id: string
@@ -33,6 +37,11 @@ interface ContentItem {
   whereToWatch?: string[]
   whereToRead?: string[]
   whereToListen?: string[]
+}
+
+interface Position {
+  top: number
+  left: number
 }
 
 const SuggestedToMe = () => {
@@ -112,10 +121,20 @@ const SuggestedToMe = () => {
   const [filteredSuggestions, setFilteredSuggestions] = useState<ContentItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // Global state for shared emoji picker and comment box
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showCommentBox, setShowCommentBox] = useState(false)
+  const [activeCardId, setActiveCardId] = useState<string | null>(null)
+  const [emojiPickerPosition, setEmojiPickerPosition] = useState<Position>({ top: 0, left: 0 })
+  const [commentBoxPosition, setCommentBoxPosition] = useState<Position>({ top: 0, left: 0 })
+  const [cardReactions, setCardReactions] = useState<Record<string, string[]>>({})
+
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
+  const commentBoxRef = useRef<HTMLDivElement>(null)
+
   // Filter suggestions when tab or suggestions change
   useEffect(() => {
     setFilteredSuggestions(activeTab === "all" ? suggestions : suggestions.filter((item) => item.type === activeTab))
-    console.log("filtered Suggestions: ", filteredSuggestions)
   }, [activeTab, suggestions])
 
   // Fetch suggestions on component mount
@@ -142,6 +161,24 @@ const SuggestedToMe = () => {
 
     fetchSuggestions()
   }, [])
+
+  // Close emoji picker and comment box when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showEmojiPicker && emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false)
+      }
+
+      if (showCommentBox && commentBoxRef.current && !commentBoxRef.current.contains(event.target as Node)) {
+        setShowCommentBox(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [showEmojiPicker, showCommentBox])
 
   const handleMarkAsWatched = (id: string) => {
     setSuggestions((prev) =>
@@ -212,25 +249,136 @@ const SuggestedToMe = () => {
     }
   }
 
-  return (
-      <main className="w-full mx-auto pt-0 pb-[10vh] px-4 sm:px-6 lg:px-8">
-        <div className="py-6">
-          <h1 className="text-3xl font-bold text-foreground mb-8">
-            <span className="text-primary">Suggested</span> to Me
-          </h1>
+  // Handle emoji picker toggle
+  const handleToggleEmojiPicker = (cardId: string, position: Position) => {
+    setActiveCardId(cardId)
 
-          <CustomTabsList
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            CustomCard={SuggestedToMeCard}
-            filteredSuggestions={filteredSuggestions}
-            handleMarkAsWatched={handleMarkAsWatched}
-            handleMarkAsWatching={handleMarkAsWatching}
-            handleAddToWatchlist={handleAddToWatchlist}
-            isLoading={isLoading}
+    // Calculate position to ensure it's visible on screen
+    const viewportHeight = window.innerHeight
+    const viewportWidth = window.innerWidth
+
+    // Adjust top position to ensure it's visible
+    let top = position.top
+    const emojiPickerHeight = 400 // Approximate height of emoji picker
+    if (top + emojiPickerHeight > viewportHeight) {
+      top = position.top - emojiPickerHeight - 10 // Position above the button
+    }
+
+    // Adjust left position to ensure it's visible
+    let left = position.left
+    const emojiPickerWidth = 300 // Approximate width of emoji picker
+    if (left + emojiPickerWidth > viewportWidth) {
+      left = viewportWidth - emojiPickerWidth - 20 // 20px margin from right edge
+    }
+
+    setEmojiPickerPosition({ top, left })
+    setShowEmojiPicker((prev) => !prev)
+    setShowCommentBox(false) // Close comment box if open
+  }
+
+  // Handle comment box toggle
+  const handleToggleCommentBox = (cardId: string, position: Position) => {
+    setActiveCardId(cardId)
+
+    // Calculate position to ensure it's visible on screen
+    const viewportHeight = window.innerHeight
+    const viewportWidth = window.innerWidth
+
+    // Adjust top position to ensure it's visible
+    let top = position.top
+    const commentBoxHeight = 200 // Approximate height of comment box
+    if (top + commentBoxHeight > viewportHeight) {
+      top = position.top - commentBoxHeight - 10 // Position above the button
+    }
+
+    // Adjust left position to ensure it's visible
+    let left = position.left
+    const commentBoxWidth = 300 // Approximate width of comment box
+    if (left + commentBoxWidth > viewportWidth) {
+      left = viewportWidth - commentBoxWidth - 20 // 20px margin from right edge
+    }
+
+    setCommentBoxPosition({ top, left })
+    setShowCommentBox((prev) => !prev)
+    setShowEmojiPicker(false) // Close emoji picker if open
+  }
+
+  // Handle emoji selection
+  const handleEmojiSelect = (emojiData: EmojiClickData) => {
+    if (activeCardId) {
+      setCardReactions((prev) => {
+        // Instead of adding to the array, just set a single emoji as the reaction
+        return {
+          ...prev,
+          [activeCardId]: [emojiData.emoji], // Replace with a single emoji instead of adding to array
+        }
+      })
+      setShowEmojiPicker(false)
+    }
+  }
+
+  // Handle comment submission
+  const handleCommentSubmit = (comment: string) => {
+    console.log(`Comment for card ${activeCardId}: ${comment}`)
+    setShowCommentBox(false)
+  }
+
+  return (
+    <main className="w-full mx-auto pt-0 pb-[10vh] px-4 sm:px-6 lg:px-8 relative">
+      <div className="py-6">
+        <h1 className="text-3xl font-bold text-foreground mb-8">
+          <span className="text-primary">Suggested</span> to Me
+        </h1>
+
+        <CustomTabsList
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          CustomCard={SuggestedToMeCard}
+          filteredSuggestions={filteredSuggestions}
+          handleMarkAsWatched={handleMarkAsWatched}
+          handleMarkAsWatching={handleMarkAsWatching}
+          handleAddToWatchlist={handleAddToWatchlist}
+          isLoading={isLoading}
+          // Pass the new handlers and state
+          onToggleEmojiPicker={handleToggleEmojiPicker}
+          onToggleCommentBox={handleToggleCommentBox}
+          cardReactions={cardReactions}
+        />
+      </div>
+
+      {/* Shared Emoji Picker */}
+      {showEmojiPicker && (
+        <div
+          ref={emojiPickerRef}
+          className="fixed z-[1000]"
+          style={{
+            top: `${emojiPickerPosition.top}px`,
+            left: `${emojiPickerPosition.left}px`,
+          }}
+        >
+          <EmojiPicker onEmojiClick={handleEmojiSelect} width={300} height={400} />
+        </div>
+      )}
+
+      {/* Shared Comment Box */}
+      {showCommentBox && (
+        <div
+          ref={commentBoxRef}
+          className="fixed z-[1000] bg-background border border-border rounded-lg shadow-lg w-80"
+          style={{
+            top: `${commentBoxPosition.top}px`,
+            left: `${commentBoxPosition.left}px`,
+          }}
+        >
+          <CommentBox
+            onSubmit={(comment) => {
+              console.log(`Comment for card ${activeCardId}: ${comment}`)
+              setShowCommentBox(false)
+            }}
           />
         </div>
-      </main>
+      )}
+    </main>
   )
 }
 

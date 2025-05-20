@@ -1,39 +1,36 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import debounce from "lodash/debounce";
-import { log } from "console";
-import { globalSearch } from "@/services/search.service";
-import { ScrollArea } from "../ui/scroll-area";
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { Search, X } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import debounce from "lodash/debounce"
+import { globalSearch } from "@/services/search.service"
+import { ScrollArea } from "../ui/scroll-area"
 
 interface ContentSearchProps {
-  contentType?: string;
-  onSelect?: (content: ContentItem) => void;
+  contentType?: string
+  onSelect?: (content: ContentItem) => void
 }
 
 interface ContentItem {
-  id: string;
-  title: string;
-  type: string;
-  imageUrl?: string;
-  year?: string;
-  creator?: string;
-  description?: string;
+  id: string
+  title: string
+  type: string
+  imageUrl?: string
+  year?: string
+  creator?: string
+  description?: string
 }
 
-const ContentSearch = ({
-  contentType = "movie",
-  onSelect = () => {},
-}: ContentSearchProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<ContentItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [searchData, setSearchData] = useState(null);
+const ContentSearch = ({ contentType = "movie", onSelect = () => {} }: ContentSearchProps) => {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<ContentItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [searchData, setSearchData] = useState(null)
 
   // Mock data for different content types
   const mockData: Record<string, ContentItem[]> = {
@@ -42,8 +39,7 @@ const ContentSearch = ({
         id: "m1",
         title: "The Shawshank Redemption",
         type: "movie",
-        imageUrl:
-          "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
         year: "1994",
         creator: "Frank Darabont",
         description:
@@ -53,8 +49,7 @@ const ContentSearch = ({
         id: "m2",
         title: "The Godfather",
         type: "movie",
-        imageUrl:
-          "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&q=80",
         year: "1972",
         creator: "Francis Ford Coppola",
         description:
@@ -64,8 +59,7 @@ const ContentSearch = ({
         id: "m3",
         title: "The Dark Knight",
         type: "movie",
-        imageUrl:
-          "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=300&q=80",
         year: "2008",
         creator: "Christopher Nolan",
         description:
@@ -77,8 +71,7 @@ const ContentSearch = ({
         id: "b1",
         title: "To Kill a Mockingbird",
         type: "book",
-        imageUrl:
-          "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
         year: "1960",
         creator: "Harper Lee",
         description:
@@ -88,12 +81,10 @@ const ContentSearch = ({
         id: "b2",
         title: "1984",
         type: "book",
-        imageUrl:
-          "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&q=80",
         year: "1949",
         creator: "George Orwell",
-        description:
-          "A dystopian social science fiction novel and cautionary tale set in a totalitarian state.",
+        description: "A dystopian social science fiction novel and cautionary tale set in a totalitarian state.",
       },
     ],
     anime: [
@@ -101,8 +92,7 @@ const ContentSearch = ({
         id: "a1",
         title: "Attack on Titan",
         type: "anime",
-        imageUrl:
-          "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
         year: "2013",
         creator: "Hajime Isayama",
         description:
@@ -112,8 +102,7 @@ const ContentSearch = ({
         id: "a2",
         title: "Death Note",
         type: "anime",
-        imageUrl:
-          "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=300&q=80",
         year: "2006",
         creator: "Tsugumi Ohba",
         description:
@@ -125,8 +114,7 @@ const ContentSearch = ({
         id: "s1",
         title: "Bohemian Rhapsody",
         type: "song",
-        imageUrl:
-          "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
         year: "1975",
         creator: "Queen",
         description:
@@ -136,100 +124,94 @@ const ContentSearch = ({
         id: "s2",
         title: "Imagine",
         type: "song",
-        imageUrl:
-          "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&q=80",
         year: "1971",
         creator: "John Lennon",
         description:
           "A song co-produced by John Lennon, Yoko Ono, and Phil Spector, encouraging listeners to imagine a world of peace.",
       },
     ],
-  };
+  }
 
   useEffect(() => {
     if (searchQuery.length < 1) {
-      return;
+      return
     }
     // Simulate API call with mock data
-    setIsLoading(true);
+    setIsLoading(true)
 
     // Simulate network delay
     const timer = setTimeout(() => {
       const filteredResults =
         mockData[contentType]?.filter((item) => {
-          console.log("searchquery: ", searchQuery);
+          console.log("searchquery: ", searchQuery)
 
           // console.log(item.title.toLowerCase(), searchQuery.toLowerCase(), "includes =>", item.title.toLowerCase().includes(searchQuery.toLowerCase()))
-          return item.title.toLowerCase().includes(searchQuery.toLowerCase());
-        }) || [];
-      console.log(filteredResults, contentType);
-      performSearch(searchQuery);
+          return item.title.toLowerCase().includes(searchQuery.toLowerCase())
+        }) || []
+      console.log(filteredResults, contentType)
+      performSearch(searchQuery)
       if (!searchResults || searchResults.length < 1) {
-        setSearchResults(filteredResults);
+        setSearchResults(filteredResults)
       }
-      setIsLoading(false);
-    }, 500);
+      setIsLoading(false)
+    }, 500)
 
-    return () => clearTimeout(timer);
-  }, [searchQuery, contentType]);
+    return () => clearTimeout(timer)
+  }, [searchQuery, contentType])
 
   const performSearch = useCallback(
     debounce(async (term: string) => {
       if (term.trim().length < 1) {
-        setSearchResults(null);
-        setIsSearching(false);
-        return;
+        setSearchResults(null)
+        setIsSearching(false)
+        return
       }
-      globalSearch({ searchTerm: term, searchType: contentType }).then(
-        (response) => {
-          console.log("search res: ", response.data.results[contentType].data);
-          const normalizedResults = response.data.results[contentType].data.map(
-            (item: any) => ({
-              id:
-                item._id ||
-                item?.imdbId ||
-                item?.tmdbId ||
-                item?.spotifyId ||
-                item?.openLibraryId ||
-                item?.googleBooksId,
-              title: item.title,
-              type: contentType,
-              imageUrl: item.poster?.url || item.poster || "",
-              year: item.year || "",
-              creator: item.director?.join(", ") || "",
-              description: item.plot || "",
-            })
-          );
-          setSearchResults(normalizedResults);
-        }
-      );
+      globalSearch({ searchTerm: term, searchType: contentType }).then((response) => {
+        console.log("search res: ", response.data.results[contentType].data)
+        const normalizedResults = response.data.results[contentType].data.map((item: any) => ({
+          id: item._id || item?.imdbId || item?.tmdbId || item?.spotifyId || item?.openLibraryId || item?.googleBooksId,
+          title: item.title,
+          type: contentType,
+          imageUrl: item.poster?.url || item.poster || "",
+          year: item.year || "",
+          creator: item.director?.join(", ") || "",
+          description: item.plot || "",
+        }))
+        setSearchResults(normalizedResults)
+      })
       // Simulate a search API call
 
       try {
-        setIsSearching(true);
+        setIsSearching(true)
         // Define setDesktopSearchOpen if needed
-        setDesktopSearchOpen(true); // Open popup for desktop
-        setMobileSearchOpen(true); // Open popup for mobile
+        setDesktopSearchOpen(true) // Open popup for desktop
+        setMobileSearchOpen(true) // Open popup for mobile
       } catch (error) {
-        console.error("Search error:", error);
-        setSearchResults(null);
+        console.error("Search error:", error)
+        setSearchResults(null)
       } finally {
-        setIsSearching(false);
+        setIsSearching(false)
       }
     }, 300),
-    []
-  );
+    [],
+  )
 
   const handleClearSearch = () => {
-    setSearchQuery("");
-    setSearchResults([]);
-  };
+    setSearchQuery("")
+    setSearchResults([])
+  }
 
   const handleSelectContent = (content: ContentItem) => {
-    onSelect(content);
-    setSearchQuery("");
-    setSearchResults([]);
-  };
+    onSelect(content)
+    setSearchQuery("")
+    setSearchResults([])
+  }
+
+  // Add a function to check if any content is selected
+  const isContentSelected = (content: ContentItem) => {
+    return false // This will be replaced by your actual selection logic
+  }
 
   return (
     <div className="w-full bg-white dark:bg-muted p-3 rounded-lg shadow-sm">
@@ -245,20 +227,13 @@ const ContentSearch = ({
             className="pl-10 pr-10"
           />
           {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1 h-7 w-7"
-              onClick={handleClearSearch}
-            >
+            <Button variant="ghost" size="icon" className="absolute right-1 top-1 h-7 w-7" onClick={handleClearSearch}>
               <X className="h-4 w-4" />
             </Button>
           )}
         </div>
 
-        {isLoading && (
-          <div className="mt-2 text-sm text-muted-foreground">Searching...</div>
-        )}
+        {isLoading && <div className="mt-2 text-sm text-muted-foreground">Searching...</div>}
 
         {searchResults?.length > 0 && (
           <ScrollArea>
@@ -272,7 +247,7 @@ const ContentSearch = ({
                   {result.imageUrl && (
                     <div className="flex-shrink-0 mr-3">
                       <img
-                        src={result.imageUrl}
+                        src={result.imageUrl || "/placeholder.svg"}
                         alt={result.title}
                         className="w-12 h-16 object-cover rounded"
                       />
@@ -283,9 +258,7 @@ const ContentSearch = ({
                     <p className="text-sm text-muted-foreground">
                       {result.creator} • {result.year}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {result.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{result.description}</p>
                   </div>
                 </div>
               ))}
@@ -293,45 +266,38 @@ const ContentSearch = ({
           </ScrollArea>
         )}
 
-        {searchQuery?.length > 2 &&
-          searchResults?.length === 0 &&
-          !isLoading && (
-            <div className="mt-2 p-3 text-sm text-muted-foreground border rounded-md flex flex-col items-center">
-              <p className="mb-2 text-center">
-                No {contentType}s found matching "{searchQuery}".
-              </p>
-              <Button
-                variant="default"
-                className="w-full mt-2"
-                onClick={() =>
-                  (window.location.href = `/add-content/${contentType}?title=${encodeURIComponent(
-                    searchQuery
-                  )}`)
-                }
-              >
-                Add new {contentType}
-              </Button>
-            </div>
-          )}
+        {searchQuery?.length > 2 && searchResults?.length === 0 && !isLoading && (
+          <div className="mt-2 p-3 text-sm text-muted-foreground border rounded-md flex flex-col items-center">
+            <p className="mb-2 text-center">
+              No {contentType}s found matching "{searchQuery}".
+            </p>
+            <Button
+              variant="default"
+              className="w-full mt-2"
+              onClick={() =>
+                (window.location.href = `/add-content/${contentType}?title=${encodeURIComponent(searchQuery)}`)
+              }
+            >
+              Add new {contentType}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 text-sm text-muted-foreground">
         <p>
           Search for existing {contentType}s or{" "}
-          <a
-            href={`/add-content/${contentType}`}
-            className="text-primary hover:underline font-medium"
-          >
+          <a href={`/add-content/${contentType}`} className="text-primary hover:underline font-medium">
             add a new one
           </a>{" "}
           if not found.
         </p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ContentSearch;
+export default ContentSearch
 // function useCallback(arg0: any, arg1: undefined[]) {
 //   throw new Error("Function not implemented.");
 // }
@@ -361,5 +327,5 @@ export default ContentSearch;
 // }
 
 function searchPeople(arg0: { searchTerm: string }): any {
-  throw new Error("Function not implemented.");
+  throw new Error("Function not implemented.")
 }

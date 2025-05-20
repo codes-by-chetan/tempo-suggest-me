@@ -12,7 +12,7 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { socket } = useSocket();
-  const { chats, selectChat, fetchChats } = useChat();
+  const { chats, fetchChats } = useChat();
 
   const [showNewChatDialog, setShowNewChatDialog] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
@@ -23,16 +23,12 @@ const ChatPage: React.FC = () => {
     isGroup: boolean = false
   ) => {
     try {
-      const response = await api.post(
-        "/chats",
-
-        {
-          participants: participantIds,
-          groupName: name,
-          chatType: isGroup ? "group" : "private",
-          createdBy: user._id,
-        }
-      );
+      const response = await api.post("/chats", {
+        participants: participantIds,
+        groupName: name,
+        chatType: isGroup ? "group" : "private",
+        createdBy: user._id,
+      });
       if (!response.status) throw new Error("Failed to create chat");
       const newChat = await response.data.data;
       navigate(`/chat/${newChat._id}`);
@@ -42,21 +38,13 @@ const ChatPage: React.FC = () => {
   };
 
   const handleSelectChat = (chatId: string) => {
-    selectChat(chatId); // Use ChatContext's selectChat to load messages
     navigate(`/chat/${chatId}`);
-  };
-  const initialise = async () => {
-    fetchChats().then(()=>{if (chatId) {
-      handleSelectChat(chatId);
-    }})
-    // if (chatId) {
-    //   handleSelectChat(chatId);
-    // }
   };
 
   useEffect(() => {
-    initialise();
-  }, []);
+    fetchChats();
+  }, [fetchChats]);
+
   // Determine if we're on a small screen (mobile or tablet)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 

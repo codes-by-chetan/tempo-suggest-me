@@ -1,20 +1,22 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ChatHeader from "@/components/chat/ChatHeader";
 import ChatMessages from "@/components/chat/ChatMessages";
 import ChatInput from "@/components/chat/ChatInput";
 import ChatInfo from "@/components/chat/ChatInfo";
 import { useAuth } from "@/lib/auth-context";
 import { useChat } from "@/lib/chat-context";
+import { useConversation } from "@/services/conversation.service";
 
 const DesktopChatConversation: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const { selectedChat, messages, sendMessage } = useChat();
-
+  const { chats } = useChat();
+  const { messages, hasMoreMessages, fetchMessages, sendMessage } = useConversation(chatId || "");
   const [showInfo, setShowInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const selectedChat = chats.find((chat) => chat._id === chatId);
 
   const handleSendMessage = async (content: string) => {
     if (!chatId || !content.trim()) return;
@@ -32,7 +34,7 @@ const DesktopChatConversation: React.FC = () => {
     if (!chatId) return;
     try {
       setIsLoading(true);
-      await sendMessage(chatId, content); // Note: Suggestions might need backend support
+      await sendMessage(chatId, content); // Suggestions might need backend support
     } catch (error) {
       console.error("Error sending suggestion:", error);
     } finally {
@@ -40,7 +42,16 @@ const DesktopChatConversation: React.FC = () => {
     }
   };
 
-  if (!selectedChat) {
+  const handleLoadMore = async () => {
+    if (!chatId || !hasMoreMessages) return;
+    try {
+      await fetchMessages(chatId, messages.length / 100 + 1);
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+    }
+  };
+
+  if (!selectedChat || !chatId) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -64,6 +75,8 @@ const DesktopChatConversation: React.FC = () => {
         <ChatMessages
           messages={messages}
           currentUserId={user?._id || "user1"}
+          onLoadMore={handleLoadMore}
+          hasMoreMessages={hasMoreMessages}
         />
         <ChatInput
           onSendMessage={handleSendMessage}

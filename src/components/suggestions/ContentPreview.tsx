@@ -1,24 +1,24 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon, ExternalLink, Info, MapPin, User } from "lucide-react";
-import { format } from "date-fns";
+"use client"
+import { Button } from "@/components/ui/button"
+import { CalendarIcon, ExternalLink, Info, MapPin, User } from "lucide-react"
 
 interface ContentItem {
-  id: string;
-  title: string;
-  type: string;
-  imageUrl?: string;
-  year?: string;
-  creator?: string;
-  description?: string;
-  [key: string]: any;
+  id: string
+  title: string
+  type: string
+  imageUrl?: string
+  year?: string
+  creator?: string
+  description?: string
+  [key: string]: any
 }
 
 interface ContentPreviewProps {
-  content: ContentItem;
-  contentType: string;
-  onBack?: () => void;
-  onNext?: () => void;
+  content: ContentItem
+  contentType: string
+  onBack?: () => void
+  onNext?: () => void
+  hideButtons?: boolean // Add this prop
 }
 
 const ContentPreview = ({
@@ -26,13 +26,14 @@ const ContentPreview = ({
   contentType,
   onBack = () => {},
   onNext = () => {},
+  hideButtons = false,
 }: ContentPreviewProps) => {
   const renderMoviePreview = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-1">
         {content.imageUrl ? (
           <img
-            src={content.imageUrl}
+            src={content.imageUrl || "/placeholder.svg"}
             alt={content.title}
             className="w-full h-auto rounded-md shadow-md object-cover"
           />
@@ -57,9 +58,7 @@ const ContentPreview = ({
 
         {content.genre && (
           <div className="flex flex-wrap gap-2">
-            <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">
-              {content.genre}
-            </span>
+            <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">{content.genre}</span>
           </div>
         )}
 
@@ -78,7 +77,7 @@ const ContentPreview = ({
         )}
       </div>
     </div>
-  );
+  )
 
   const renderBookPreview = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -110,9 +109,7 @@ const ContentPreview = ({
 
         {content.genre && (
           <div className="flex flex-wrap gap-2">
-            <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">
-              {content.genre}
-            </span>
+            <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">{content.genre}</span>
           </div>
         )}
 
@@ -131,25 +128,23 @@ const ContentPreview = ({
         )}
       </div>
     </div>
-  );
+  )
 
   const renderPreviewByType = () => {
     switch (contentType) {
       case "movie":
-        return renderMoviePreview();
+        return renderMoviePreview()
       case "book":
-        return renderBookPreview();
+        return renderBookPreview()
       default:
-        return renderMoviePreview();
+        return renderMoviePreview()
     }
-  };
+  }
 
   return (
     <div className="bg-white dark:bg-muted p-6 rounded-lg shadow-md w-full max-w-4xl mx-auto">
       <div className="flex items-center mb-6">
-        <h2 className="text-2xl font-bold">
-          {contentType.charAt(0).toUpperCase() + contentType.slice(1)} Preview
-        </h2>
+        <h2 className="text-2xl font-bold">{contentType.charAt(0).toUpperCase() + contentType.slice(1)} Preview</h2>
         <Button variant="ghost" size="sm" className="ml-2">
           <Info className="h-4 w-4" />
           <span className="sr-only">Info</span>
@@ -158,16 +153,18 @@ const ContentPreview = ({
 
       {renderPreviewByType()}
 
-      <div className="flex justify-between pt-6">
-        <Button type="button" variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button type="button" onClick={onNext}>
-          Next
-        </Button>
-      </div>
+      {!hideButtons && (
+        <div className="flex justify-between pt-6">
+          <Button type="button" variant="outline" onClick={onBack}>
+            Back
+          </Button>
+          <Button type="button" onClick={onNext}>
+            Next
+          </Button>
+        </div>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default ContentPreview;
+export default ContentPreview

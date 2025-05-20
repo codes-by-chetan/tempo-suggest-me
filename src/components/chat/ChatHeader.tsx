@@ -1,7 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Info, Phone, Video, MoreVertical, Users } from "lucide-react";
+import {
+  Info,
+  Phone,
+  Video,
+  MoreVertical,
+  Users,
+  ArrowLeft,
+} from "lucide-react";
 import { Chat, Participant } from "@/interfaces/chat.interfaces";
 import {
   DropdownMenu,
@@ -12,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth-context";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router";
 
 interface ChatHeaderProps {
   chat: Chat;
@@ -21,7 +29,7 @@ interface ChatHeaderProps {
 const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
   const [chatPartner, setChatPartner] = useState<Participant | null>(null);
   const { user } = useAuth();
-
+  const navigate = useNavigate();
   const setChatData = useCallback(() => {
     if (chat.chatType === "private") {
       chat.participants.forEach((participant) => {
@@ -76,10 +84,20 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
       return otherParticipant ? "Online" : "Offline"; // Mocked
     }
   };
-
+  const handleBackToList = () => {
+    navigate("/chat");
+  };
   return (
     <div className="flex items-center justify-between p-4 border-b border-border bg-card w-full">
       <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-1"
+          onClick={handleBackToList}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <Avatar className="h-10 w-10">
           <AvatarImage src={chatPartner?.profile?.avatar?.url} />
           <AvatarFallback className="bg-primary/10 text-primary">
@@ -88,7 +106,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onViewInfo }) => {
           </AvatarFallback>
         </Avatar>
         <div className="ml-3 overflow-hidden">
-          <h3 className="font-medium truncate">{chatPartner?.fullNameString || chat?.groupName || "Unknown"}</h3>
+          <h3 className="font-medium truncate">
+            {chatPartner?.fullNameString || chat?.groupName || "Unknown"}
+          </h3>
           <p className="text-xs text-muted-foreground flex items-center">
             {chat.chatType === "group" && <Users className="h-3 w-3 mr-1" />}
             {getOnlineStatus()}
