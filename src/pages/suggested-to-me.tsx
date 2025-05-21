@@ -1,56 +1,46 @@
-"use client"
-
-import { useState, useEffect, useRef } from "react"
-import { CustomTabsList } from "@/components/layout/CustomTabsList"
-import SuggestedToMeCard from "@/components/layout/SuggestedToMeCard"
-import { getSuggestedToYou } from "@/services/suggestion.service"
-import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
-import CommentBox from "@/components/reusables/CommentBox"
-
+import { useState, useEffect, useRef } from "react";
+import { CustomTabsList } from "@/components/layout/CustomTabsList";
+import SuggestedToMeCard from "@/components/layout/SuggestedToMeCard";
+import { getSuggestedToYou } from "@/services/suggestion.service";
+import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
+import CommentBox from "@/components/reusables/CommentBox";
+import { toast } from "@/services/toast.service";
 
 interface ContentItem {
-  id: string
-  contentId?: string
-  title: string
-  type: string
-  imageUrl?: string
-  year?: string
-  creator?: string
-  description?: string
+  id: string;
+  contentId?: string;
+  title: string;
+  type: string;
+  imageUrl?: string;
+  year?: string;
+  creator?: string;
+  description?: string;
   suggestedBy: {
-    id: string
-    name: string
-    avatar?: string
-  }
-  suggestedAt: string
-  status?:
-    | "watched"
-    | "watching"
-    | "watchlist"
-    | "finished"
-    | "reading"
-    | "listened"
-    | "listening"
-    | "readlist"
-    | "listenlist"
-    | null
-  whereToWatch?: string[]
-  whereToRead?: string[]
-  whereToListen?: string[]
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  suggestedAt: string;
+  whereToWatch?: string[];
+  whereToRead?: string[];
+  whereToListen?: string[];
+  [key: string]: any;
 }
 
 interface Position {
-  top: number
-  left: number
+  top: number;
+  left: number;
 }
 
 const SuggestedToMe = () => {
   const mockSuggestions: ContentItem[] = [
     {
       id: "1",
+      contentId: "movie123",
       title: "The Shawshank Redemption",
       type: "movie",
-      imageUrl: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
+      imageUrl:
+        "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&q=80",
       year: "1994",
       creator: "Frank Darabont",
       description:
@@ -65,9 +55,11 @@ const SuggestedToMe = () => {
     },
     {
       id: "2",
+      contentId: "book456",
       title: "To Kill a Mockingbird",
       type: "book",
-      imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      imageUrl:
+        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
       year: "1960",
       creator: "Harper Lee",
       description:
@@ -82,9 +74,11 @@ const SuggestedToMe = () => {
     },
     {
       id: "3",
+      contentId: "series789",
       title: "Attack on Titan",
       type: "anime",
-      imageUrl: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
+      imageUrl:
+        "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=80",
       year: "2013",
       creator: "Hajime Isayama",
       description:
@@ -99,9 +93,11 @@ const SuggestedToMe = () => {
     },
     {
       id: "4",
+      contentId: "music101",
       title: "Bohemian Rhapsody",
       type: "song",
-      imageUrl: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
+      imageUrl:
+        "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80",
       year: "1975",
       creator: "Queen",
       description:
@@ -114,214 +110,158 @@ const SuggestedToMe = () => {
       suggestedAt: "2023-06-01T11:20:00Z",
       whereToListen: ["Spotify", "Apple Music", "YouTube Music"],
     },
-  ]
+  ];
 
-  const [activeTab, setActiveTab] = useState("all")
-  const [suggestions, setSuggestions] = useState<ContentItem[]>([])
-  const [filteredSuggestions, setFilteredSuggestions] = useState<ContentItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState("all");
+  const [suggestions, setSuggestions] = useState<ContentItem[]>([]);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<ContentItem[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 12;
 
   // Global state for shared emoji picker and comment box
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [showCommentBox, setShowCommentBox] = useState(false)
-  const [activeCardId, setActiveCardId] = useState<string | null>(null)
-  const [emojiPickerPosition, setEmojiPickerPosition] = useState<Position>({ top: 0, left: 0 })
-  const [commentBoxPosition, setCommentBoxPosition] = useState<Position>({ top: 0, left: 0 })
-  const [cardReactions, setCardReactions] = useState<Record<string, string[]>>({})
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showCommentBox, setShowCommentBox] = useState(false);
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [emojiPickerPosition, setEmojiPickerPosition] = useState<Position>({
+    top: 0,
+    left: 0,
+  });
+  const [commentBoxPosition, setCommentBoxPosition] = useState<Position>({
+    top: 0,
+    left: 0,
+  });
+  const [cardReactions, setCardReactions] = useState<Record<string, string[]>>(
+    {}
+  );
 
-  const emojiPickerRef = useRef<HTMLDivElement>(null)
-  const commentBoxRef = useRef<HTMLDivElement>(null)
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const commentBoxRef = useRef<HTMLDivElement>(null);
 
   // Filter suggestions when tab or suggestions change
   useEffect(() => {
-    setFilteredSuggestions(activeTab === "all" ? suggestions : suggestions.filter((item) => item.type === activeTab))
-  }, [activeTab, suggestions])
+    setFilteredSuggestions(
+      activeTab === "all"
+        ? suggestions
+        : suggestions.filter((item) => item.type === activeTab)
+    );
+  }, [activeTab, suggestions]);
 
-  // Fetch suggestions on component mount
+  // Fetch suggestions on component mount or page/tab change
   useEffect(() => {
     const fetchSuggestions = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const res = await getSuggestedToYou()
+        const res = await getSuggestedToYou({
+          page,
+          limit,
+          type: activeTab === "all" ? undefined : activeTab,
+        });
         if (res.success) {
-          setSuggestions(res.data)
+          setSuggestions(res.data);
+          setTotalPages(Math.ceil(res.total / limit));
         } else {
-          setSuggestions(mockSuggestions)
+          setSuggestions(mockSuggestions);
+          toast.error("Abe, suggestions fetch nahi hui!");
         }
       } catch (error) {
-        console.error("Error fetching suggestions:", error)
-        setSuggestions(mockSuggestions)
+        console.error("Error fetching suggestions:", error);
+        setSuggestions(mockSuggestions);
+        toast.error("Abe, kuch gadbad ho gaya!");
       } finally {
-        // Add a small delay to make the loading state more noticeable for better UX
-        setTimeout(() => {
-          setIsLoading(false)
-        }, 800)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchSuggestions()
-  }, [])
+    fetchSuggestions();
+  }, [activeTab, page]);
 
   // Close emoji picker and comment box when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (showEmojiPicker && emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-        setShowEmojiPicker(false)
+      if (
+        showEmojiPicker &&
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node)
+      ) {
+        setShowEmojiPicker(false);
       }
-
-      if (showCommentBox && commentBoxRef.current && !commentBoxRef.current.contains(event.target as Node)) {
-        setShowCommentBox(false)
+      if (
+        showCommentBox &&
+        commentBoxRef.current &&
+        !commentBoxRef.current.contains(event.target as Node)
+      ) {
+        setShowCommentBox(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [showEmojiPicker, showCommentBox])
-
-  const handleMarkAsWatched = (id: string) => {
-    setSuggestions((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const status = getContentSpecificWatchedStatus(item.type) as ContentItem["status"]
-          return { ...item, status }
-        }
-        return item
-      }),
-    )
-  }
-
-  const handleMarkAsWatching = (id: string) => {
-    setSuggestions((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const status = getContentSpecificWatchingStatus(item.type) as ContentItem["status"]
-          return { ...item, status }
-        }
-        return item
-      }),
-    )
-  }
-
-  const handleAddToWatchlist = (id: string) => {
-    setSuggestions((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const status = getContentSpecificListStatus(item.type) as ContentItem["status"]
-          return { ...item, status }
-        }
-        return item
-      }),
-    )
-  }
-
-  const getContentSpecificListStatus = (type: string): string => {
-    switch (type) {
-      case "book":
-        return "readlist"
-      case "song":
-        return "listenlist"
-      default:
-        return "watchlist"
-    }
-  }
-
-  const getContentSpecificWatchedStatus = (type: string): string => {
-    switch (type) {
-      case "book":
-        return "finished"
-      case "song":
-        return "listened"
-      default:
-        return "watched"
-    }
-  }
-
-  const getContentSpecificWatchingStatus = (type: string): string => {
-    switch (type) {
-      case "book":
-        return "reading"
-      case "song":
-        return "listening"
-      default:
-        return "watching"
-    }
-  }
-
-  // Handle emoji picker toggle
-  const handleToggleEmojiPicker = (cardId: string, position: Position) => {
-    setActiveCardId(cardId)
-
-    // Calculate position to ensure it's visible on screen
-    const viewportHeight = window.innerHeight
-    const viewportWidth = window.innerWidth
-
-    // Adjust top position to ensure it's visible
-    let top = position.top
-    const emojiPickerHeight = 400 // Approximate height of emoji picker
-    if (top + emojiPickerHeight > viewportHeight) {
-      top = position.top - emojiPickerHeight - 10 // Position above the button
-    }
-
-    // Adjust left position to ensure it's visible
-    let left = position.left
-    const emojiPickerWidth = 300 // Approximate width of emoji picker
-    if (left + emojiPickerWidth > viewportWidth) {
-      left = viewportWidth - emojiPickerWidth - 20 // 20px margin from right edge
-    }
-
-    setEmojiPickerPosition({ top, left })
-    setShowEmojiPicker((prev) => !prev)
-    setShowCommentBox(false) // Close comment box if open
-  }
-
-  // Handle comment box toggle
-  const handleToggleCommentBox = (cardId: string, position: Position) => {
-    setActiveCardId(cardId)
-
-    // Calculate position to ensure it's visible on screen
-    const viewportHeight = window.innerHeight
-    const viewportWidth = window.innerWidth
-
-    // Adjust top position to ensure it's visible
-    let top = position.top
-    const commentBoxHeight = 200 // Approximate height of comment box
-    if (top + commentBoxHeight > viewportHeight) {
-      top = position.top - commentBoxHeight - 10 // Position above the button
-    }
-
-    // Adjust left position to ensure it's visible
-    let left = position.left
-    const commentBoxWidth = 300 // Approximate width of comment box
-    if (left + commentBoxWidth > viewportWidth) {
-      left = viewportWidth - commentBoxWidth - 20 // 20px margin from right edge
-    }
-
-    setCommentBoxPosition({ top, left })
-    setShowCommentBox((prev) => !prev)
-    setShowEmojiPicker(false) // Close emoji picker if open
-  }
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker, showCommentBox]);
 
   // Handle emoji selection
   const handleEmojiSelect = (emojiData: EmojiClickData) => {
     if (activeCardId) {
-      setCardReactions((prev) => {
-        // Instead of adding to the array, just set a single emoji as the reaction
-        return {
-          ...prev,
-          [activeCardId]: [emojiData.emoji], // Replace with a single emoji instead of adding to array
-        }
-      })
-      setShowEmojiPicker(false)
+      setCardReactions((prev) => ({
+        ...prev,
+        [activeCardId]: [emojiData.emoji],
+      }));
+      setShowEmojiPicker(false);
+      toast.success("Bhai, emoji daal diya!");
     }
-  }
+  };
 
   // Handle comment submission
   const handleCommentSubmit = (comment: string) => {
-    console.log(`Comment for card ${activeCardId}: ${comment}`)
-    setShowCommentBox(false)
-  }
+    console.log(`Comment for card ${activeCardId}: ${comment}`);
+    setShowCommentBox(false);
+    toast.success("Bhai, comment daal diya!");
+  };
+
+  // Handle emoji picker toggle
+  const handleToggleEmojiPicker = (cardId: string, position: Position) => {
+    setActiveCardId(cardId);
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    let top = position.top;
+    const emojiPickerHeight = 400;
+    if (top + emojiPickerHeight > viewportHeight) {
+      top = position.top - emojiPickerHeight - 10;
+    }
+    let left = position.left;
+    const emojiPickerWidth = 300;
+    if (left + emojiPickerWidth > viewportWidth) {
+      left = viewportWidth - emojiPickerWidth - 20;
+    }
+    setEmojiPickerPosition({ top, left });
+    setShowEmojiPicker((prev) => !prev);
+    setShowCommentBox(false);
+  };
+
+  // Handle comment box toggle
+  const handleToggleCommentBox = (cardId: string, position: Position) => {
+    setActiveCardId(cardId);
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    let top = position.top;
+    const commentBoxHeight = 200;
+    if (top + commentBoxHeight > viewportHeight) {
+      top = position.top - commentBoxHeight - 10;
+    }
+    let left = position.left;
+    const commentBoxWidth = 300;
+    if (left + commentBoxWidth > viewportWidth) {
+      left = viewportWidth - commentBoxWidth - 20;
+    }
+    setCommentBoxPosition({ top, left });
+    setShowCommentBox((prev) => !prev);
+    setShowEmojiPicker(false);
+  };
 
   return (
     <main className="w-full mx-auto pt-0 pb-[10vh] px-4 sm:px-6 lg:px-8 relative">
@@ -329,24 +269,20 @@ const SuggestedToMe = () => {
         <h1 className="text-3xl font-bold text-foreground mb-8">
           <span className="text-primary">Suggested</span> to Me
         </h1>
-
         <CustomTabsList
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           CustomCard={SuggestedToMeCard}
           filteredSuggestions={filteredSuggestions}
-          handleMarkAsWatched={handleMarkAsWatched}
-          handleMarkAsWatching={handleMarkAsWatching}
-          handleAddToWatchlist={handleAddToWatchlist}
           isLoading={isLoading}
-          // Pass the new handlers and state
           onToggleEmojiPicker={handleToggleEmojiPicker}
           onToggleCommentBox={handleToggleCommentBox}
           cardReactions={cardReactions}
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
         />
       </div>
-
-      {/* Shared Emoji Picker */}
       {showEmojiPicker && (
         <div
           ref={emojiPickerRef}
@@ -356,11 +292,13 @@ const SuggestedToMe = () => {
             left: `${emojiPickerPosition.left}px`,
           }}
         >
-          <EmojiPicker onEmojiClick={handleEmojiSelect} width={300} height={400} />
+          <EmojiPicker
+            onEmojiClick={handleEmojiSelect}
+            width={300}
+            height={400}
+          />
         </div>
       )}
-
-      {/* Shared Comment Box */}
       {showCommentBox && (
         <div
           ref={commentBoxRef}
@@ -370,16 +308,11 @@ const SuggestedToMe = () => {
             left: `${commentBoxPosition.left}px`,
           }}
         >
-          <CommentBox
-            onSubmit={(comment) => {
-              console.log(`Comment for card ${activeCardId}: ${comment}`)
-              setShowCommentBox(false)
-            }}
-          />
+          <CommentBox onSubmit={handleCommentSubmit} />
         </div>
       )}
     </main>
-  )
-}
+  );
+};
 
-export default SuggestedToMe
+export default SuggestedToMe;

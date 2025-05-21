@@ -9,6 +9,7 @@ import ContentTypeSelector from "./ContentTypeSelector"
 import ContentSearch from "./ContentSearch"
 import ContentPreview from "./ContentPreview"
 import RecipientSelector, { type Recipient } from "./RecipientSelector"
+import { set } from "date-fns"
 
 interface ContentItem {
   id: string
@@ -48,6 +49,7 @@ const SuggestionFlow = ({ open = true, onOpenChange = () => {}, onComplete = () 
   const handleContentSelect = (content: ContentItem) => {
     setSelectedContent(content)
     // Don't automatically advance to next step
+    setStep(3)
   }
 
   const handleContentPreviewNext = () => {

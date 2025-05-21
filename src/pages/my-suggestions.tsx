@@ -12,12 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import SuggestionFlow from "@/components/suggestions/SuggestionFlow";
 import { CustomTabsList } from "@/components/layout/CustomTabsList";
-import { type ContentItem, mockMySuggestions } from "@/data/mySuggestions";
-import MySuggestionCard from "@/components/layout/MySuggestion";
 import {
   getSuggestedByYou,
   suggestContent,
 } from "@/services/suggestion.service";
+import { toast } from "@/services/toast.service";
+import { ContentItem } from "@/interfaces/content.interfaces";
+import MySuggestionCard from "@/components/layout/MySuggestion";
 
 const MySuggestions = () => {
   const navigate = useNavigate();
@@ -28,92 +29,59 @@ const MySuggestions = () => {
     []
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 12;
 
-  useEffect(() => {
-    setFilteredSuggestions(
-      activeTab === "all"
-        ? suggestions
-        : suggestions.filter((item) => item.type === activeTab)
-    );
-    console.log("filtered Suggestions: ", filteredSuggestions);
-  }, [activeTab, suggestions]);
-
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      setIsLoading(true);
-      try {
-        const res = await getSuggestedByYou();
-        if (res.success) {
-          setSuggestions(res.data);
-        } else {
-          setSuggestions(mockMySuggestions);
-        }
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-        setSuggestions(mockMySuggestions);
-      } finally {
-        // Add a small delay to make the loading state more noticeable for better UX
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 800);
-      }
-    };
-
-    fetchSuggestions();
-  }, []);
-
-  // Helper functions for content-specific status labels
-  const getContentSpecificStatusLabel = (
-    status: string,
-    type: string
-  ): string => {
-    if (status === "watchlist") return "In Watchlist";
-    if (status === "readlist") return "In Reading List";
-    if (status === "listenlist") return "In Listening List";
-
-    switch (type) {
-      case "book":
-        return status === "finished" ? "Finished" : "Reading";
-      case "song":
-        return status === "listened" ? "Listened" : "Listening";
-      default:
-        return status === "watched" ? "Watched" : "Watching";
-    }
-  };
-
-  const getIconForType = (type: string) => {
-    switch (type) {
-      case "movie":
-        return <Film className="h-5 w-5" />;
-      case "book":
-        return <BookOpen className="h-5 w-5" />;
-      case "anime":
-        return <Tv className="h-5 w-5" />;
-      case "song":
-        return <Music className="h-5 w-5" />;
-      case "youtube":
-        return <Youtube className="h-5 w-5" />;
-      case "reels":
-        return <Instagram className="h-5 w-5" />;
-      default:
-        return <Film className="h-5 w-5" />;
-    }
-  };
-
-  const handleSuggestionComplete = async (data: any) => {
-    console.log("Suggestion completed:", data);
+  const fetchSuggestions = async (currentPage: number, type?: string) => {
     setIsLoading(true);
-    await suggestContent(data).then((res) => {
-      console.log(res);
-    });
-    setIsSuggestionFlowOpen(false);
-    // Refetch suggestions after adding a new one
-    await getSuggestedByYou().then((res) => {
+    try {
+      const res = await getSuggestedByYou({
+          page,
+          limit,
+          type: activeTab === "all" ? undefined : activeTab,
+        });
       if (res.success) {
         setSuggestions(res.data);
+        setTotalPages(Math.ceil(res.total / res.limit));
+      } else {
+        toast.error("Abe, suggestions fetch nahi hui!");
+        setSuggestions([]);
       }
-      setIsLoading(false);
-    });
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      toast.error("Abe, kuch gadbad ho gaya!");
+      setSuggestions([]);
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 800);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuggestions(page, activeTab);
+  }, [page, activeTab]);
+
+  useEffect(() => {
+    setFilteredSuggestions(suggestions);
+  }, [suggestions]);
+
+  const handleSuggestionComplete = async (data: any) => {
+    setIsLoading(true);
+    try {
+      const res = await suggestContent(data);
+      if (res.success) {
+        toast.success("Bhai, suggestion add ho gaya!");
+      } else {
+        toast.error("Abe, suggestion add nahi hua!");
+      }
+    } catch (error) {
+      toast.error("Abe, kuch gadbad ho gaya!");
+    }
+    await fetchSuggestions(1, activeTab);
+    setPage(1);
+    setIsSuggestionFlowOpen(false);
   };
 
   return (
@@ -137,10 +105,13 @@ const MySuggestions = () => {
           setActiveTab={setActiveTab}
           filteredSuggestions={filteredSuggestions}
           CustomCard={MySuggestionCard}
-          handleMarkAsWatched={() => {}}
-          handleMarkAsWatching={() => {}}
-          handleAddToWatchlist={() => {}}
           isLoading={isLoading}
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
+          onToggleCommentBox={() => {}}
+          onToggleEmojiPicker={() => {}}
+          
         />
         <SuggestionFlow
           open={isSuggestionFlowOpen}

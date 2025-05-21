@@ -15,7 +15,7 @@ TempoDevtools.init();
 const basename = import.meta.env.BASE_URL;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  
     <ThemeProvider defaultTheme="light">
       <AuthProvider>
         <SocketProvider>
@@ -29,5 +29,4 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </SocketProvider>
       </AuthProvider>
     </ThemeProvider>
-  </React.StrictMode>
 );

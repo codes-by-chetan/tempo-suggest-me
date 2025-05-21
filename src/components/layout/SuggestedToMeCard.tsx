@@ -1,5 +1,3 @@
-"use client";
-
 import { useNavigate } from "react-router";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -17,31 +15,92 @@ import {
   SmilePlus,
   Tv,
   Youtube,
+  Loader2,
+  XCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import {
+  addContent,
+  checkContent,
+  updateContentStatus,
+} from "@/services/contentList.service";
+import { toast } from "@/services/toast.service";
 
 interface Position {
   top: number;
   left: number;
 }
 
+interface SuggestionItem {
+  id: string;
+  contentId?: string;
+  title: string;
+  type: string;
+  imageUrl?: string;
+  year?: string;
+  creator?: string;
+  description?: string;
+  suggestedBy: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  suggestedAt: string;
+  [key: string]: any;
+}
+
+interface SuggestedToMeCardProps {
+  item: SuggestionItem;
+  onToggleEmojiPicker: (id: string, position: Position) => void;
+  onToggleCommentBox: (id: string, position: Position) => void;
+  cardReactions?: Record<string, string[]>;
+}
+
 function SuggestedToMeCard({
   item,
-  handleMarkAsWatched,
-  handleMarkAsWatching,
-  handleAddToWatchlist,
   onToggleEmojiPicker,
   onToggleCommentBox,
   cardReactions = {},
-}) {
+}: SuggestedToMeCardProps) {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
-
+  const [status, setStatus] = useState<
+    "WantToConsume" | "Consuming" | "Consumed" | "NotInterested" | null
+  >(null);
+  const [userContentId, setUserContentId] = useState<string | null>(null);
+  const [loading, setLoading] = useState({
+    consumed: false,
+    consuming: false,
+    wantToConsume: false,
+    notInterested: false,
+  });
   const reactionBtnRef = useRef<HTMLButtonElement>(null);
   const commentBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Fetch content status on mount
+  useEffect(() => {
+    const fetchContentStatus = async () => {
+      try {
+        const response = await checkContent({
+          contentId: item.contentId,
+          suggestionId: item.id,
+        });
+        if (response.success && response.data) {
+          setStatus(response.data.status);
+          setUserContentId(response.data.id);
+        }
+      } catch (error) {
+        console.error("Error checking content:", error);
+        toast.error("Abe, content check nahi hua!");
+      }
+    };
+    if (item.contentId) {
+      fetchContentStatus();
+    }
+  }, [item.contentId, item.id]);
 
   const getIconForType = (type: string) => {
     switch (type) {
@@ -54,6 +113,7 @@ function SuggestedToMeCard({
       case "anime":
         return <Tv className="h-5 w-5" />;
       case "music":
+      case "song":
         return <Music className="h-5 w-5" />;
       case "youtube":
         return <Youtube className="h-5 w-5" />;
@@ -71,7 +131,7 @@ function SuggestedToMeCard({
       case "book":
         return `/books/${id}`;
       case "music":
-      case "albums":
+      case "song":
         return `/music/${id}`;
       case "video":
         return `/videos/${id}`;
@@ -85,42 +145,50 @@ function SuggestedToMeCard({
   };
 
   const getContentSpecificStatusLabel = (
-    status: string,
+    status: string | null,
     type: string
   ): string => {
-    if (status === "watchlist") return "In Watchlist";
-    if (status === "readlist") return "In Reading List";
-    if (status === "listenlist") return "In Listening List";
-
+    if (!status) return "";
+    if (status === "NotInterested") return "Not Interested";
+    if (status === "WantToConsume") {
+      return type === "book"
+        ? "Reading List"
+        : type === "music" || type === "song"
+        ? "Listening List"
+        : "Watchlist";
+    }
     switch (type) {
       case "book":
-        return status === "finished" ? "Finished" : "Reading";
+        return status === "Consumed" ? "Finished" : "Reading";
+      case "music":
       case "song":
-        return status === "listened" ? "Listened" : "Listening";
+        return status === "Consumed" ? "Listened" : "Listening";
       default:
-        return status === "watched" ? "Watched" : "Watching";
+        return status === "Consumed" ? "Watched" : "Watching";
     }
   };
-  const getStatusBadgeColor = (status: string) => {
-    if (
-      status === "watched" ||
-      status === "finished" ||
-      status === "listened"
-    ) {
-      return "bg-green-600 text-white";
-    } else if (
-      status === "watching" ||
-      status === "reading" ||
-      status === "listening"
-    ) {
-      return "bg-blue-600 text-white";
+
+  const getStatusBadgeColor = (status: string | null) => {
+    if (status === "Consumed") {
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+    } else if (status === "Consuming") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    } else if (status === "WantToConsume") {
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+    } else if (status === "NotInterested") {
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     } else {
-      return "bg-amber-600 text-white";
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     }
   };
-  const toggleWatchList = (id: string) => {
-    console.log(`Added ${id} to watchlist`);
+
+  const toggleWatchList = () => {
     setIsFavorite(!isFavorite);
+    toast.success(
+      isFavorite
+        ? "Bhai, favorite se hata diya!"
+        : "Bhai, favorite mein jod diya!"
+    );
   };
 
   const handleReactionClick = () => {
@@ -128,7 +196,7 @@ function SuggestedToMeCard({
       const rect = reactionBtnRef.current.getBoundingClientRect();
       const position: Position = {
         top: rect.bottom + window.scrollY,
-        left: Math.max(rect.left + window.scrollX - 150, 10), // Ensure it's not too far left
+        left: Math.max(rect.left + window.scrollX - 150, 10),
       };
       onToggleEmojiPicker(item.id, position);
     }
@@ -139,23 +207,72 @@ function SuggestedToMeCard({
       const rect = commentBtnRef.current.getBoundingClientRect();
       const position: Position = {
         top: rect.bottom + window.scrollY,
-        left: Math.max(rect.left + window.scrollX - 150, 10), // Ensure it's not too far left
+        left: Math.max(rect.left + window.scrollX - 150, 10),
       };
       onToggleCommentBox(item.id, position);
     }
   };
 
-  // Get reactions for this card
-  const reactions = cardReactions[item.id] || [];
+  const handleStatusUpdate = async (
+    newStatus: "Consumed" | "Consuming" | "WantToConsume" | "NotInterested"
+  ) => {
+    if (!item.contentId) {
+      toast.error("Abe, content ID nahi hai!");
+      return;
+    }
 
-  // Determine image aspect ratio based on content type
+    setLoading((prev) => ({ ...prev, [newStatus.toLowerCase()]: true }));
+    try {
+      if (userContentId) {
+        // Update existing content
+        const response = await updateContentStatus(userContentId, {
+          status: newStatus,
+        });
+        if (response.success) {
+          setStatus(newStatus);
+          toast.success(
+            newStatus === "NotInterested"
+              ? "Bhai, content ko not interested mark kar diya!"
+              : "Bhai, status update ho gaya!"
+          );
+        } else {
+          toast.error("Abe, status update nahi hua!");
+        }
+      } else {
+        // Add new content
+        const response = await addContent({
+          content: { id: item.contentId, type: item.type?.charAt(0).toUpperCase() + item.type?.slice(1) },
+          status: newStatus,
+          suggestionId: item.id,
+        });
+        if (response.success) {
+          setStatus(newStatus);
+          setUserContentId(response.data.id);
+          toast.success(
+            newStatus === "NotInterested"
+              ? "Bhai, content ko not interested mark kar diya!"
+              : "Bhai, content watchlist mein jod diya!"
+          );
+        } else {
+          toast.error("Abe, content add nahi hua!");
+        }
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Abe, kuch gadbad ho gaya!");
+    } finally {
+      setLoading((prev) => ({ ...prev, [newStatus.toLowerCase()]: false }));
+    }
+  };
+
+  const reactions = cardReactions[item.id] || [];
   const getImageClass = (type: string) => {
     switch (type) {
       case "music":
       case "song":
-        return "aspect-square"; // 1:1 ratio for music
+        return "aspect-square";
       default:
-        return "aspect-[2/3]"; // 2:3 ratio for movies, books, etc.
+        return "aspect-[2/3]";
     }
   };
 
@@ -172,54 +289,42 @@ function SuggestedToMeCard({
         className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer bg-card"
       >
         <CardContent className="p-4">
-          {/* Top section with image on left, title/type/year on right */}
           <div className="flex mb-4 relative">
-            {/* Left side - Image with appropriate aspect ratio */}
-            {/* Status indicator */}
-            {item.status && (
+            {status && (
               <div className="absolute top-1 right-1 z-10">
                 <motion.span
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
-                    item.status === "watched" ||
-                    item.status === "finished" ||
-                    item.status === "listened"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                      : item.status === "watching" ||
-                        item.status === "reading" ||
-                        item.status === "listening"
-                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                  }`}
+                  className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${getStatusBadgeColor(
+                    status
+                  )}`}
                 >
-                  {item.status === "watched" ||
-                  item.status === "finished" ||
-                  item.status === "listened" ? (
+                  {status === "Consumed" ? (
                     <>
                       <CheckCircle className="mr-0.5 h-2.5 w-2.5" />
-                      <span className="truncate ">
-                        {getContentSpecificStatusLabel(item.status, item.type)}
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(status, item.type)}
                       </span>
                     </>
-                  ) : item.status === "watching" ||
-                    item.status === "reading" ||
-                    item.status === "listening" ? (
+                  ) : status === "Consuming" ? (
                     <>
                       <Clock className="mr-0.5 h-2.5 w-2.5" />
-                      <span className="truncate ">
-                        {getContentSpecificStatusLabel(item.status, item.type)}
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(status, item.type)}
+                      </span>
+                    </>
+                  ) : status === "NotInterested" ? (
+                    <>
+                      <XCircle className="mr-0.5 h-2.5 w-2.5" />
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(status, item.type)}
                       </span>
                     </>
                   ) : (
                     <>
                       <Bookmark className="mr-0.5 h-2.5 w-2.5" />
-                      <span className="truncate ">
-                        {item.status === "readlist"
-                          ? "Reading List"
-                          : item.status === "listenlist"
-                          ? "Listen List"
-                          : "Watchlist"}
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(status, item.type)}
                       </span>
                     </>
                   )}
@@ -232,7 +337,7 @@ function SuggestedToMeCard({
                 getImageClass(item.type)
               )}
               onClick={() =>
-                navigate(getRouteForType(item.type, item?.contentId || item.id))
+                navigate(getRouteForType(item.type, item.contentId || item.id))
               }
             >
               {item.imageUrl && (
@@ -243,8 +348,6 @@ function SuggestedToMeCard({
                 />
               )}
             </div>
-
-            {/* Right side - Title, type, year */}
             <div className="flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-1">
                 <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
@@ -257,25 +360,21 @@ function SuggestedToMeCard({
                   {new Date(item.suggestedAt).toLocaleDateString()}
                 </span>
               </div>
-
               <h3
                 className="font-semibold text-lg mb-1 line-clamp-1 text-foreground cursor-pointer"
                 onClick={() =>
                   navigate(
-                    getRouteForType(item.type, item?.contentId || item.id)
+                    getRouteForType(item.type, item.contentId || item.id)
                   )
                 }
               >
                 {item.title}
               </h3>
-
               <p className="text-sm text-muted-foreground">
                 {item.creator} • {item.year}
               </p>
             </div>
           </div>
-
-          {/* Description - Full width */}
           <div className="mb-4">
             <p
               className="text-sm line-clamp-2 text-foreground"
@@ -284,96 +383,91 @@ function SuggestedToMeCard({
               }}
             ></p>
           </div>
-
-          {/* Action buttons - Full width */}
-          <div className="flex items-center justify-between mb-4 gap-2">
+          <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
             <Button
-              variant={
-                item.status === "finished" ||
-                item.status === "listened" ||
-                item.status === "watched"
-                  ? "default"
-                  : "outline"
-              }
+              variant={status === "Consumed" ? "default" : "outline"}
               size="sm"
-              className={`rounded-full text-xs flex-1 ${
-                item.status === "finished" ||
-                item.status === "listened" ||
-                item.status === "watched"
-                  ? "bg-primary text-white"
-                  : ""
+              className={`rounded-full text-xs flex-1 min-w-[100px] ${
+                status === "Consumed" ? "bg-primary text-white" : ""
               }`}
-              onClick={() => handleMarkAsWatched(item.id)}
+              onClick={() => handleStatusUpdate("Consumed")}
+              disabled={loading.consumed}
             >
-              <CheckCircle className="h-3 w-3 mr-1" />
+              {loading.consumed ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <CheckCircle className="h-3 w-3 mr-1" />
+              )}
               {item.type === "book"
                 ? "Finished"
-                : item.type === "song"
+                : item.type === "music" || item.type === "song"
                 ? "Listened"
                 : "Watched"}
             </Button>
-
             <Button
-              variant={
-                item.status === "reading" ||
-                item.status === "listening" ||
-                item.status === "watching"
-                  ? "default"
-                  : "outline"
-              }
+              variant={status === "Consuming" ? "default" : "outline"}
               size="sm"
-              className={`rounded-full text-xs flex-1 ${
-                item.status === "reading" ||
-                item.status === "listening" ||
-                item.status === "watching"
-                  ? "bg-primary text-white"
-                  : ""
+              className={`rounded-full text-xs flex-1 min-w-[100px] ${
+                status === "Consuming" ? "bg-primary text-white" : ""
               }`}
-              onClick={() => handleMarkAsWatching(item.id)}
+              onClick={() => handleStatusUpdate("Consuming")}
+              disabled={loading.consuming}
             >
-              <Clock className="h-3 w-3 mr-1" />
+              {loading.consuming ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Clock className="h-3 w-3 mr-1" />
+              )}
               {item.type === "book"
                 ? "Reading"
-                : item.type === "song"
+                : item.type === "music" || item.type === "song"
                 ? "Listening"
                 : "Watching"}
             </Button>
-
             <Button
-              variant={
-                item.status === "readlist" ||
-                item.status === "listenlist" ||
-                item.status === "watchlist"
-                  ? "default"
-                  : "outline"
-              }
+              variant={status === "WantToConsume" ? "default" : "outline"}
               size="sm"
-              className={`rounded-full text-xs flex-1 ${
-                item.status === "readlist" ||
-                item.status === "listenlist" ||
-                item.status === "watchlist"
-                  ? "bg-primary text-white"
-                  : ""
+              className={`rounded-full text-xs flex-1 min-w-[100px] ${
+                status === "WantToConsume" ? "bg-primary text-white" : ""
               }`}
-              onClick={() => handleAddToWatchlist(item.id)}
+              onClick={() => handleStatusUpdate("WantToConsume")}
+              disabled={loading.wantToConsume}
             >
-              <Bookmark className="h-3 w-3 mr-1" />
+              {loading.wantToConsume ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Bookmark className="h-3 w-3 mr-1" />
+              )}
               {item.type === "book"
                 ? "Reading List"
-                : item.type === "song"
+                : item.type === "music" || item.type === "song"
                 ? "Listening List"
                 : "Watchlist"}
             </Button>
+            <Button
+              variant={status === "NotInterested" ? "default" : "outline"}
+              size="sm"
+              className={`rounded-full text-xs flex-1 min-w-[100px] ${
+                status === "NotInterested" ? "bg-gray-600 text-white" : ""
+              }`}
+              onClick={() => handleStatusUpdate("NotInterested")}
+              disabled={loading.notInterested}
+            >
+              {loading.notInterested ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <XCircle className="h-3 w-3 mr-1" />
+              )}
+              Not Interested
+            </Button>
           </div>
-
-          {/* Social media style interaction buttons - Full width */}
           <div className="flex items-center justify-between mb-4">
             <motion.div whileTap={{ scale: 0.9 }}>
               <Button
                 variant="ghost"
                 size="sm"
                 className="rounded-full p-2 h-auto"
-                onClick={() => toggleWatchList(item.id)}
+                onClick={toggleWatchList}
               >
                 <Heart
                   className={`h-4 w-4 ${
@@ -383,8 +477,6 @@ function SuggestedToMeCard({
                 />
               </Button>
             </motion.div>
-
-            {/* Reaction Button */}
             <motion.div whileTap={{ scale: 0.9 }}>
               <Button
                 ref={reactionBtnRef}
@@ -411,8 +503,6 @@ function SuggestedToMeCard({
                 )}
               </Button>
             </motion.div>
-
-            {/* Comment Button */}
             <motion.div whileTap={{ scale: 0.9 }}>
               <Button
                 ref={commentBtnRef}
@@ -424,8 +514,6 @@ function SuggestedToMeCard({
                 <MessageCircle className="h-4 w-4 text-muted-foreground" />
               </Button>
             </motion.div>
-
-            {/* Share Button */}
             <motion.div whileTap={{ scale: 0.9 }}>
               <Button
                 variant="ghost"
@@ -436,8 +524,6 @@ function SuggestedToMeCard({
               </Button>
             </motion.div>
           </div>
-
-          {/* Suggested by - Full width */}
           <div className="flex items-center pt-3 border-t border-border">
             <span className="text-xs font-medium text-foreground mr-2">
               Suggested by:

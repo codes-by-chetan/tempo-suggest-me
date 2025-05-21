@@ -11,12 +11,21 @@ import {
   Clock,
   Bookmark,
   Clapperboard,
+  Share2,
+  XCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import LikeCommentShare from "../reusables/LikeCommentShare";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { toast } from "@/services/toast.service";
+import { ContentItem } from "@/interfaces/content.interfaces";
 
-function MySuggestionCard({ item }) {
+interface MySuggestionCardProps {
+  item: ContentItem;
+}
+
+function MySuggestionCard({ item }: MySuggestionCardProps) {
   const navigate = useNavigate();
 
   const getIconForType = (type: string) => {
@@ -30,6 +39,7 @@ function MySuggestionCard({ item }) {
       case "anime":
         return <Tv className="h-5 w-5" />;
       case "music":
+      case "song":
         return <Music className="h-5 w-5" />;
       case "youtube":
         return <Youtube className="h-5 w-5" />;
@@ -63,20 +73,50 @@ function MySuggestionCard({ item }) {
   };
 
   const getContentSpecificStatusLabel = (
-    status: string,
+    status: string | null,
     type: string
   ): string => {
-    if (status === "watchlist") return "In Watchlist";
-    if (status === "readlist") return "In Reading List";
-    if (status === "listenlist") return "In Listening List";
-
+    if (!status) return "";
+    if (status === "NotInterested") return "Not Interested";
+    if (status === "WantToConsume") {
+      return type === "book"
+        ? "Reading List"
+        : type === "music" || type === "song"
+        ? "Listening List"
+        : "Watchlist";
+    }
     switch (type) {
       case "book":
-        return status === "finished" ? "Finished" : "Reading";
+        return status === "Consumed" ? "Finished" : "Reading";
+      case "music":
       case "song":
-        return status === "listened" ? "Listened" : "Listening";
+        return status === "Consumed" ? "Listened" : "Listening";
       default:
-        return status === "watched" ? "Watched" : "Watching";
+        return status === "Consumed" ? "Watched" : "Watching";
+    }
+  };
+
+  const getStatusBadgeColor = (status: string | null) => {
+    if (status === "Consumed") {
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+    } else if (status === "Consuming") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    } else if (status === "WantToConsume") {
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+    } else if (status === "NotInterested") {
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    } else {
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  const getImageClass = (type: string) => {
+    switch (type) {
+      case "music":
+      case "song":
+        return "aspect-square";
+      default:
+        return "aspect-[2/3]";
     }
   };
 
@@ -90,136 +130,153 @@ function MySuggestionCard({ item }) {
     >
       <Card
         key={item.id}
-        className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer"
+        className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer bg-card min-h-[340px] flex flex-col"
       >
-        <div className="flex flex-col h-full relative">
-          {item.imageUrl && (
-            <div
-              className="w-full h-40 bg-muted"
-              onClick={() =>
-                navigate(getRouteForType(item.type, item?.contentId || item.id))
-              }
-            >
-              <img
-                src={item.imageUrl || "/placeholder.svg"}
-                alt={item.title}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          )}
-          <CardContent className="flex-1 p-5">
-            {/* Status indicator */}
+        <CardContent className="p-4 flex flex-col flex-1">
+          <div className="flex mb-4 relative">
             {item.status && (
-              <div className="absolute top-2 right-2 z-10">
+              <div className="absolute top-1 right-1 z-10">
                 <motion.span
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    item.status === "watched" ||
-                    item.status === "finished" ||
-                    item.status === "listened"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                      : item.status === "watching" ||
-                        item.status === "reading" ||
-                        item.status === "listening"
-                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                  }`}
+                  className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${getStatusBadgeColor(
+                    item.status
+                  )}`}
                 >
-                  {item.status === "watched" ||
-                  item.status === "finished" ||
-                  item.status === "listened" ? (
+                  {item.status === "Consumed" ? (
                     <>
-                      <CheckCircle className="mr-1 h-3 w-3" />
-                      {getContentSpecificStatusLabel(item.status, item.type)}
+                      <CheckCircle className="mr-0.5 h-2.5 w-2.5" />
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(item.status, item.type)}
+                      </span>
                     </>
-                  ) : item.status === "watching" ||
-                    item.status === "reading" ||
-                    item.status === "listening" ? (
+                  ) : item.status === "Consuming" ? (
                     <>
-                      <Clock className="mr-1 h-3 w-3" />
-                      {getContentSpecificStatusLabel(item.status, item.type)}
+                      <Clock className="mr-0.5 h-2.5 w-2.5" />
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(item.status, item.type)}
+                      </span>
                     </>
-                  ) : item.status === "watchlist" ? (
+                  ) : item.status === "NotInterested" ? (
                     <>
-                      <Bookmark className="mr-1 h-3 w-3" />
-                      In Watchlist
-                    </>
-                  ) : item.status === "readlist" ? (
-                    <>
-                      <Bookmark className="mr-1 h-3 w-3" />
-                      In Reading List
+                      <XCircle className="mr-0.5 h-2.5 w-2.5" />
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(item.status, item.type)}
+                      </span>
                     </>
                   ) : (
                     <>
-                      <Bookmark className="mr-1 h-3 w-3" />
-                      In Listening List
+                      <Bookmark className="mr-0.5 h-2.5 w-2.5" />
+                      <span className="truncate">
+                        {getContentSpecificStatusLabel(item.status, item.type)}
+                      </span>
                     </>
                   )}
                 </motion.span>
               </div>
             )}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                "relative overflow-hidden rounded-md cursor-pointer w-24 md:w-32 flex-shrink-0 mr-4",
+                getImageClass(item.type)
+              )}
+              onClick={() =>
+                navigate(getRouteForType(item.type, item.contentId || item.id))
+              }
+            >
+              {item.imageUrl && (
+                <img
+                  src={item.imageUrl || "/placeholder.svg"}
+                  alt={item.title}
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </div>
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center gap-2 mb-1">
                 <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
                   {getIconForType(item.type)}
                 </div>
                 <span className="text-xs font-medium text-primary capitalize">
                   {item.type}
                 </span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {new Date(
+                    item.suggestedAt || item.addedAt || Date.now()
+                  ).toLocaleDateString()}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground">
-                {new Date(item.suggestedAt).toLocaleDateString()}
-              </span>
+              <h3
+                className="font-semibold text-lg mb-1 line-clamp-1 text-foreground cursor-pointer"
+                onClick={() =>
+                  navigate(
+                    getRouteForType(item.type, item.contentId || item.id)
+                  )
+                }
+              >
+                {item.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {item.creator || "Unknown"} • {item.year || "N/A"}
+              </p>
             </div>
-            <h3
-              className="font-semibold text-lg mb-1 line-clamp-1"
-              onClick={() =>
-                navigate(getRouteForType(item.type, item?.contentId || item.id))
-              }
-            >
-              {item.title}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-2">
-              {item.creator} • {item.year}
-            </p>
+          </div>
+          <div className="mb-4  flex-1">
             <p
-              className="text-sm line-clamp-2 mb-4"
+              className="text-sm line-clamp-2 text-foreground"
               dangerouslySetInnerHTML={{
                 __html: item.description || "No description available.",
               }}
             ></p>
-
-            <LikeCommentShare />
-            <div className="flex flex-col pt-3 border-t border-border">
-              <span className="text-xs font-medium text-foreground mb-2">
+          </div>
+          <div className="flex items-center justify-between pt-3 border-t border-border">
+            <div className="flex items-center">
+              <span className="text-xs font-medium text-foreground mr-2">
                 Suggested to:
               </span>
-              <div className="flex flex-wrap gap-1">
-                {item.suggestedTo.map((recipient) => (
-                  <motion.div
-                    key={recipient.id}
-                    whileHover={{ scale: 1.05 }}
-                    className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-2 transition-colors"
-                  >
-                    <Avatar className="h-5 w-5 mr-1 ring-1 ring-primary/20">
-                      <AvatarImage
-                        src={recipient.avatar || "/placeholder.svg"}
-                        alt={recipient.name}
-                      />
-                      <AvatarFallback className="bg-primary-100 text-primary-800">
-                        {recipient.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-medium">
-                      {recipient.name}
-                    </span>
-                  </motion.div>
-                ))}
+              <div className="flex items-center">
+                {item.suggestedTo && item.suggestedTo.length > 0 ? (
+                  item.suggestedTo.map((recipient, index) => (
+                    <>
+                      <Avatar
+                        key={recipient.id}
+                        className={cn(
+                          "h-5 w-5 ring-1 ring-primary/20",
+                          index > 0 ? "-ml-2" : "mr-1"
+                        )}
+                      >
+                        <AvatarImage
+                          src={recipient.avatar || "/placeholder.svg"}
+                          alt={recipient.name}
+                        />
+                        <AvatarFallback className="bg-primary-100 text-primary-800">
+                          {recipient.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs font-medium text-foreground">
+                        {recipient?.name}
+                      </span>
+                    </>
+                  ))
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    No recipients
+                  </span>
+                )}
               </div>
             </div>
-          </CardContent>
-        </div>
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full p-2 h-auto"
+                onClick={() => toast.success("Bhai, share link copy ho gaya!")}
+              >
+                <Share2 className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </motion.div>
+          </div>
+        </CardContent>
       </Card>
     </motion.div>
   );

@@ -1,47 +1,57 @@
-"use client"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Film, BookOpen, Music, Youtube, Plus, Clapperboard } from "lucide-react";
+import { Button } from "../ui/button";
+import { AnimatePresence, motion } from "framer-motion";
+import SuggestionPlaceholderCard from "./SuggestionPlaceholderCard";
+import { Dispatch, SetStateAction } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Film, BookOpen, Music, Youtube, Plus, Clapperboard } from "lucide-react"
-import { Button } from "../ui/button"
-import { AnimatePresence, motion } from "framer-motion"
-import SuggestionPlaceholderCard from "./SuggestionPlaceholderCard"
+interface CustomTabsListProps {
+  activeTab: string;
+  setActiveTab: Dispatch<SetStateAction<string>>;
+  filteredSuggestions: any[];
+  CustomCard: any;
+  isLoading?: boolean;
+  onToggleEmojiPicker?: (id: string, position: { top: number; left: number }) => void;
+  onToggleCommentBox?: (id: string, position: { top: number; left: number }) => void;
+  cardReactions?: Record<string, string[]>;
+  page?: number;
+  totalPages?: number;
+  setPage?: Dispatch<SetStateAction<number>>;
+}
 
 export const CustomTabsList = ({
   activeTab,
   setActiveTab,
   filteredSuggestions,
-  handleMarkAsWatched,
-  handleMarkAsWatching,
-  handleAddToWatchlist = (id: string) => {},
-  handleRemoveFromMyWatchList = (id: string) => {},
   CustomCard,
-  myWatchList = false,
   isLoading = false,
   onToggleEmojiPicker,
   onToggleCommentBox,
   cardReactions,
-}) => {
+  page,
+  totalPages,
+  setPage,
+}: CustomTabsListProps) => {
   const tabs = [
     { value: "all", label: "All" },
     { value: "movie", label: "Movies", icon: Film },
     { value: "series", label: "Series", icon: Clapperboard },
     { value: "book", label: "Books", icon: BookOpen },
-    // { value: "anime", label: "Anime", icon: Tv },
     { value: "music", label: "Music", icon: Music },
     { value: "youtube", label: "Videos", icon: Youtube },
-  ]
+  ];
 
-  // Create an array of skeleton placeholders when loading
   const skeletonPlaceholders = Array(6)
     .fill(0)
-    .map((_, index) => <SuggestionPlaceholderCard key={`skeleton-${index}`} />)
+    .map((_, index) => <SuggestionPlaceholderCard key={`skeleton-${index}`} />);
 
   return (
     <Tabs
       defaultValue="all"
       value={activeTab}
       onValueChange={(value) => {
-        setActiveTab(value)
+        setActiveTab(value);
+        if (setPage) setPage(1); // Reset to page 1 on tab change
       }}
       className="w-full"
     >
@@ -57,7 +67,6 @@ export const CustomTabsList = ({
           </TabsTrigger>
         ))}
       </TabsList>
-
       <TabsContent value={activeTab} className="mt-0">
         <AnimatePresence mode="wait">
           <motion.div
@@ -68,10 +77,8 @@ export const CustomTabsList = ({
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {isLoading ? (
-              // Show skeleton placeholders when loading
               skeletonPlaceholders
             ) : filteredSuggestions.length > 0 ? (
-              // Show actual content when loaded and available
               filteredSuggestions.map((item) => (
                 <motion.div
                   key={item.id}
@@ -82,10 +89,6 @@ export const CustomTabsList = ({
                 >
                   <CustomCard
                     item={item}
-                    myWatchlist={myWatchList}
-                    handleMarkAsWatched={handleMarkAsWatched}
-                    handleMarkAsWatching={handleMarkAsWatching}
-                    handleAddToWatchlist={handleAddToWatchlist}
                     onToggleEmojiPicker={onToggleEmojiPicker}
                     onToggleCommentBox={onToggleCommentBox}
                     cardReactions={cardReactions}
@@ -93,7 +96,6 @@ export const CustomTabsList = ({
                 </motion.div>
               ))
             ) : (
-              // Show empty state when no suggestions
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -104,9 +106,12 @@ export const CustomTabsList = ({
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                   <Film className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-foreground">No suggestions yet</h3>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">
+                  No suggestions yet
+                </h3>
                 <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                  You don't have any suggestions in this category yet. Ask your friends to recommend something!
+                  You don't have any suggestions in this category yet. Ask your
+                  friends to recommend something!
                 </p>
                 <Button className="rounded-full gap-2">
                   <Plus className="h-4 w-4" />
@@ -116,9 +121,32 @@ export const CustomTabsList = ({
             )}
           </motion.div>
         </AnimatePresence>
+        {page && totalPages && setPage && totalPages > 1 && (
+          <div className="flex justify-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              className="rounded-full"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-foreground">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              className="rounded-full"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </TabsContent>
     </Tabs>
-  )
-}
+  );
+};
 
-export default CustomTabsList
+export default CustomTabsList;
