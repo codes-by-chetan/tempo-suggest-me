@@ -19,6 +19,7 @@ import MobileTabBar from "./components/layout/MobileTabBar";
 import MusicDetailsPage from "./pages/MusicDetailsPage";
 import MobileChatConversation from "./pages/chat/mobile-conversation";
 import DesktopChatConversation from "./pages/chat/desktop-conversation";
+import SearchPage from "./pages/SearchPage";
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
@@ -78,6 +79,7 @@ function MainContent() {
               path="/suggested-to-me/suggestion/:suggestionId"
               element={<SuggestionDetails />}
             />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/my-suggestions" element={<MySuggestions />} />
             <Route path="/my-watchlist" element={<MyWatchlist />} />
             <Route path="/profile/:id?" element={<Profile />} />

@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
   BookOpen,
   ArrowLeft,
   ExternalLink,
@@ -12,10 +17,14 @@ import {
   MessageCircle,
   Share2,
   Tag,
+  XCircle,
+  ChevronDown,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getBookDetails, BookDetails } from "@/services/content.service";
+import { checkContent, addContent, updateContentStatus } from "@/services/contentList.service";
+import { toast } from "@/services/toast.service";
 
 interface DisplayBook {
   id: string;
@@ -55,11 +64,13 @@ const BookDetailsPage = () => {
   const navigate = useNavigate();
 
   const [book, setBook] = useState<DisplayBook | null>(null);
+  const [contentStatus, setContentStatus] = useState<string | null>(null);
+  const [contentRecordId, setContentRecordId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
 
   const normalizeBookData = (data: any): DisplayBook => {
-    // Handle the actual API response structure
     return {
       id: data._id || "",
       title: data.title,
@@ -68,13 +79,11 @@ const BookDetailsPage = () => {
       publishedYear: data.publishedYear,
       authors: data.author?.map((a: any) => a.name).join(", ") || "",
       description: data.description,
-      publisher: data.publisher?.name || "",
+      publisher: data.publisher?.name || data.publisher || "",
       pages: data.pages,
       isbn:
-        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_13")
-          ?.identifier ||
-        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_10")
-          ?.identifier,
+        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_13")?.identifier ||
+        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_10")?.identifier,
       genres: data.genres || [],
       language: data.language,
       status: null,
@@ -116,10 +125,92 @@ const BookDetailsPage = () => {
     fetchBookDetails();
   }, [id]);
 
-  const getStatusLabel = (status: string | null): string => {
-    if (!status) return "Not Started";
-    if (status === "readlist") return "In Reading List";
-    return status === "finished" ? "Finished" : "Reading";
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (!book?.id) return;
+      try {
+        const response = await checkContent({ contentId: book.id });
+        if (response.success && response.data) {
+          setContentStatus(response.data.status || null);
+          setContentRecordId(response.data.id || null);
+        } else {
+          setContentStatus(null);
+          setContentRecordId(null);
+        }
+      } catch (err: any) {
+        toast.error("Failed to fetch content status.");
+      }
+    };
+
+    fetchStatus();
+  }, [book?.id]);
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!book) return;
+    if (newStatus === "add-to-list") return;
+    try {
+      let response;
+      if (contentRecordId) {
+        response = await updateContentStatus(contentRecordId, { status: newStatus });
+        if (response.success) {
+          setContentStatus(newStatus);
+          toast.success("Content status updated successfully.");
+        } else {
+          throw new Error(response.message || "Failed to update content status.");
+        }
+      } else {
+        response = await addContent({
+          content: { id: book.id, type: "Book" },
+          status: newStatus,
+          suggestionId: undefined,
+        });
+        if (response.success && response.data) {
+          setContentStatus(newStatus);
+          setContentRecordId(response.data.id);
+          toast.success("Content added successfully.");
+        } else {
+          throw new Error(response.message || "Failed to add content.");
+        }
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred. Please try again.");
+    } finally {
+      setIsPopoverOpen(false);
+    }
+  };
+
+  const getStatusBadgeColor = (status: string | null) => {
+    if (status === "Consumed") {
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+    } else if (status === "Consuming") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    } else if (status === "WantToConsume") {
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+    } else if (status === "NotInterested") {
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    } else {
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  const getStatusOptions = () => {
+    const baseOptions = [
+      { value: "Consumed", label: "Finished" },
+      { value: "Consuming", label: "Reading" },
+      { value: "WantToConsume", label: "Reading List" },
+      { value: "NotInterested", label: "Not Interested" },
+    ];
+    if (!contentRecordId) {
+      return [{ value: "add-to-list", label: "Add to Your List" }, ...baseOptions];
+    }
+    return baseOptions;
+  };
+
+  const getContentSpecificStatusLabel = (status: string | null): string => {
+    if (!status) return "Add to Your List";
+    if (status === "NotInterested") return "Not Interested";
+    if (status === "WantToConsume") return "Reading List";
+    return status === "Consumed" ? "Finished" : "Reading";
   };
 
   if (loading) {
@@ -145,10 +236,9 @@ const BookDetailsPage = () => {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold">Book not found</h2>
+            <h2 className="text-2xl font-bold">Book Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              {error ||
-                "The book you're looking for doesn't exist or couldn't be loaded."}
+              {error || "The book you are looking for does not exist or could not be loaded."}
             </p>
           </div>
         </div>
@@ -164,7 +254,6 @@ const BookDetailsPage = () => {
         </Button>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Left column - Book Cover */}
           <div className="md:col-span-1">
             <div className="rounded-lg overflow-hidden bg-muted shadow-lg">
               {book.coverUrl ? (
@@ -180,39 +269,6 @@ const BookDetailsPage = () => {
               )}
             </div>
 
-            {/* Status indicator */}
-            {book.status && (
-              <div className="mt-4">
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    book.status === "finished"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                      : book.status === "reading"
-                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                  }`}
-                >
-                  {book.status === "finished" ? (
-                    <>
-                      <CheckCircle className="mr-1 h-4 w-4" />
-                      {getStatusLabel(book.status)}
-                    </>
-                  ) : book.status === "reading" ? (
-                    <>
-                      <Clock className="mr-1 h-4 w-4" />
-                      {getStatusLabel(book.status)}
-                    </>
-                  ) : (
-                    <>
-                      <Bookmark className="mr-1 h-4 w-4" />
-                      {getStatusLabel(book.status)}
-                    </>
-                  )}
-                </span>
-              </div>
-            )}
-
-            {/* Where to read */}
             <div className="mt-6 bg-card rounded-lg p-4 shadow-sm">
               <h3 className="font-medium text-lg mb-3">Where to Read</h3>
               <div className="space-y-2">
@@ -234,7 +290,6 @@ const BookDetailsPage = () => {
             </div>
           </div>
 
-          {/* Right column - Book details */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-2">
               <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
@@ -242,27 +297,73 @@ const BookDetailsPage = () => {
               </div>
               <span className="text-sm font-medium text-primary">Book</span>
               {book.publishedYear && (
-                <span className="text-sm text-muted-foreground">
-                  ({book.publishedYear})
-                </span>
+                <span className="text-sm text-muted-foreground">({book.publishedYear})</span>
               )}
             </div>
 
-            <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
+            <div className="flex items-center gap-4 mb-2">
+              <h1 className="text-3xl font-bold">{book.title}</h1>
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(contentStatus)} hover:opacity-80 transition-opacity`}
+                    aria-label="Change content status"
+                  >
+                    {contentStatus === "Consumed" ? (
+                      <CheckCircle className="mr-1 h-4 w-4" />
+                    ) : contentStatus === "Consuming" ? (
+                      <Clock className="mr-1 h-4 w-4" />
+                    ) : contentStatus === "WantToConsume" ? (
+                      <Bookmark className="mr-1 h-4 w-4" />
+                    ) : contentStatus === "NotInterested" ? (
+                      <XCircle className="mr-1 h-4 w-4" />
+                    ) : (
+                      <Bookmark className="mr-1 h-4 w-4" />
+                    )}
+                    {getContentSpecificStatusLabel(contentStatus)}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2">
+                  <div className="space-y-1">
+                    {getStatusOptions().map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleStatusChange(option.value)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                          option.value === contentStatus
+                            ? "bg-primary/10 text-foreground cursor-not-allowed"
+                            : "hover:bg-accent"
+                        } disabled:opacity-50`}
+                        disabled={option.value === "add-to-list" || option.value === contentStatus}
+                      >
+                        {option.value === "add-to-list" ? (
+                          <Bookmark className="h-4 w-4" />
+                        ) : option.value === "Consumed" ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : option.value === "Consuming" ? (
+                          <Clock className="h-4 w-4" />
+                        ) : option.value === "WantToConsume" ? (
+                          <Bookmark className="h-4 w-4" />
+                        ) : (
+                          <XCircle className="h-4 w-4" />
+                        )}
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
             {book.subtitle && (
-              <h2 className="text-xl text-muted-foreground mb-3">
-                {book.subtitle}
-              </h2>
+              <h2 className="text-xl text-muted-foreground mb-3">{book.subtitle}</h2>
             )}
 
             <p className="text-muted-foreground mb-4">
               {[
-                book.authors && (
-                  <span className="font-medium">By {book.authors}</span>
-                ),
-                typeof book.publisher === "string"
-                  ? book.publisher
-                  : book.publisher?.name,
+                book.authors && <span className="font-medium">By {book.authors}</span>,
+                typeof book.publisher === "string" ? book.publisher : book.publisher?.name,
                 book.isbn && `ISBN: ${book.isbn}`,
                 book.pages && `${book.pages} pages`,
                 book.language && `Language: ${book.language.toUpperCase()}`,
@@ -276,16 +377,12 @@ const BookDetailsPage = () => {
                 ))}
             </p>
 
-            {/* Genres */}
             {book.genres && book.genres.length > 0 && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg">Genres</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {book.genres.map((genre, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-accent text-sm rounded-full"
-                    >
+                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
                       {genre}
                     </span>
                   ))}
@@ -293,28 +390,24 @@ const BookDetailsPage = () => {
               </div>
             )}
 
-            {/* Awards */}
-            {book.awards &&
-              (book.awards.wins > 0 || book.awards.nominations > 0) && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-lg">Awards</h3>
-                  <div className="mt-2">
-                    <p>
-                      {book.awards.wins} wins, {book.awards.nominations}{" "}
-                      nominations
-                    </p>
-                    {book.awards.awardsDetails?.length > 0 && (
-                      <ul className="list-disc pl-5 mt-2">
-                        {book.awards.awardsDetails.map((award, index) => (
-                          <li key={index}>{award}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+            {book.awards && (book.awards.wins > 0 || book.awards.nominations > 0) && (
+              <div className="mb-4">
+                <h3 className="font-medium text-lg">Awards</h3>
+                <div className="mt-2">
+                  <p>
+                    {book.awards.wins} wins, {book.awards.nominations} nominations
+                  </p>
+                  {book.awards.awardsDetails?.length > 0 && (
+                    <ul className="list-disc pl-5 mt-2">
+                      {book.awards.awardsDetails.map((award, index) => (
+                        <li key={index}>{award}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
 
-            {/* Description */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Description</h2>
               <p
@@ -325,46 +418,27 @@ const BookDetailsPage = () => {
               ></p>
             </div>
 
-            {/* Social media style interaction buttons */}
             <div className="flex items-center gap-4 mb-6">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-              >
+              <Button variant="outline" size="sm" className="rounded-full gap-2">
                 <Heart className="h-4 w-4" /> Like
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-              >
+              <Button variant="outline" size="sm" className="rounded-full gap-2">
                 <MessageCircle className="h-4 w-4" /> Comment
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-              >
+              <Button variant="outline" size="sm" className="rounded-full gap-2">
                 <Share2 className="h-4 w-4" /> Share
               </Button>
             </div>
 
             <Separator className="my-6" />
 
-            {/* Suggested by or to section */}
             {book.suggestedBy && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-3">Suggested by</h2>
                 <div className="flex items-center">
                   <Avatar className="h-10 w-10 mr-3 ring-2 ring-primary/20">
-                    <AvatarImage
-                      src={book.suggestedBy.avatar}
-                      alt={book.suggestedBy.name}
-                    />
-                    <AvatarFallback>
-                      {book.suggestedBy.name.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarImage src={book.suggestedBy.avatar} alt={book.suggestedBy.name} />
+                    <AvatarFallback>{book.suggestedBy.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{book.suggestedBy.name}</p>
@@ -388,17 +462,10 @@ const BookDetailsPage = () => {
                       className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-3 transition-colors"
                     >
                       <Avatar className="h-6 w-6 mr-2 ring-1 ring-primary/20">
-                        <AvatarImage
-                          src={recipient.avatar}
-                          alt={recipient.name}
-                        />
-                        <AvatarFallback>
-                          {recipient.name.charAt(0)}
-                        </AvatarFallback>
+                        <AvatarImage src={recipient.avatar} alt={recipient.name} />
+                        <AvatarFallback>{recipient.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">
-                        {recipient.name}
-                      </span>
+                      <span className="text-sm font-medium">{recipient.name}</span>
                     </div>
                   ))}
                 </div>

@@ -71,6 +71,7 @@ const MySuggestions = () => {
     setIsLoading(true);
     try {
       const res = await suggestContent(data);
+      console.log("Suggestion response:", res);
       if (res.success) {
         toast.success("Bhai, suggestion add ho gaya!");
       } else {

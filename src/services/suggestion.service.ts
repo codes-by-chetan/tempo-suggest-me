@@ -21,7 +21,7 @@ export const suggestContent = async (data: SuggestContentParams) => {
         Authorization: `Bearer ${getAccessToken()}`,
       },
     });
-    return response.data.data; // Extract the data field from ApiResponse
+    return response.data; // Extract the data field from ApiResponse
   } catch (err: any) {
     console.error("Error suggesting content:", err);
     throw new Error(err.response?.data?.message || "Abe, suggestion add nahi hua!");

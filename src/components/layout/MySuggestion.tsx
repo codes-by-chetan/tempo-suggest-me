@@ -133,9 +133,9 @@ function MySuggestionCard({ item }: MySuggestionCardProps) {
         className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer bg-card min-h-[340px] flex flex-col"
       >
         <CardContent className="p-4 flex flex-col flex-1">
-          <div className="flex mb-4 relative">
+          <div className="flex flex-1 mb-4 relative">
             {item.status && (
-              <div className="absolute top-1 right-1 z-10">
+              <div className="absolute top-1 right-1 z-10 ">
                 <motion.span
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -177,7 +177,7 @@ function MySuggestionCard({ item }: MySuggestionCardProps) {
             )}
             <div
               className={cn(
-                "relative overflow-hidden rounded-md cursor-pointer w-24 md:w-32 flex-shrink-0 mr-4",
+                "relative overflow-hidden rounded-md cursor-pointer  w-24 md:w-32 flex-shrink-0 mr-4",
                 getImageClass(item.type)
               )}
               onClick={() =>
@@ -217,7 +217,7 @@ function MySuggestionCard({ item }: MySuggestionCardProps) {
                 {item.title}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {item.creator || "Unknown"} • {item.year || "N/A"}
+                {item.creator || item?.artist || "Unknown"} • {item.year || "N/A"}
               </p>
             </div>
           </div>

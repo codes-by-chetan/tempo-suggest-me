@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useParams,
   useLocation,
@@ -7,12 +7,10 @@ import {
 } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import {
   Film,
   BookOpen,
@@ -34,6 +32,7 @@ import {
   Clapperboard,
   Tag,
   XCircle,
+  ChevronDown,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -134,16 +133,15 @@ const ContentDetailsPage = () => {
   const isSeriesRoute = useMatch("/series/:id");
   const isBookRoute = useMatch("/books/:id");
   const isMusicRoute = useMatch("/music/:id");
-  const stateContentDetails = location.state?.contentDetails as
-    | DisplayContent
-    | undefined;
+  const stateContentDetails = location.state?.contentDetails as DisplayContent | undefined;
 
   const [content, setContent] = useState<DisplayContent | null>(null);
   const [contentStatus, setContentStatus] = useState<string | null>(null);
-  const [contentRecordId, setContentRecordId] = useState<string | null>(null); // Store the user content record ID
+  const [contentRecordId, setContentRecordId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showFullCast, setShowFullCast] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
 
   const getPublisher = (isBookData: any, item: any) => {
     if (isBookData) {
@@ -157,23 +155,13 @@ const ContentDetailsPage = () => {
   };
 
   const normalizeContent = (
-    data:
-      | DisplayContent
-      | MovieDetails
-      | SeriesDetails
-      | BookDetails
-      | MusicDetails,
+    data: DisplayContent | MovieDetails | SeriesDetails | BookDetails | MusicDetails,
     isFromApi: boolean,
     contentType: "movie" | "series" | "book" | "music"
   ): DisplayContent => {
     if (isFromApi) {
-      const item = data as
-        | MovieDetails
-        | SeriesDetails
-        | BookDetails
-        | MusicDetails;
-      const isBookData =
-        !!(item as BookDetails).author && !!(item as BookDetails).coverImage;
+      const item = data as MovieDetails | SeriesDetails | BookDetails | MusicDetails;
+      const isBookData = !!(item as BookDetails).author && !!(item as BookDetails).coverImage;
 
       return {
         id: item._id || (item.references?.tmdbId ?? ""),
@@ -195,34 +183,20 @@ const ContentDetailsPage = () => {
         description: isBookData
           ? (item as BookDetails).description
           : (item as MovieDetails | SeriesDetails | MusicDetails).plot,
-        status: null, // We'll fetch status separately
+        status: null,
         whereToConsume: isBookData
           ? [
-              ...((item as BookDetails).availableOn?.bookstores?.map(
-                (b: any) => b.name
-              ) || []),
-              ...((item as BookDetails).availableOn?.ebooks?.map(
-                (e: any) => e.name
-              ) || []),
-              ...((item as BookDetails).availableOn?.audiobooks?.map(
-                (a: any) => a.name
-              ) || []),
+              ...((item as BookDetails).availableOn?.bookstores?.map((b: any) => b.name) || []),
+              ...((item as BookDetails).availableOn?.ebooks?.map((e: any) => e.name) || []),
+              ...((item as BookDetails).availableOn?.audiobooks?.map((a: any) => a.name) || []),
             ].filter(Boolean).length > 0
             ? [
-                ...((item as BookDetails).availableOn?.bookstores?.map(
-                  (b: any) => b.name
-                ) || []),
-                ...((item as BookDetails).availableOn?.ebooks?.map(
-                  (e: any) => e.name
-                ) || []),
-                ...((item as BookDetails).availableOn?.audiobooks?.map(
-                  (a: any) => a.name
-                ) || []),
+                ...((item as BookDetails).availableOn?.bookstores?.map((b: any) => b.name) || []),
+                ...((item as BookDetails).availableOn?.ebooks?.map((e: any) => e.name) || []),
+                ...((item as BookDetails).availableOn?.audiobooks?.map((a: any) => a.name) || []),
               ].filter(Boolean)
             : ["Amazon", "Barnes & Noble", "Local Library"]
-          : (
-              item.availableOn?.streaming?.map((s: any) => s.platform) || []
-            ).filter(Boolean).length > 0
+          : (item.availableOn?.streaming?.map((s: any) => s.platform) || []).filter(Boolean).length > 0
           ? item.availableOn?.streaming?.map((s: any) => s.platform) || []
           : contentType === "music"
           ? ["Spotify", "Apple Music", "YouTube Music"]
@@ -235,18 +209,13 @@ const ContentDetailsPage = () => {
         awards: item.awards as any,
         boxOffice: (item as MovieDetails).boxOffice,
         production: {
-          companies:
-            (item as MovieDetails | SeriesDetails).production?.companies || [],
+          companies: (item as MovieDetails | SeriesDetails).production?.companies || [],
         },
         keywords: (item as MovieDetails | SeriesDetails).keywords || [],
         language: isBookData
           ? (item as BookDetails).language
-          : Array.isArray(
-              (item as MovieDetails | SeriesDetails | MusicDetails).language
-            )
-          ? (item as MovieDetails | SeriesDetails | MusicDetails).language.join(
-              ", "
-            )
+          : Array.isArray((item as MovieDetails | SeriesDetails | MusicDetails).language)
+          ? (item as MovieDetails | SeriesDetails | MusicDetails).language.join(", ")
           : (item as MovieDetails | SeriesDetails | MusicDetails).language as any,
         country: (item as MovieDetails | SeriesDetails).country,
         seasons: (item as SeriesDetails).seasons,
@@ -260,14 +229,8 @@ const ContentDetailsPage = () => {
           contentType === "music" && !isBookData
             ? (item as MusicDetails).artists?.map((a) => a.name).join(", ")
             : undefined,
-        album:
-          contentType === "music" && !isBookData
-            ? (item as MusicDetails).album as any
-            : undefined,
-        duration:
-          contentType === "music" && !isBookData
-            ? (item as MusicDetails).duration as any
-            : undefined,
+        album: contentType === "music" && !isBookData ? (item as MusicDetails).album as any : undefined,
+        duration: contentType === "music" && !isBookData ? (item as MusicDetails).duration as any : undefined,
       };
     }
     return {
@@ -294,16 +257,9 @@ const ContentDetailsPage = () => {
     };
   };
 
-  // Fetch content details
   useEffect(() => {
     if (stateContentDetails) {
-      setContent(
-        normalizeContent(
-          stateContentDetails,
-          false,
-          stateContentDetails.type as any
-        )
-      );
+      setContent(normalizeContent(stateContentDetails, false, stateContentDetails.type as any));
       return;
     }
 
@@ -352,68 +308,59 @@ const ContentDetailsPage = () => {
     };
 
     fetchContent();
-  }, [
-    id,
-    stateContentDetails,
-    isMovieRoute,
-    isSeriesRoute,
-    isBookRoute,
-    isMusicRoute,
-  ]);
+  }, [id, stateContentDetails, isMovieRoute, isSeriesRoute, isBookRoute, isMusicRoute]);
 
-  // Fetch content status
   useEffect(() => {
     const fetchStatus = async () => {
-      if (!id) return;
+      if (!content?.id) return;
       try {
-        const response = await checkContent({ contentId: id });
+        const response = await checkContent({ contentId: content.id });
         if (response.success && response.data) {
           setContentStatus(response.data.status || null);
-          setContentRecordId(response.data.id || null); // Store the user content record ID
+          setContentRecordId(response.data.id || null);
         } else {
           setContentStatus(null);
           setContentRecordId(null);
         }
       } catch (err: any) {
-        toast.error("Abe, status check nahi hua!");
+        toast.error("Failed to fetch content status.");
       }
     };
 
     fetchStatus();
-  }, [id]);
+  }, [content?.id]);
 
-  // Handle status change
   const handleStatusChange = async (newStatus: string) => {
     if (!content) return;
-    if (newStatus === "add-to-list") return; // Do nothing if "Add to Your List" is selected
+    if (newStatus === "add-to-list") return;
     try {
       let response;
       if (contentRecordId) {
-        // Content exists, update status
         response = await updateContentStatus(contentRecordId, { status: newStatus });
         if (response.success) {
           setContentStatus(newStatus);
-          toast.success("Bhai, status update ho gaya!");
+          toast.success("Content status updated successfully.");
         } else {
-          throw new Error(response.message || "Abe, status update nahi hua!");
+          throw new Error(response.message || "Failed to update content status.");
         }
       } else {
-        // Content doesn't exist, add it
         response = await addContent({
           content: { id: content.id, type: content.type.charAt(0).toUpperCase() + content.type.slice(1) },
           status: newStatus,
-          suggestionId: undefined, // Not a suggested content
+          suggestionId: undefined,
         });
         if (response.success && response.data) {
           setContentStatus(newStatus);
-          setContentRecordId(response.data.id); // Store the new record ID
-          toast.success("Bhai, content add ho gaya!");
+          setContentRecordId(response.data.id);
+          toast.success("Content added successfully.");
         } else {
-          throw new Error(response.message || "Abe, content add nahi hua!");
+          throw new Error(response.message || "Failed to add content.");
         }
       }
     } catch (err: any) {
-      toast.error(err.message || "Abe, kuch gadbad ho gaya!");
+      toast.error(err.message || "An error occurred. Please try again.");
+    } finally {
+      setIsPopoverOpen(false);
     }
   };
 
@@ -421,11 +368,7 @@ const ContentDetailsPage = () => {
     return (
       <main className="w-full mx-auto pb-[10vh] pt-0 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
-          <Button
-            variant="ghost"
-            className="mb-4"
-            onClick={() => navigate(-1)}
-          >
+          <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
           <div className="text-center py-12">
@@ -440,18 +383,13 @@ const ContentDetailsPage = () => {
     return (
       <main className="max-w-7xl mx-auto pt-0 px-4 sm:px-6 lg:px-8">
         <div className="py-6">
-          <Button
-            variant="ghost"
-            className="mb-4"
-            onClick={() => navigate(-1)}
-          >
+          <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold">Content not found</h2>
+            <h2 className="text-2xl font-bold">Content Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              {error ||
-                "The content you're looking for doesn't exist or couldn't be loaded."}
+              {error || "The content you are looking for does not exist or could not be loaded."}
             </p>
           </div>
         </div>
@@ -538,7 +476,6 @@ const ContentDetailsPage = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  // Define dropdown options based on content type
   const getStatusOptions = (type: string) => {
     const baseOptions = [
       { value: "Consumed", label: type === "book" ? "Finished" : type === "music" || type === "song" ? "Listened" : "Watched" },
@@ -560,7 +497,6 @@ const ContentDetailsPage = () => {
         </Button>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Left column - Poster */}
           <div className="md:col-span-1">
             <div className="rounded-lg overflow-hidden bg-muted shadow-lg">
               {content.posterUrl ? (
@@ -576,11 +512,8 @@ const ContentDetailsPage = () => {
               )}
             </div>
 
-            {/* Where to watch/read/listen */}
             <div className="mt-6 bg-card rounded-lg p-4 shadow-sm">
-              <h3 className="font-medium text-lg mb-3">
-                {getWhereToConsumeLabel()}
-              </h3>
+              <h3 className="font-medium text-lg mb-3">{getWhereToConsumeLabel()}</h3>
               <div className="space-y-2">
                 {content.whereToConsume?.length ? (
                   content.whereToConsume.map((place, index) => (
@@ -594,43 +527,56 @@ const ContentDetailsPage = () => {
                     </a>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Not available
-                  </p>
+                  <p className="text-sm text-muted-foreground">Not available</p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Right column - Content details */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-2">
               <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
                 {getIconForType(content.type)}
               </div>
-              <span className="text-sm font-medium text-primary capitalize">
-                {content.type}
-              </span>
+              <span className="text-sm font-medium text-primary capitalize">{content.type}</span>
             </div>
 
-            {/* Title with Status Dropdown */}
             <div className="flex items-center gap-4 mb-2">
               <h1 className="text-3xl font-bold">{content.title}</h1>
-              <Select
-                onValueChange={(value) => handleStatusChange(value)}
-                value={contentStatus || "add-to-list"}
-              >
-                <SelectTrigger
-                  className={`w-[180px] ${getStatusBadgeColor(contentStatus)} border-none shadow-sm focus:ring-0 focus:ring-offset-0`}
-                >
-                  <SelectValue>
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(contentStatus)} hover:opacity-80 transition-opacity`}
+                    aria-label="Change content status"
+                  >
+                    {contentStatus === "Consumed" ? (
+                      <CheckCircle className="mr-1 h-4 w-4" />
+                    ) : contentStatus === "Consuming" ? (
+                      <Clock className="mr-1 h-4 w-4" />
+                    ) : contentStatus === "WantToConsume" ? (
+                      <Bookmark className="mr-1 h-4 w-4" />
+                    ) : contentStatus === "NotInterested" ? (
+                      <XCircle className="mr-1 h-4 w-4" />
+                    ) : (
+                      <Bookmark className="mr-1 h-4 w-4" />
+                    )}
                     {getContentSpecificStatusLabel(contentStatus, content.type)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {getStatusOptions(content.type).map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex items-center gap-2">
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2">
+                  <div className="space-y-1">
+                    {getStatusOptions(content.type).map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleStatusChange(option.value)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                          option.value === contentStatus
+                            ? "bg-primary/10 text-foreground cursor-not-allowed"
+                            : "hover:bg-accent"
+                        } disabled:opacity-50`}
+                        disabled={option.value === "add-to-list" || option.value === contentStatus}
+                      >
                         {option.value === "add-to-list" ? (
                           <Bookmark className="h-4 w-4" />
                         ) : option.value === "Consumed" ? (
@@ -643,11 +589,11 @@ const ContentDetailsPage = () => {
                           <XCircle className="h-4 w-4" />
                         )}
                         {option.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <p className="text-muted-foreground mb-4">
@@ -659,9 +605,7 @@ const ContentDetailsPage = () => {
                 content.duration && formatDuration(content.duration),
                 content.language,
                 content.country,
-                typeof content.publisher === "string"
-                  ? content.publisher
-                  : content.publisher?.name,
+                typeof content.publisher === "string" ? content.publisher : content.publisher?.name,
                 content.isbn && `ISBN: ${content.isbn}`,
                 content.album,
                 content.pages && `${content.pages} pages`,
@@ -670,40 +614,31 @@ const ContentDetailsPage = () => {
                 .join(" • ")}
             </p>
 
-            {/* Seasons (for series) */}
-            {content.type === "series" &&
-              content.seasons &&
-              content.seasons.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-lg">Seasons</h3>
-                  <div className="mt-2">
-                    <p>
-                      {content.seasons.length} Season
-                      {content.seasons.length > 1 ? "s" : ""}
-                    </p>
-                    <ul className="list-disc pl-5 mt-2">
-                      {content.seasons.map((season, index) => (
-                        <li key={index}>
-                          Season {season.seasonNumber}: {season.episodeCount}{" "}
-                          Episode
-                          {season.episodeCount > 1 ? "s" : ""}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+            {content.type === "series" && content.seasons && content.seasons.length > 0 && (
+              <div className="mb-4">
+                <h3 className="font-medium text-lg">Seasons</h3>
+                <div className="mt-2">
+                  <p>
+                    {content.seasons.length} Season{content.seasons.length > 1 ? "s" : ""}
+                  </p>
+                  <ul className="list-disc pl-5 mt-2">
+                    {content.seasons.map((season, index) => (
+                      <li key={index}>
+                        Season {season.seasonNumber}: {season.episodeCount} Episode
+                        {season.episodeCount > 1 ? "s" : ""}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              )}
+              </div>
+            )}
 
-            {/* Genres */}
             {content.genres && content.genres.length > 0 && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg">Genres</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.genres.map((genre, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-accent text-sm rounded-full"
-                    >
+                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
                       {genre}
                     </span>
                   ))}
@@ -711,40 +646,34 @@ const ContentDetailsPage = () => {
               </div>
             )}
 
-            {/* Rating */}
             {content.ratings?.imdb?.score && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg">Rating</h3>
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-yellow-400 fill-current" />
                   <span>
-                    {content.ratings.imdb.score.toFixed(1)}/10 (
-                    {content.ratings.imdb.votes.toLocaleString()} votes)
+                    {content.ratings.imdb.score.toFixed(1)}/10 ({content.ratings.imdb.votes.toLocaleString()} votes)
                   </span>
                 </div>
               </div>
             )}
 
-            {/* Awards */}
             {content.awards && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg flex items-center gap-2">
                   <Award className="h-5 w-5" /> Awards
                 </h3>
                 <div className="mt-2">
-                  {content.awards.oscars?.wins ||
-                  content.awards.oscars?.nominations ? (
+                  {content.awards.oscars?.wins || content.awards.oscars?.nominations ? (
                     <p>
-                      Oscars: {content.awards.oscars.wins} wins,{" "}
-                      {content.awards.oscars.nominations} nominations
+                      Oscars: {content.awards.oscars.wins} wins, {content.awards.oscars.nominations} nominations
                     </p>
                   ) : (
                     <p>No Oscar wins or nominations</p>
                   )}
                   {(content.awards.wins || content.awards.nominations) && (
                     <p>
-                      Total: {content.awards.wins} wins,{" "}
-                      {content.awards.nominations} nominations
+                      Total: {content.awards.wins} wins, {content.awards.nominations} nominations
                     </p>
                   )}
                   {content.awards.awardsDetails?.length ? (
@@ -754,35 +683,26 @@ const ContentDetailsPage = () => {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No additional award details
-                    </p>
+                    <p className="text-sm text-muted-foreground">No additional award details</p>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Box Office (for movies only) */}
             {content.type === "movie" && content.boxOffice && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg flex items-center gap-2">
                   <DollarSign className="h-5 w-5" /> Box Office
                 </h3>
                 <div className="mt-2">
-                  {content.boxOffice.budget && (
-                    <p>Budget: {formatCurrency(content.boxOffice.budget)}</p>
-                  )}
+                  {content.boxOffice.budget && <p>Budget: {formatCurrency(content.boxOffice.budget)}</p>}
                   {content.boxOffice.grossWorldwide && (
-                    <p>
-                      Gross Worldwide:{" "}
-                      {formatCurrency(content.boxOffice.grossWorldwide)}
-                    </p>
+                    <p>Gross Worldwide: {formatCurrency(content.boxOffice.grossWorldwide)}</p>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Production Companies */}
             {content.production?.companies?.length && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg flex items-center gap-2">
@@ -790,10 +710,7 @@ const ContentDetailsPage = () => {
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.production.companies.map((company, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-accent text-sm rounded-full"
-                    >
+                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
                       {company.name}
                     </span>
                   ))}
@@ -801,7 +718,6 @@ const ContentDetailsPage = () => {
               </div>
             )}
 
-            {/* Keywords */}
             {content.keywords && content.keywords.length > 0 && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg flex items-center gap-2">
@@ -809,10 +725,7 @@ const ContentDetailsPage = () => {
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.keywords.map((keyword, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-accent text-sm rounded-full"
-                    >
+                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
                       {keyword}
                     </span>
                   ))}
@@ -820,7 +733,6 @@ const ContentDetailsPage = () => {
               </div>
             )}
 
-            {/* Description */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Description</h2>
               <p
@@ -831,86 +743,56 @@ const ContentDetailsPage = () => {
               ></p>
             </div>
 
-            {/* Cast */}
             {content.cast && content.cast.length > 0 && (
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-2">Cast</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {content.cast
-                    .slice(0, showFullCast ? undefined : 10)
-                    .map((actor, index) => (
-                      <div key={index} className="flex items-center">
-                        <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20 cursor-pointer">
-                          <AvatarImage
-                            src={actor.person?.profileImage?.url}
-                            alt={actor.person?.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <AvatarFallback>
-                            {actor.person?.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{actor.person?.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            as {actor?.character}
-                          </p>
-                        </div>
+                  {content.cast.slice(0, showFullCast ? undefined : 10).map((actor, index) => (
+                    <div key={index} className="flex items-center">
+                      <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20 cursor-pointer">
+                        <AvatarImage
+                          src={actor.person?.profileImage?.url}
+                          alt={actor.person?.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <AvatarFallback>{actor.person?.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{actor.person?.name}</p>
+                        <p className="text-sm text-muted-foreground">as {actor?.character}</p>
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
                 {content.cast.length > 10 && (
-                  <Button
-                    variant="link"
-                    className="mt-4"
-                    onClick={() => setShowFullCast(!showFullCast)}
-                  >
+                  <Button variant="link" className="mt-4" onClick={() => setShowFullCast(!showFullCast)}>
                     {showFullCast ? "Show Less" : "Show More"}
                   </Button>
                 )}
               </div>
             )}
 
-            {/* Social media style interaction buttons */}
             <div className="flex items-center gap-4 mb-6">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-              >
+              <Button variant="outline" size="sm" className="rounded-full gap-2">
                 <Heart className="h-4 w-4" /> Like
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-              >
+              <Button variant="outline" size="sm" className="rounded-full gap-2">
                 <MessageCircle className="h-4 w-4" /> Comment
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-2"
-              >
+              <Button variant="outline" size="sm" className="rounded-full gap-2">
                 <Share2 className="h-4 w-4" /> Share
               </Button>
             </div>
 
             <Separator className="my-6" />
 
-            {/* Suggested by or to section */}
             {content.suggestedBy && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-3">Suggested by</h2>
                 <div className="flex items-center">
                   <Avatar className="h-10 w-10 mr-3 ring-2 ring-primary/20">
-                    <AvatarImage
-                      src={content.suggestedBy.avatar}
-                      alt={content.suggestedBy.name}
-                    />
-                    <AvatarFallback>
-                      {content.suggestedBy.name.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarImage src={content.suggestedBy.avatar} alt={content.suggestedBy.name} />
+                    <AvatarFallback>{content.suggestedBy.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{content.suggestedBy.name}</p>
@@ -934,17 +816,10 @@ const ContentDetailsPage = () => {
                       className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-3 transition-colors"
                     >
                       <Avatar className="h-6 w-6 mr-2 ring-1 ring-primary/20">
-                        <AvatarImage
-                          src={recipient.avatar}
-                          alt={recipient.name}
-                        />
-                        <AvatarFallback>
-                          {recipient.name.charAt(0)}
-                        </AvatarFallback>
+                        <AvatarImage src={recipient.avatar} alt={recipient.name} />
+                        <AvatarFallback>{recipient.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">
-                        {recipient.name}
-                      </span>
+                      <span className="text-sm font-medium">{recipient.name}</span>
                     </div>
                   ))}
                 </div>

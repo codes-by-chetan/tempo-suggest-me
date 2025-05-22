@@ -80,7 +80,6 @@ function SuggestedToMeCard({
   const reactionBtnRef = useRef<HTMLButtonElement>(null);
   const commentBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Fetch content status on mount
   useEffect(() => {
     const fetchContentStatus = async () => {
       try {
@@ -94,7 +93,7 @@ function SuggestedToMeCard({
         }
       } catch (error) {
         console.error("Error checking content:", error);
-        toast.error("Abe, content check nahi hua!");
+        toast.error("Failed to fetch content status.");
       }
     };
     if (item.contentId) {
@@ -182,12 +181,22 @@ function SuggestedToMeCard({
     }
   };
 
+  const getImageClass = (type: string) => {
+    switch (type) {
+      case "music":
+      case "song":
+        return "aspect-square w-28";
+      default:
+        return "aspect-[2/3] w-24";
+    }
+  };
+
   const toggleWatchList = () => {
     setIsFavorite(!isFavorite);
     toast.success(
       isFavorite
-        ? "Bhai, favorite se hata diya!"
-        : "Bhai, favorite mein jod diya!"
+        ? "Removed from favorites."
+        : "Added to favorites."
     );
   };
 
@@ -217,14 +226,13 @@ function SuggestedToMeCard({
     newStatus: "Consumed" | "Consuming" | "WantToConsume" | "NotInterested"
   ) => {
     if (!item.contentId) {
-      toast.error("Abe, content ID nahi hai!");
+      toast.error("Content ID is missing.");
       return;
     }
 
     setLoading((prev) => ({ ...prev, [newStatus.toLowerCase()]: true }));
     try {
       if (userContentId) {
-        // Update existing content
         const response = await updateContentStatus(userContentId, {
           status: newStatus,
         });
@@ -232,14 +240,13 @@ function SuggestedToMeCard({
           setStatus(newStatus);
           toast.success(
             newStatus === "NotInterested"
-              ? "Bhai, content ko not interested mark kar diya!"
-              : "Bhai, status update ho gaya!"
+              ? "Content marked as not interested."
+              : "Content status updated successfully."
           );
         } else {
-          toast.error("Abe, status update nahi hua!");
+          toast.error("Failed to update content status.");
         }
       } else {
-        // Add new content
         const response = await addContent({
           content: { id: item.contentId, type: item.type?.charAt(0).toUpperCase() + item.type?.slice(1) },
           status: newStatus,
@@ -250,31 +257,22 @@ function SuggestedToMeCard({
           setUserContentId(response.data.id);
           toast.success(
             newStatus === "NotInterested"
-              ? "Bhai, content ko not interested mark kar diya!"
-              : "Bhai, content watchlist mein jod diya!"
+              ? "Content marked as not interested."
+              : "Content added to your list."
           );
         } else {
-          toast.error("Abe, content add nahi hua!");
+          toast.error("Failed to add content to your list.");
         }
       }
     } catch (error) {
       console.error("Error updating status:", error);
-      toast.error("Abe, kuch gadbad ho gaya!");
+      toast.error("An error occurred. Please try again.");
     } finally {
       setLoading((prev) => ({ ...prev, [newStatus.toLowerCase()]: false }));
     }
   };
 
   const reactions = cardReactions[item.id] || [];
-  const getImageClass = (type: string) => {
-    switch (type) {
-      case "music":
-      case "song":
-        return "aspect-square";
-      default:
-        return "aspect-[2/3]";
-    }
-  };
 
   return (
     <motion.div
@@ -283,13 +281,14 @@ function SuggestedToMeCard({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
       whileHover={{ y: -5 }}
+      className="h-full"
     >
       <Card
         key={item.id}
-        className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer bg-card"
+        className="overflow-hidden shadow-social dark:shadow-social-dark transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover border-0 cursor-pointer bg-card h-full flex flex-col"
       >
-        <CardContent className="p-4">
-          <div className="flex mb-4 relative">
+        <CardContent className="p-4 flex flex-col h-full">
+          <div className="flex mb-4 relative flex-shrink-0 min-h-[144px]">
             {status && (
               <div className="absolute top-1 right-1 z-10">
                 <motion.span
@@ -333,22 +332,37 @@ function SuggestedToMeCard({
             )}
             <div
               className={cn(
-                "relative overflow-hidden rounded-md cursor-pointer w-24 md:w-32 flex-shrink-0 mr-4",
+                "relative overflow-hidden rounded-md cursor-pointer flex-shrink-0 mr-4 flex items-center justify-center",
                 getImageClass(item.type)
               )}
               onClick={() =>
                 navigate(getRouteForType(item.type, item.contentId || item.id))
               }
             >
-              {item.imageUrl && (
+              {item.imageUrl ? (
                 <img
-                  src={item.imageUrl || "/placeholder.svg"}
+                  src={item.imageUrl}
                   alt={item.title}
-                  className="h-full w-full object-cover"
+                  className="w-full object-cover rounded-md"
+                  style={{
+                    aspectRatio:
+                      item.type === "music" || item.type === "song"
+                        ? "1 / 1"
+                        : "2 / 3",
+                  }}
                 />
+              ) : (
+                <div
+                  className={cn(
+                    "w-full flex items-center justify-center bg-primary/10",
+                    getImageClass(item.type)
+                  )}
+                >
+                  {getIconForType(item.type)}
+                </div>
               )}
             </div>
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col justify-center flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
                   {getIconForType(item.type)}
@@ -363,27 +377,25 @@ function SuggestedToMeCard({
               <h3
                 className="font-semibold text-lg mb-1 line-clamp-1 text-foreground cursor-pointer"
                 onClick={() =>
-                  navigate(
-                    getRouteForType(item.type, item.contentId || item.id)
-                  )
+                  navigate(getRouteForType(item.type, item.contentId || item.id))
                 }
               >
                 {item.title}
               </h3>
-              <p className="text-sm text-muted-foreground">
-                {item.creator} • {item.year}
+              <p className="text-sm text-muted-foreground line-clamp-1">
+                {item.creator || "Unknown"} • {item.year || "N/A"}
               </p>
             </div>
           </div>
-          <div className="mb-4">
+          <div className="mb-4 flex-grow">
             <p
-              className="text-sm line-clamp-2 text-foreground"
+              className="text-sm line-clamp-2 text-foreground min-h-[2.5rem]"
               dangerouslySetInnerHTML={{
                 __html: item.description || "No description available.",
               }}
             ></p>
           </div>
-          <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+          <div className="flex flex-wrap items-center justify-between mb-4 gap-2 flex-shrink-0">
             <Button
               variant={status === "Consumed" ? "default" : "outline"}
               size="sm"
@@ -461,7 +473,7 @@ function SuggestedToMeCard({
               Not Interested
             </Button>
           </div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <motion.div whileTap={{ scale: 0.9 }}>
               <Button
                 variant="ghost"
@@ -524,7 +536,7 @@ function SuggestedToMeCard({
               </Button>
             </motion.div>
           </div>
-          <div className="flex items-center pt-3 border-t border-border">
+          <div className="flex items-center pt-3 border-t border-border flex-shrink-0">
             <span className="text-xs font-medium text-foreground mr-2">
               Suggested by:
             </span>

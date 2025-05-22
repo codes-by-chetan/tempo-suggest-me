@@ -8,13 +8,24 @@ import {
   BookMarked,
   BookOpenCheck,
   MessageCircle,
+  Search,
+  Library,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import * as Dialog from "@radix-ui/react-dialog";
+import { useState } from "react";
 
 // Mobile tab bar
 const MobileTabBar = () => {
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const contentPaths = [
+    "/my-watchlist",
+    "/suggested-to-me",
+    "/my-suggestions",
+  ];
 
   const isActive = (path: string) => {
     if (path === "/chat") {
@@ -24,6 +35,8 @@ const MobileTabBar = () => {
     }
     return location.pathname === path;
   };
+
+  const isContentTabActive = contentPaths.some((path) => isActive(path));
 
   const handleLogout = () => {
     logout();
@@ -45,43 +58,79 @@ const MobileTabBar = () => {
           <span className="text-xs mt-1">Home</span>
         </Link>
 
-        <Link
-          to="/suggested-to-me"
-          className={cn(
-            "flex flex-col items-center justify-center flex-1 py-2",
-            isActive("/suggested-to-me")
-              ? "text-primary"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <BookOpenCheck className="h-5 w-5" />
-          <span className="text-xs mt-1">Suggested</span>
-        </Link>
+        <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog.Trigger asChild>
+            <button
+              className={cn(
+                "flex flex-col items-center justify-center flex-1 py-2",
+                isContentTabActive
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Library className="h-5 w-5" />
+              <span className="text-xs mt-1">Content</span>
+            </button>
+          </Dialog.Trigger>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
+            <Dialog.Content className="fixed bottom-16 left-1/2 transform -translate-x-1/2 w-40 bg-card border border-border p-2 rounded-md z-50">
+              <Dialog.Title className="text-sm font-semibold mb-2">
+                Select Content
+              </Dialog.Title>
+              <div className="flex flex-col gap-1">
+                <Link
+                  to="/my-watchlist"
+                  onClick={() => setIsDialogOpen(false)}
+                  className={cn(
+                    "p-1 rounded-md text-center text-sm",
+                    isActive("/my-watchlist")
+                      ? "bg-primary text-primary-foreground cursor-not-allowed"
+                      : "text-foreground hover:bg-muted"
+                  )}
+                >
+                  Watchlist
+                </Link>
+                <Link
+                  to="/suggested-to-me"
+                  onClick={() => setIsDialogOpen(false)}
+                  className={cn(
+                    "p-1 rounded-md text-center text-sm",
+                    isActive("/suggested-to-me")
+                      ? "bg-primary text-primary-foreground cursor-not-allowed"
+                      : "text-foreground hover:bg-muted"
+                  )}
+                >
+                  Suggested
+                </Link>
+                <Link
+                  to="/my-suggestions"
+                  onClick={() => setIsDialogOpen(false)}
+                  className={cn(
+                    "p-1 rounded-md text-center text-sm",
+                    isActive("/my-suggestions")
+                      ? "bg-primary text-primary-foreground cursor-not-allowed"
+                      : "text-foreground hover:bg-muted"
+                  )}
+                >
+                  My Suggestions
+                </Link>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
 
         <Link
-          to="/my-suggestions"
+          to="/search"
           className={cn(
             "flex flex-col items-center justify-center flex-1 py-2",
-            isActive("/my-suggestions")
+            isActive("/search")
               ? "text-primary"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <User className="h-5 w-5" />
-          <span className="text-xs !text-center mt-1">My Suggestions</span>
-        </Link>
-
-        <Link
-          to="/my-watchlist"
-          className={cn(
-            "flex flex-col items-center justify-center flex-1 py-2",
-            isActive("/my-watchlist")
-              ? "text-primary"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <BookMarked className="h-5 w-5" />
-          <span className="text-xs mt-1">Watchlist</span>
+          <Search className="h-5 w-5" />
+          <span className="text-xs mt-1">Search</span>
         </Link>
 
         <Link
