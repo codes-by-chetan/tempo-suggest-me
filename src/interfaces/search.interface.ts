@@ -5,7 +5,20 @@ export interface GlobalSearchResponse {
   success: boolean;
   redirect: null;
 }
-
+export interface SearchResult {
+  id?: string
+  tmdbId?: string
+  googleBooksId?: string
+  spotifyId?: string
+  title?: string
+  fullName?: string
+  avatar?: { url: string }
+  coverImage?: string | { url: string }
+  poster?: string | { url: string }
+  category?: string
+  year?: string
+  plot?: string
+}
 interface GSearchResults {
   results: GlobalSearchResults;
   pagination: Pagination;

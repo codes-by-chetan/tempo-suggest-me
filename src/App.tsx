@@ -19,7 +19,8 @@ import MobileTabBar from "./components/layout/MobileTabBar";
 import MusicDetailsPage from "./pages/MusicDetailsPage";
 import MobileChatConversation from "./pages/chat/mobile-conversation";
 import DesktopChatConversation from "./pages/chat/desktop-conversation";
-import SearchPage from "./pages/SearchPage";
+import SearchPage from "./pages/search/search-page";
+
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));

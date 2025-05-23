@@ -164,7 +164,7 @@ const Navbar = () => {
               <input
                 ref={desktopInputRef}
                 type="text"
-                placeholder="Search peoples, movies, books, ..."
+                placeholder="Search people, movies, books, ..."
                 className="w-full py-1.5 pl-10 pr-4 rounded-full bg-accent/50 border-0 text-sm ring-1 ring-primary/30 focus:ring-1 focus:ring-primary/70 focus:outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
