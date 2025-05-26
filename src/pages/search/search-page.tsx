@@ -1,62 +1,115 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, useCallback } from "react"
-import { useSearchParams } from "react-router-dom"
-import { SearchInput } from "./search-input"
-import { SearchTabs } from "./search-tabs"
-import { SearchResults } from "./search-results"
-import { globalSearch, searchPeople } from "@/services/search.service"
-import type { GlobalSearchResponse, PeopleSearchResponse, SearchResultItem } from "@/interfaces/search.interface"
-import { useMobile } from "@/lib/use-mobile"
-import { useInfiniteScroll } from "@/lib/use-infinite-scroll"
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import { SearchInput } from "./search-input";
+import { SearchTabs } from "./search-tabs";
+import { SearchResults } from "./search-results";
+import { globalSearch, searchPeople } from "@/services/search.service";
+import type {
+  GlobalSearchResponse,
+  PeopleSearchResponse,
+  SearchResultItem,
+} from "@/interfaces/search.interface";
+import { useMobile } from "@/lib/use-mobile";
+import { useInfiniteScroll } from "@/lib/use-infinite-scroll";
 
 // Define limit as a constant
-const LIMIT = 10
+const LIMIT = 10;
 
 export type TabType = {
-  label: string
-  value: string
-}
+  label: string;
+  value: string;
+};
 
 export type TabDataType = {
-  results: SearchResultItem[]
-  totalResults: number
-  totalPages: number
-  hasMore: boolean
-  page: number
-  imageFailed: boolean[]
-}
+  results: SearchResultItem[];
+  totalResults: number;
+  totalPages: number;
+  hasMore: boolean;
+  page: number;
+  imageFailed: boolean[];
+};
 
 export type TabDataWithSearchState = {
-  [key: string]: TabDataType
-} & {
-  hasSearched?: boolean
-}
+  results?: SearchResultItem[];
+  totalResults?: number;
+  totalPages?: number;
+  hasMore?: boolean;
+  page?: number;
+  imageFailed?: boolean[];
+  hasSearched?: boolean;
+};
 
 export default function SearchPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const isMobile = useMobile()
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isMobile = useMobile();
 
-  const [searchTerm, setSearchTerm] = useState<string>(searchParams.get("q") || "")
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>(searchTerm)
-  const [activeTab, setActiveTab] = useState<string>("all")
-  const [hasSearched, setHasSearched] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isSearchEmpty, setIsSearchEmpty] = useState<boolean>(true)
+  const [searchTerm, setSearchTerm] = useState<string>(
+    searchParams.get("q") || ""
+  );
+  const [debouncedSearchTerm, setDebouncedSearchTerm] =
+    useState<string>(searchTerm);
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSearchEmpty, setIsSearchEmpty] = useState<boolean>(true);
 
   const [tabData, setTabData] = useState<{
-    [key: string]: TabDataType
+    [key: string]: TabDataType;
   }>({
-    all: { results: [], totalResults: 0, totalPages: 0, hasMore: true, page: 1, imageFailed: [] },
-    users: { results: [], totalResults: 0, totalPages: 0, hasMore: true, page: 1, imageFailed: [] },
-    movie: { results: [], totalResults: 0, totalPages: 0, hasMore: true, page: 1, imageFailed: [] },
-    series: { results: [], totalResults: 0, totalPages: 0, hasMore: true, page: 1, imageFailed: [] },
-    music: { results: [], totalResults: 0, totalPages: 0, hasMore: true, page: 1, imageFailed: [] },
-    book: { results: [], totalResults: 0, totalPages: 0, hasMore: true, page: 1, imageFailed: [] },
-  })
+    all: {
+      results: [],
+      totalResults: 0,
+      totalPages: 0,
+      hasMore: true,
+      page: 1,
+      imageFailed: [],
+    },
+    users: {
+      results: [],
+      totalResults: 0,
+      totalPages: 0,
+      hasMore: true,
+      page: 1,
+      imageFailed: [],
+    },
+    movie: {
+      results: [],
+      totalResults: 0,
+      totalPages: 0,
+      hasMore: true,
+      page: 1,
+      imageFailed: [],
+    },
+    series: {
+      results: [],
+      totalResults: 0,
+      totalPages: 0,
+      hasMore: true,
+      page: 1,
+      imageFailed: [],
+    },
+    music: {
+      results: [],
+      totalResults: 0,
+      totalPages: 0,
+      hasMore: true,
+      page: 1,
+      imageFailed: [],
+    },
+    book: {
+      results: [],
+      totalResults: 0,
+      totalPages: 0,
+      hasMore: true,
+      page: 1,
+      imageFailed: [],
+    },
+  });
 
   const tabs: TabType[] = [
     { label: "All", value: "all" },
@@ -65,16 +118,16 @@ export default function SearchPage() {
     { label: "Series", value: "series" },
     { label: "Music", value: "music" },
     { label: "Books", value: "book" },
-  ]
+  ];
 
   // Debounce search term update
   const updateDebouncedSearch = useCallback(
     debounce((value: string) => {
-      setDebouncedSearchTerm(value)
-      setIsSearchEmpty(!value.trim())
-      setHasSearched(!!value.trim())
+      setDebouncedSearchTerm(value);
+      setIsSearchEmpty(!value.trim());
+      setHasSearched(!!value.trim());
       setTabData((prev) => {
-        const newData = { ...prev }
+        const newData = { ...prev };
         Object.keys(newData).forEach((key) => {
           newData[key] = {
             results: [],
@@ -83,64 +136,84 @@ export default function SearchPage() {
             hasMore: true,
             page: 1,
             imageFailed: [],
-          }
-        })
-        return newData
-      })
+          };
+        });
+        return newData;
+      });
       // Update URL query parameter
       if (value.trim()) {
-        setSearchParams({ q: value })
+        setSearchParams({ q: value });
       } else {
-        setSearchParams({})
+        setSearchParams({});
       }
     }, 800),
-    [setSearchParams],
-  )
+    [setSearchParams]
+  );
 
   useEffect(() => {
-    updateDebouncedSearch(searchTerm)
-  }, [searchTerm, updateDebouncedSearch])
+    updateDebouncedSearch(searchTerm);
+  }, [searchTerm, updateDebouncedSearch]);
 
-  const fetchResults = async (tab: string, currentPage: number, append = false) => {
+  const fetchResults = async (
+    tab: string,
+    currentPage: number,
+    append = false
+  ) => {
     if (!debouncedSearchTerm) {
       setTabData((prev) => ({
         ...prev,
-        [tab]: { results: [], totalResults: 0, totalPages: 0, hasMore: false, page: 1, imageFailed: [] },
-      }))
-      return
+        [tab]: {
+          results: [],
+          totalResults: 0,
+          totalPages: 0,
+          hasMore: false,
+          page: 1,
+          imageFailed: [],
+        },
+      }));
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      setError(null) // Reset error state before fetching
+      setError(null); // Reset error state before fetching
       if (tab === "users") {
         // Fetch user search results
         const response: PeopleSearchResponse = await searchPeople({
           searchTerm: debouncedSearchTerm,
           page: currentPage,
           limit: LIMIT,
-        })
+        });
 
-        const newResults = response.data.data || []
+        const newResults = response.data.data || [];
 
         setTabData((prev) => ({
           ...prev,
           [tab]: {
-            results: append ? [...prev[tab].results, ...newResults] : newResults,
+            results: append
+              ? [...prev[tab].results, ...newResults]
+              : newResults,
             totalResults: response.data.pagination.totalResults || 0,
-            totalPages: Math.ceil((response.data.pagination.totalResults || 0) / LIMIT),
+            totalPages: Math.ceil(
+              (response.data.pagination.totalResults || 0) / LIMIT
+            ),
             hasMore:
-              newResults.length > 0 && currentPage < Math.ceil((response.data.pagination.totalResults || 0) / LIMIT),
+              newResults.length > 0 &&
+              currentPage <
+                Math.ceil((response.data.pagination.totalResults || 0) / LIMIT),
             page: currentPage,
             imageFailed: append
-              ? [...prev[tab].imageFailed, ...Array(newResults.length).fill(false)]
+              ? [
+                  ...prev[tab].imageFailed,
+                  ...Array(newResults.length).fill(false),
+                ]
               : Array(newResults.length).fill(false),
           },
-        }))
+        }));
       } else {
         // Fetch global search results
-        const contentTypes = tab === "all" ? [] : [tab]
+        const contentTypes = tab === "all" ? [] : [tab];
 
         const response: GlobalSearchResponse = await globalSearch({
           searchType: "all",
@@ -148,10 +221,10 @@ export default function SearchPage() {
           page: currentPage,
           limit: LIMIT,
           contentTypes,
-        })
+        });
 
-        const searchResults = response.data?.results || {}
-        let combinedResults: SearchResultItem[] = []
+        const searchResults = response.data?.results || {};
+        let combinedResults: SearchResultItem[] = [];
 
         if (tab === "all") {
           Object.keys(searchResults).forEach((category) => {
@@ -162,30 +235,37 @@ export default function SearchPage() {
                   ...item,
                   category,
                 })),
-              ]
+              ];
             }
-          })
+          });
         } else {
-          combinedResults = searchResults[tab]?.data || []
+          combinedResults = searchResults[tab]?.data || [];
         }
 
         setTabData((prev) => ({
           ...prev,
           [tab]: {
-            results: append ? [...prev[tab].results, ...combinedResults] : combinedResults,
+            results: append
+              ? [...prev[tab].results, ...combinedResults]
+              : combinedResults,
             totalResults: response.data?.pagination?.totalResults || 0,
             totalPages: response.data?.pagination?.totalPages || 0,
-            hasMore: combinedResults.length > 0 && currentPage < (response.data?.pagination?.totalPages || 0),
+            hasMore:
+              combinedResults.length > 0 &&
+              currentPage < (response.data?.pagination?.totalPages || 0),
             page: currentPage,
             imageFailed: append
-              ? [...prev[tab].imageFailed, ...Array(combinedResults.length).fill(false)]
+              ? [
+                  ...prev[tab].imageFailed,
+                  ...Array(combinedResults.length).fill(false),
+                ]
               : Array(combinedResults.length).fill(false),
           },
-        }))
+        }));
       }
     } catch (err) {
-      console.error(err)
-      setError("An error occurred while fetching results. Please try again.")
+      console.error(err);
+      setError("An error occurred while fetching results. Please try again.");
       setTabData((prev) => ({
         ...prev,
         [tab]: {
@@ -196,44 +276,48 @@ export default function SearchPage() {
           page: currentPage,
           imageFailed: append ? prev[tab].imageFailed : [],
         },
-      }))
+      }));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Fetch results on tab switch or search term change
   useEffect(() => {
     if (debouncedSearchTerm && (activeTab !== "all" || hasSearched)) {
-      fetchResults(activeTab, 1, false)
+      fetchResults(activeTab, 1, false);
     }
-  }, [debouncedSearchTerm, activeTab, hasSearched])
+  }, [debouncedSearchTerm, activeTab, hasSearched]);
 
   // Setup infinite scroll
   const loadMore = useCallback(() => {
     if (!loading && tabData[activeTab].hasMore) {
-      const nextPage = tabData[activeTab].page + 1
-      fetchResults(activeTab, nextPage, true)
+      const nextPage = tabData[activeTab].page + 1;
+      fetchResults(activeTab, nextPage, true);
     }
-  }, [loading, activeTab, tabData])
+  }, [loading, activeTab, tabData]);
 
-  const { observerRef } = useInfiniteScroll(loadMore)
+  const { observerRef } = useInfiniteScroll(loadMore);
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateDebouncedSearch(searchTerm)
-  }
+    e.preventDefault();
+    updateDebouncedSearch(searchTerm);
+  };
 
   // Create tabData with hasSearched for mobile view
   const tabDataWithSearchState: TabDataWithSearchState = {
     ...tabData,
     hasSearched,
-  }
+  };
 
   return (
-    <div className="relative px-2 py-0 sm:p-2 md:p-3 lg:p-4 w-full max-w-[100%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto overflow-x-hidden">
+    <div className="relative px-2 py-0 sm:p-2 md:p-3 lg:p-4 w-full max-w-[100%] sm:max-w-xl md:max-w-2xl lg:max-w-7xl mx-auto overflow-x-hidden">
       {/* Search Input */}
-      <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleSearch={handleSearch} />
+      <SearchInput
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        handleSearch={handleSearch}
+      />
 
       {/* Conditional Rendering Based on Screen Size */}
       {isMobile ? (
@@ -252,7 +336,12 @@ export default function SearchPage() {
         />
       ) : (
         <>
-          <SearchTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} isMobile={isMobile} />
+          <SearchTabs
+            tabs={tabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            isMobile={isMobile}
+          />
           <SearchResults
             activeTab={activeTab}
             tabData={tabData}
@@ -266,14 +355,14 @@ export default function SearchPage() {
         </>
       )}
     </div>
-  )
+  );
 }
 
 // Debounce function
 function debounce(func: (...args: any[]) => void, delay: number) {
-  let timeoutId: NodeJS.Timeout
+  let timeoutId: NodeJS.Timeout;
   return (...args: any[]) => {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => func(...args), delay)
-  }
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
 }

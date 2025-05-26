@@ -68,7 +68,7 @@ function MainContent() {
         className=""
         initial={false}
         animate={{
-          marginLeft: collapsed ? "0.5rem" : "1rem",
+          marginLeft: isMobile ? "0" : collapsed ? "0.5rem" : "1rem",
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >

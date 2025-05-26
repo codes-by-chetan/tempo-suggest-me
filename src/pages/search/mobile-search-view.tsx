@@ -129,14 +129,14 @@ export function MobileSearchView({
     <div className="flex flex-col h-full">
       {/* Tab Bar - Instagram Style */}
       <div className="flex-shrink-0 mb-4">
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-2">
+        <div className="flex justify-between overflow-x-auto scrollbar-hide pb-2">
           {tabs.map((tab) => (
             <Button
               key={tab.value}
               variant="ghost"
               onClick={() => setActiveTab(tab.value)}
               className={cn(
-                "flex-shrink-0 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200",
+                "flex-shrink-0 px-3 py-1.5 text-xs font-normal rounded-full transition-all duration-200",
                 activeTab === tab.value
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent",
@@ -215,7 +215,7 @@ export function MobileSearchView({
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex items-center justify-center px-4">
+                <div className="flex-1 h-full flex items-center justify-center px-4">
                   {error ? (
                     <p className="text-center text-sm text-destructive">{error}</p>
                   ) : (
