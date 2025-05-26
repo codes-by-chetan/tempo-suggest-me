@@ -1,22 +1,59 @@
 "use client"
 
+import type React from "react"
+
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { TabType } from "./search-page"
-import { MobileTabsView } from "./mobile-tabs-view"
+import type { TabType, TabDataType, TabDataWithSearchState } from "./search-page"
+import { MobileSearchView } from "./mobile-search-view"
 
 interface SearchTabsProps {
   tabs: TabType[]
   activeTab: string
   setActiveTab: (tab: string) => void
   isMobile: boolean
+  // Add props for mobile view
+  tabData?: TabDataWithSearchState
+  setTabData?: React.Dispatch<React.SetStateAction<{ [key: string]: TabDataType }>>
+  loading?: boolean
+  hasSearched?: boolean
+  observerRef?: React.RefObject<HTMLDivElement>
+  error?: string | null
+  isSearchEmpty?: boolean
 }
 
-export function SearchTabs({ tabs, activeTab, setActiveTab, isMobile }: SearchTabsProps) {
-  if (isMobile) {
-    return <MobileTabsView tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
+export function SearchTabs({
+  tabs,
+  activeTab,
+  setActiveTab,
+  isMobile,
+  tabData,
+  setTabData,
+  loading,
+  hasSearched,
+  observerRef,
+  error,
+  isSearchEmpty,
+}: SearchTabsProps) {
+  // If mobile and we have all the required props, render the full mobile view
+  if (isMobile && tabData && setTabData && observerRef !== undefined) {
+    return (
+      <MobileSearchView
+        tabs={tabs}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        tabData={tabData}
+        setTabData={setTabData}
+        loading={loading || false}
+        hasSearched={hasSearched || false}
+        observerRef={observerRef}
+        error={error || null}
+        isSearchEmpty={isSearchEmpty || false}
+      />
+    )
   }
 
+  // Desktop view
   return (
     <div className="mb-4 w-full max-w-[100%] overflow-x-hidden">
       <div className="flex flex-row gap-2 overflow-x-auto snap-x snap-mandatory whitespace-nowrap w-full max-w-[100%] pb-1">

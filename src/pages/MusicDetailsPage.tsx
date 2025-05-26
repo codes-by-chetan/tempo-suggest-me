@@ -91,7 +91,7 @@ const MusicDetailsPage = () => {
     };
 
     fetchStatus();
-  }, [content]);
+  }, [content?._id]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!content) return;

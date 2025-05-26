@@ -3,12 +3,12 @@
 import type React from "react"
 
 import { useState, useEffect, useCallback } from "react"
+import { useSearchParams } from "react-router-dom"
 import { SearchInput } from "./search-input"
 import { SearchTabs } from "./search-tabs"
 import { SearchResults } from "./search-results"
 import { globalSearch, searchPeople } from "@/services/search.service"
-import type { GlobalSearchResponse, PeopleSearchResponse } from "@/interfaces/search.interface"
-import { useSearchParams } from "react-router-dom"
+import type { GlobalSearchResponse, PeopleSearchResponse, SearchResultItem } from "@/interfaces/search.interface"
 import { useMobile } from "@/lib/use-mobile"
 import { useInfiniteScroll } from "@/lib/use-infinite-scroll"
 
@@ -21,7 +21,7 @@ export type TabType = {
 }
 
 export type TabDataType = {
-  results: any[]
+  results: SearchResultItem[]
   totalResults: number
   totalPages: number
   hasMore: boolean
@@ -29,15 +29,23 @@ export type TabDataType = {
   imageFailed: boolean[]
 }
 
+export type TabDataWithSearchState = {
+  [key: string]: TabDataType
+} & {
+  hasSearched?: boolean
+}
+
 export default function SearchPage() {
-  const searchParams = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const isMobile = useMobile()
 
-  const [searchTerm, setSearchTerm] = useState<string>(searchParams["q"] || "")
+  const [searchTerm, setSearchTerm] = useState<string>(searchParams.get("q") || "")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>(searchTerm)
   const [activeTab, setActiveTab] = useState<string>("all")
   const [hasSearched, setHasSearched] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isSearchEmpty, setIsSearchEmpty] = useState<boolean>(true)
 
   const [tabData, setTabData] = useState<{
     [key: string]: TabDataType
@@ -63,7 +71,8 @@ export default function SearchPage() {
   const updateDebouncedSearch = useCallback(
     debounce((value: string) => {
       setDebouncedSearchTerm(value)
-      setHasSearched(true)
+      setIsSearchEmpty(!value.trim())
+      setHasSearched(!!value.trim())
       setTabData((prev) => {
         const newData = { ...prev }
         Object.keys(newData).forEach((key) => {
@@ -79,11 +88,13 @@ export default function SearchPage() {
         return newData
       })
       // Update URL query parameter
-      const url = new URL(window.location.href)
-      url.searchParams.set("q", value)
-      window.history.pushState({}, "", url)
+      if (value.trim()) {
+        setSearchParams({ q: value })
+      } else {
+        setSearchParams({})
+      }
     }, 800),
-    [],
+    [setSearchParams],
   )
 
   useEffect(() => {
@@ -102,6 +113,7 @@ export default function SearchPage() {
     setLoading(true)
 
     try {
+      setError(null) // Reset error state before fetching
       if (tab === "users") {
         // Fetch user search results
         const response: PeopleSearchResponse = await searchPeople({
@@ -139,7 +151,7 @@ export default function SearchPage() {
         })
 
         const searchResults = response.data?.results || {}
-        let combinedResults: any[] = []
+        let combinedResults: SearchResultItem[] = []
 
         if (tab === "all") {
           Object.keys(searchResults).forEach((category) => {
@@ -173,6 +185,7 @@ export default function SearchPage() {
       }
     } catch (err) {
       console.error(err)
+      setError("An error occurred while fetching results. Please try again.")
       setTabData((prev) => ({
         ...prev,
         [tab]: {
@@ -211,23 +224,47 @@ export default function SearchPage() {
     updateDebouncedSearch(searchTerm)
   }
 
+  // Create tabData with hasSearched for mobile view
+  const tabDataWithSearchState: TabDataWithSearchState = {
+    ...tabData,
+    hasSearched,
+  }
+
   return (
     <div className="relative px-2 py-0 sm:p-2 md:p-3 lg:p-4 w-full max-w-[100%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto overflow-x-hidden">
       {/* Search Input */}
       <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleSearch={handleSearch} />
 
-      {/* Tabs and Results */}
-      <SearchTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} isMobile={isMobile} />
-
-      <SearchResults
-        activeTab={activeTab}
-        tabData={tabData}
-        setTabData={setTabData}
-        loading={loading}
-        hasSearched={hasSearched}
-        observerRef={observerRef}
-        isMobile={isMobile}
-      />
+      {/* Conditional Rendering Based on Screen Size */}
+      {isMobile ? (
+        <SearchTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isMobile={isMobile}
+          tabData={tabDataWithSearchState}
+          setTabData={setTabData}
+          loading={loading}
+          hasSearched={hasSearched}
+          observerRef={observerRef}
+          error={error}
+          isSearchEmpty={isSearchEmpty}
+        />
+      ) : (
+        <>
+          <SearchTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} isMobile={isMobile} />
+          <SearchResults
+            activeTab={activeTab}
+            tabData={tabData}
+            setTabData={setTabData}
+            loading={loading}
+            hasSearched={hasSearched}
+            observerRef={observerRef}
+            isMobile={isMobile}
+            error={error}
+          />
+        </>
+      )}
     </div>
   )
 }
