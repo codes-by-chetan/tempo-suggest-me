@@ -2,19 +2,18 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Music, Book, Film, Tv, Library } from "lucide-react"
-import type { SearchResultItem } from "@/interfaces/search.interface"
-import { useNavigate } from "react-router-dom"
+import type { SearchResult } from "./search-page"
 
 interface SearchResultItemProps {
-  item: SearchResultItem
+  item: SearchResult
   index: number
   activeTab: string
   imageFailed: boolean
-  getPosterUrl: (item: SearchResultItem) => string
+  getPosterUrl: (item: SearchResult) => string
   onImageError: () => void
 }
 
-export function SearchResultItemComponent({
+export function SearchResultItem({
   item,
   index,
   activeTab,
@@ -22,8 +21,6 @@ export function SearchResultItemComponent({
   getPosterUrl,
   onImageError,
 }: SearchResultItemProps) {
-  const navigate = useNavigate()
-
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "music":
@@ -45,79 +42,22 @@ export function SearchResultItemComponent({
     return plot.length > 50 ? `${plot.slice(0, 50)}...` : plot
   }
 
-  const handleItemClick = () => {
-    if (activeTab === "users") {
-      navigate(`/profile/${item._id}`)
-    } else {
-      const category = item.category || activeTab
-      let route = ""
-
-      switch (category) {
-        case "movie":
-          route = `/movies/${item.imdbId || item.tmdbId || item._id}`
-          break
-        case "series":
-          route = `/series/${item.imdbId || item.tmdbId || item._id}`
-          break
-        case "book":
-          route = `/books/${item.googleBooksId || item._id}`
-          break
-        case "music":
-          route = `/music/${item.spotifyId || item._id}`
-          break
-        default:
-          if (item.imdbId) {
-            route = `/movies/${item.imdbId}`
-          } else if (item.googleBooksId) {
-            route = `/books/${item.googleBooksId}`
-          } else if (item.spotifyId) {
-            route = `/music/${item.spotifyId}`
-          } else {
-            route = `/content/${item._id}`
-          }
-      }
-
-      navigate(route)
-    }
-  }
-
-  const getDisplayName = () => {
-    if (activeTab === "users") {
-      if (item.fullName) {
-        return `${item.fullName.firstName} ${item.fullName.lastName}`.trim()
-      }
-      return item.profile?.displayName || "Unknown User"
-    }
-    return item.title || item.name || "Unknown"
-  }
-
-  const getAvatarUrl = () => {
-    if (activeTab === "users") {
-      return item.profile?.avatar?.url || item.profileImage?.url || ""
-    }
-    return ""
-  }
-
   return (
     <div
       className="flex items-start gap-2 p-2 rounded-md cursor-pointer hover:bg-accent/50 transition-colors w-full box-border overflow-hidden min-h-16"
       role="listitem"
-      onClick={handleItemClick}
     >
       {activeTab === "users" ? (
         <>
           <Avatar className="h-12 w-12 flex-shrink-0">
-            {getAvatarUrl() ? (
-              <AvatarImage src={getAvatarUrl() || "/placeholder.svg"} alt={getDisplayName()} />
+            {item.avatar ? (
+              <AvatarImage src={item.avatar.url || ""} alt={item.fullName || "User"} />
             ) : (
-              <AvatarFallback>{getDisplayName().charAt(0) || "U"}</AvatarFallback>
+              <AvatarFallback>{item.fullName?.charAt(0) || "U"}</AvatarFallback>
             )}
           </Avatar>
           <div className="flex-1 min-w-0 overflow-hidden">
-            <p className="font-semibold text-sm line-clamp-2 break-words">{getDisplayName()}</p>
-            {item.profile?.bio && (
-              <p className="text-xs text-muted-foreground truncate break-words">{item.profile.bio}</p>
-            )}
+            <p className="font-semibold text-sm line-clamp-2 break-words">{item.fullName || "Unknown User"}</p>
           </div>
         </>
       ) : (
@@ -129,13 +69,13 @@ export function SearchResultItemComponent({
           ) : (
             <img
               src={getPosterUrl(item) || "/placeholder.svg"}
-              alt={getDisplayName()}
+              alt={item.title || "Media"}
               className="h-12 w-8 object-cover rounded flex-shrink-0"
               onError={onImageError}
             />
           )}
           <div className="flex-1 min-w-0 overflow-hidden">
-            <p className="font-semibold text-sm line-clamp-2 break-words">{getDisplayName()}</p>
+            <p className="font-semibold text-sm line-clamp-2 break-words">{item.title}</p>
             <p className="text-xs text-muted-foreground truncate break-words">
               {item.category || activeTab} {item.year ? `(${item.year})` : ""}
             </p>

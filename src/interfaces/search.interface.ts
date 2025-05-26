@@ -5,10 +5,24 @@ export interface GlobalSearchResponse {
   success: boolean;
   redirect: null;
 }
-
+export interface SearchResult {
+  id?: string
+  tmdbId?: string
+  googleBooksId?: string
+  spotifyId?: string
+  title?: string
+  fullName?: string
+  avatar?: { url: string }
+  coverImage?: string | { url: string }
+  poster?: string | { url: string }
+  category?: string
+  year?: string
+  plot?: string
+}
 interface GSearchResults {
   results: GlobalSearchResults;
   pagination: Pagination;
+  [key: string]: any;
 }
 
 interface Pagination {
@@ -16,276 +30,103 @@ interface Pagination {
   limit: number;
   totalResults: number;
   totalPages: number;
+  [key: string]: any;
 }
 
 interface GlobalSearchResults {
-  movie: {
-    data: MovieItem[];
-    total: number;
-  };
-  series: {
-    data: SeriesItem[];
-    total: number;
-  };
-  book: {
-    data: BookItem[];
-    total: number;
-  };
-  music: {
-    data: MusicItem[];
-    total: number;
-  };
-  songs: {
-    data: SongItem[];
-    total: number;
-  };
-  album: {
-    data: AlbumItem[];
-    total: number;
-  };
-  video: {
-    data: VideoItem[];
-    total: number;
-  };
-  people: {
-    data: PeopleItem[];
-    total: number;
-  };
+  movie: Movie;
+  series: Movie;
+  book: Book;
+  music: Music;
+  songs: Music;
+  album: Album;
+  musicVideo: Album;
+  video: Album;
+  people: People;
+  performance: Album;
+  productionCompanie: Album;
+  studio: Album;
+  publisher: Album;
+  recordLabel: Album;
+  [key: string]: any;
 }
 
-interface ContentCategory {
-  data:
-    | MovieItem[]
-    | SeriesItem[]
-    | BookItem[]
-    | MusicItem[]
-    | SongItem[]
-    | AlbumItem[]
-    | VideoItem[]
-    | PeopleItem[]
-    | UserItem[];
+interface People {
+  data: Datum4[];
   total: number;
+  [key: string]: any;
 }
 
-export interface SearchResultsType {
-  movie?: {
-    results: MovieItem[];
-    totalResults: number;
-  };
-  series?: {
-    results: SeriesItem[];
-    totalResults: number;
-  };
-  book?: {
-    results: BookItem[];
-    totalResults: number;
-  };
-  music?: {
-    results: MusicItem[];
-    totalResults: number;
-  };
-  songs?: {
-    results: SongItem[];
-    totalResults: number;
-  };
-  album?: {
-    results: AlbumItem[];
-    totalResults: number;
-  };
-  video?: {
-    results: VideoItem[];
-    totalResults: number;
-  };
-  people?: {
-    results: PeopleItem[];
-    totalResults: number;
-  };
-  user?: {
-    results: UserItem[];
-    totalResults: number;
-  };
-  searchTerm: string;
-}
-
-// Union type for all possible search result items
-export type SearchResultItem =
-  | MovieItem
-  | SeriesItem
-  | BookItem
-  | MusicItem
-  | SongItem
-  | AlbumItem
-  | VideoItem
-  | PeopleItem
-  | UserItem;
-
-interface MovieItem {
-  tmdbId?: number;
-  imdbId?: string;
-  title: string;
-  slug: string;
-  poster?: string;
-  plot?: string;
-  year?: number;
-  matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
-}
-
-interface SeriesItem {
-  tmdbId?: number;
-  imdbId?: string;
-  title: string;
-  slug: string;
-  poster?: string;
-  plot?: string;
-  year?: number;
-  matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
-}
-
-interface BookItem {
-  googleBooksId: string;
-  title: string;
-  slug: string;
-  poster?: string;
-  plot?: string;
-  year?: number;
-  matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
-}
-
-interface MusicItem {
-  _id?: string;
-  spotifyId?: string;
-  title: string;
-  slug: string;
-  poster?: string;
-  coverImage?: string;
-  plot?: string;
-  year?: number;
-  releaseYear?: number;
-  artists?: string;
-  matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
-}
-
-interface SongItem {
-  _id?: string;
-  spotifyId?: string;
-  title: string;
-  slug: string;
-  poster?: string;
-  coverImage?: string;
-  plot?: string;
-  year?: number;
-  releaseYear?: number;
-  artists?: string;
-  matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
-}
-
-interface AlbumItem {
-  _id?: string;
-  spotifyId?: string;
-  title: string;
-  slug: string;
-  poster?: string;
-  coverImage?: string;
-  plot?: string;
-  year?: number;
-  releaseYear?: number;
-  artists?: string;
-  matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
-}
-
-interface VideoItem {
-  _id?: string;
-  title: string;
-  slug: string;
-  poster?: string;
-  coverImage?: string;
-  plot?: string;
-  year?: number;
-  matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
-}
-
-interface PeopleItem {
+interface Datum4 {
   _id: string;
   name: string;
   slug: string;
-  profileImage?: ProfileImage;
+  profileImage: ProfileImage;
   matchReason: string;
-  category?: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: any;
 }
 
 interface ProfileImage {
   publicId: string;
   url: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: any;
 }
 
-export interface UserItem {
-  _id: string;
-  fullName?: FullName;
-  email?: string;
-  profile?: Profile;
-  category?: string;
-  [key: string]: any; // Allow additional properties
+interface Album {
+  data: any[];
+  total: number;
+  [key: string]: any;
 }
 
-interface Profile {
-  _id: string;
-  user: string;
-  preferences?: Preferences;
-  isPublic: boolean;
-  isVerified: boolean;
-  isActive: boolean;
-  createdBy: string;
-  deleted: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-  avatar?: Avatar;
-  updatedBy?: string;
-  bio?: string;
-  displayName?: string;
-  socialLinks?: SocialLinks;
-  [key: string]: any; // Allow additional properties
+interface Music {
+  data: Datum3[];
+  total: number;
+  [key: string]: any;
 }
 
-interface SocialLinks {
-  twitter?: string;
-  instagram?: string;
-  website?: string;
-  [key: string]: any; // Allow additional properties
+interface Datum3 {
+  spotifyId: string;
+  title: string;
+  slug: string;
+  poster: string;
+  plot: string;
+  year: number;
+  matchReason: string;
+  [key: string]: any;
 }
 
-interface Avatar {
-  publicId: string;
-  url: string;
-  [key: string]: any; // Allow additional properties
+interface Book {
+  data: Datum2[];
+  total: number;
+  [key: string]: any;
 }
 
-interface Preferences {
-  favoriteGenres: string[];
-  preferredContentTypes: string[];
-  [key: string]: any; // Allow additional properties
+interface Datum2 {
+  googleBooksId: string;
+  title: string;
+  slug: string;
+  poster: string;
+  plot: string;
+  year: number;
+  matchReason: string;
+  [key: string]: any;
 }
 
-interface FullName {
-  firstName: string;
-  lastName: string;
-  [key: string]: any; // Allow additional properties
+interface Movie {
+  data: Datum[];
+  total: number;
+  [key: string]: any;
+}
+
+interface Datum {
+  imdbId: string;
+  title: string;
+  slug: string;
+  poster: string;
+  plot: string;
+  year: number;
+  matchReason: string;
+  [key: string]: any;
 }
 
 export interface PeopleSearchResponse {
@@ -294,11 +135,63 @@ export interface PeopleSearchResponse {
   message: string;
   success: boolean;
   redirect: null;
-  [key: string]: any; // Allow additional properties
 }
 
 interface PeopleSearchResult {
-  data: UserItem[];
+  data: user[];
   pagination: Pagination;
-  [key: string]: any; // Allow additional properties
+  [key: string]: any;
+}
+
+interface user {
+  _id: string;
+  fullName: FullName;
+  email: string;
+  profile: Profile;
+  [key: string]: any;
+}
+
+interface Profile {
+  _id: string;
+  user: string;
+  preferences: Preferences;
+  isPublic: boolean;
+  isVerified: boolean;
+  isActive: boolean;
+  createdBy: string;
+  deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  avatar: Avatar;
+  updatedBy: string;
+  bio: string;
+  displayName: string;
+  socialLinks: SocialLinks;
+  [key: string]: any;
+}
+
+interface SocialLinks {
+  twitter: string;
+  instagram: string;
+  website: string;
+  [key: string]: any;
+}
+
+interface Avatar {
+  publicId: string;
+  url: string;
+  [key: string]: any;
+}
+
+interface Preferences {
+  favoriteGenres: string[];
+  preferredContentTypes: string[];
+  [key: string]: any;
+}
+
+interface FullName {
+  firstName: string;
+  lastName: string;
+  [key: string]: any;
 }

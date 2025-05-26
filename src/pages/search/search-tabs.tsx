@@ -1,54 +1,20 @@
 "use client"
 
-import type React from "react"
-
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { TabType, TabDataType } from "./search-page"
-import { MobileSearchView } from "./mobile-search-view"
+import type { TabType } from "./search-page"
+import { MobileTabsView } from "./mobile-tabs-view"
 
 interface SearchTabsProps {
   tabs: TabType[]
   activeTab: string
   setActiveTab: (tab: string) => void
   isMobile: boolean
-  tabData?: { [key: string]: TabDataType }
-  setTabData?: React.Dispatch<React.SetStateAction<{ [key: string]: TabDataType }>>
-  loading?: boolean
-  hasSearched?: boolean
-  observerRef?: React.RefObject<HTMLDivElement>
-  error?: string | null
-  isSearchEmpty?: boolean
 }
 
-export function SearchTabs({
-  tabs,
-  activeTab,
-  setActiveTab,
-  isMobile,
-  tabData,
-  setTabData,
-  loading,
-  hasSearched,
-  observerRef,
-  error,
-  isSearchEmpty,
-}: SearchTabsProps) {
-  if (isMobile && tabData && setTabData && observerRef !== undefined) {
-    return (
-      <MobileSearchView
-        tabs={tabs}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        tabData={tabData}
-        setTabData={setTabData}
-        loading={loading || false}
-        hasSearched={hasSearched || false}
-        observerRef={observerRef}
-        error={error || null}
-        isSearchEmpty={isSearchEmpty || false}
-      />
-    )
+export function SearchTabs({ tabs, activeTab, setActiveTab, isMobile }: SearchTabsProps) {
+  if (isMobile) {
+    return <MobileTabsView tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
   }
 
   return (
