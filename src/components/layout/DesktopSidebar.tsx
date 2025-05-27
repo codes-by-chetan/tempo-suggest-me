@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { IoMdPaperPlane } from "react-icons/io";
+
 import {
   Home,
   User,
@@ -95,7 +97,19 @@ const DesktopSidebar = () => {
       protected: false,
     },
     {
-      label: "Content",
+      label: "Suggested to Me",
+      icon: BookOpenCheck,
+      path: "/suggested-to-me",
+      protected: true,
+    },
+    {
+      label: "My Suggestions",
+      icon: IoMdPaperPlane,
+      path: "/my-suggestions",
+      protected: true,
+    },
+    {
+      label: "My Content list",
       icon: Library,
       path: "/my-watchlist",
       protected: true,
@@ -108,9 +122,9 @@ const DesktopSidebar = () => {
       badge: isAuthenticated ? unreadCount : 0,
     },
     {
-      label: "Profile",
-      icon: User,
-      path: "/profile",
+      label: "Messages",
+      icon: MessageCircle,
+      path: "/chat",
       protected: true,
     },
   ]
