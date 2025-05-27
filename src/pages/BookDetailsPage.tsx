@@ -16,7 +16,6 @@ import {
   Heart,
   MessageCircle,
   Share2,
-  Tag,
   XCircle,
   ChevronDown,
 } from "lucide-react";
@@ -25,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { getBookDetails, BookDetails } from "@/services/content.service";
 import { checkContent, addContent, updateContentStatus } from "@/services/contentList.service";
 import { toast } from "@/services/toast.service";
+import { useSocket } from "@/lib/socket-context";
 
 interface DisplayBook {
   id: string;
@@ -57,11 +57,14 @@ interface DisplayBook {
     nominations: number;
     awardsDetails: any[];
   };
+  googleBooksId?: string;
+  openLibraryId?: string;
 }
 
 const BookDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { socket } = useSocket();
 
   const [book, setBook] = useState<DisplayBook | null>(null);
   const [contentStatus, setContentStatus] = useState<string | null>(null);
@@ -100,6 +103,8 @@ const BookDetailsPage = () => {
             ].filter(Boolean)
           : ["Amazon", "Barnes & Noble", "Local Library"],
       awards: data.awards,
+      googleBooksId: data.googleBooksId || "",
+      openLibraryId: data.openLibraryId || undefined,
     };
   };
 
@@ -144,6 +149,29 @@ const BookDetailsPage = () => {
 
     fetchStatus();
   }, [book?.id]);
+
+  useEffect(() => {
+    if (!socket || !id || !book) return;
+
+    const handleBookEnriched = (enrichedBook: any) => {
+      // Filter based on _id, googleBooksId, or openLibraryId
+      if (
+        enrichedBook._id === book.id ||
+        enrichedBook.googleBooksId === book.googleBooksId ||
+        (enrichedBook.openLibraryId && enrichedBook.openLibraryId === book.openLibraryId)
+      ) {
+        console.log("Received matching enriched book data:", enrichedBook);
+        setBook(normalizeBookData(enrichedBook));
+        toast.success("Book details updated with enriched data!");
+      }
+    };
+
+    socket.on("bookEnriched", handleBookEnriched);
+
+    return () => {
+      socket.off("bookEnriched", handleBookEnriched);
+    };
+  }, [socket, id, book?.id, book?.googleBooksId, book?.openLibraryId]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!book) return;

@@ -28,8 +28,8 @@ export const CustomTabsList = ({
   onToggleEmojiPicker,
   onToggleCommentBox,
   cardReactions,
-  page,
-  totalPages,
+  page=1,
+  totalPages=1,
   setPage,
 }: CustomTabsListProps) => {
   const tabs = [
@@ -38,7 +38,7 @@ export const CustomTabsList = ({
     { value: "series", label: "Series", icon: Clapperboard },
     { value: "book", label: "Books", icon: BookOpen },
     { value: "music", label: "Music", icon: Music },
-    { value: "youtube", label: "Videos", icon: Youtube },
+    { value: "video", label: "Videos", icon: Youtube },
   ];
 
   const skeletonPlaceholders = Array(6)
@@ -121,7 +121,7 @@ export const CustomTabsList = ({
             )}
           </motion.div>
         </AnimatePresence>
-        {page && totalPages && setPage && totalPages > 1 && (
+        {page && totalPages && setPage && totalPages > 1 ? (
           <div className="flex justify-center gap-4 mt-8">
             <Button
               variant="outline"
@@ -143,7 +143,7 @@ export const CustomTabsList = ({
               Next
             </Button>
           </div>
-        )}
+        ): <></>}
       </TabsContent>
     </Tabs>
   );

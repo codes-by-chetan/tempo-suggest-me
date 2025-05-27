@@ -18,7 +18,7 @@ export function useInfiniteScroll(callback: () => void, options = {}) {
   useEffect(() => {
     const observer = new IntersectionObserver(handleObserver, {
       root: null,
-      rootMargin: "100px",
+      rootMargin: "200px",
       threshold: 0.1,
       ...options,
     })

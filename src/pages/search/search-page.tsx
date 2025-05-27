@@ -18,6 +18,9 @@ import { useInfiniteScroll } from "@/lib/use-infinite-scroll";
 
 // Define limit as a constant
 const LIMIT = 10;
+// SessionStorage key prefix and expiration time (1 hour in milliseconds)
+const STORAGE_PREFIX = "search_tab_";
+const EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
 
 export type TabType = {
   label: string;
@@ -44,15 +47,38 @@ export type TabDataWithSearchState = {
 };
 
 export default function SearchPage() {
+  const tabs: TabType[] = [
+    { label: "All", value: "all" },
+    { label: "Users", value: "users" },
+    { label: "Movies", value: "movie" },
+    { label: "Series", value: "series" },
+    { label: "Music", value: "music" },
+    { label: "Books", value: "book" },
+  ];
   const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useMobile();
 
   const [searchTerm, setSearchTerm] = useState<string>(
     searchParams.get("q") || ""
   );
+  const getInitialTab = () => {
+    const searchTerm = searchParams.get("q") || "";
+    if (searchTerm) {
+      const stored = sessionStorage.getItem(`${STORAGE_PREFIX}${searchTerm}`);
+      if (stored) {
+        const { tab, timestamp } = JSON.parse(stored);
+        // Check if entry is not expired
+        if (Date.now() - timestamp < EXPIRATION_TIME) {
+          const validTab = tabs.find((t) => t.value === tab);
+          return validTab ? tab : "all";
+        }
+      }
+    }
+    return "all";
+  };
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
     useState<string>(searchTerm);
-  const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>(getInitialTab());
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,19 +136,20 @@ export default function SearchPage() {
       imageFailed: [],
     },
   });
-
-  const tabs: TabType[] = [
-    { label: "All", value: "all" },
-    { label: "Users", value: "users" },
-    { label: "Movies", value: "movie" },
-    { label: "Series", value: "series" },
-    { label: "Music", value: "music" },
-    { label: "Books", value: "book" },
-  ];
-
+  
+  // Update SessionStorage when activeTab changes
+  useEffect(() => {
+    if (debouncedSearchTerm && activeTab) {
+      sessionStorage.setItem(
+        `${STORAGE_PREFIX}${debouncedSearchTerm}`,
+        JSON.stringify({ tab: activeTab, timestamp: Date.now() })
+      );
+    }
+  }, [activeTab, debouncedSearchTerm]);
   // Debounce search term update
   const updateDebouncedSearch = useCallback(
     debounce((value: string) => {
+      if (value === debouncedSearchTerm) return;
       setDebouncedSearchTerm(value);
       setIsSearchEmpty(!value.trim());
       setHasSearched(!!value.trim());
@@ -153,6 +180,10 @@ export default function SearchPage() {
   useEffect(() => {
     updateDebouncedSearch(searchTerm);
   }, [searchTerm, updateDebouncedSearch]);
+
+  useEffect(() => {
+    fetchResults(activeTab, 1, false);
+  }, []);
 
   const fetchResults = async (
     tab: string,
@@ -186,7 +217,7 @@ export default function SearchPage() {
           limit: LIMIT,
         });
 
-        const newResults = response.data.data || [];
+        const newResults = response.data.results || [];
 
         setTabData((prev) => ({
           ...prev,
@@ -284,7 +315,7 @@ export default function SearchPage() {
 
   // Fetch results on tab switch or search term change
   useEffect(() => {
-    if (debouncedSearchTerm && (activeTab !== "all" || hasSearched)) {
+    if (debouncedSearchTerm) {
       fetchResults(activeTab, 1, false);
     }
   }, [debouncedSearchTerm, activeTab, hasSearched]);
@@ -297,7 +328,10 @@ export default function SearchPage() {
     }
   }, [loading, activeTab, tabData]);
 
-  const { observerRef } = useInfiniteScroll(loadMore);
+  const { observerRef } = useInfiniteScroll(loadMore, {
+    rootMargin: isMobile ? "300px" : "100px", // Larger margin for mobile
+    threshold: isMobile ? 0.01 : 0.1, // Lower threshold for mobile
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,7 +345,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="relative px-2 py-0 sm:p-2 md:p-3 lg:p-4 w-full max-w-[100%] sm:max-w-xl md:max-w-2xl lg:max-w-7xl mx-auto overflow-x-hidden">
+    <div className="relative pb-10 sm:pb-0 px-2 py-0 sm:p-2 md:p-3 lg:p-4 w-full max-w-[100%] sm:max-w-xl md:max-w-2xl lg:max-w-7xl mx-auto overflow-x-hidden">
       {/* Search Input */}
       <SearchInput
         searchTerm={searchTerm}

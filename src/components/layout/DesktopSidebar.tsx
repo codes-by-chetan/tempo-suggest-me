@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,10 @@ import {
   LogOut,
   PanelRight,
   PanelLeft,
+  Search,
+  Library,
+  Bell,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -31,156 +35,160 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/lib/sidebar-context";
+import { useNotifications } from "@/lib/notification-context";
+import { useState } from "react";
+import AuthDialog from "./AuthDialog";
 
 const DesktopSidebar = () => {
-  const { collapsed, setCollapsed } = useSidebar();
-  const location = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
+  const { unreadCount } = useNotifications()
+  const { collapsed, setCollapsed } = useSidebar()
+  const [authDialog, setAuthDialog] = useState<{
+    isOpen: boolean
+    redirectTo: string
+    defaultTab: "login" | "signup"
+  }>({
+    isOpen: false,
+    redirectTo: "/",
+    defaultTab: "login",
+  })
 
   const isActive = (path: string) => {
-    if (path === "/chat") {
+    if (path === "/profile") {
       return (
-        location.pathname === path || location.pathname.startsWith("/chat/")
-      );
+        location.pathname === path || location.pathname.startsWith("/profile/") || location.pathname === "/edit-profile"
+      )
     }
-    return location.pathname === path;
-  };
+    return location.pathname === path
+  }
+
+  const handleProtectedNavigation = (path: string) => {
+    if (!isAuthenticated) {
+      setAuthDialog({
+        isOpen: true,
+        redirectTo: path,
+        defaultTab: "login",
+      })
+    } else {
+      navigate(path)
+    }
+  }
 
   const handleLogout = () => {
-    logout();
-  };
+    logout()
+    navigate("/")
+  }
+
+  const menuItems = [
+    {
+      label: "Home",
+      icon: Home,
+      path: "/",
+      protected: false,
+    },
+    {
+      label: "Search",
+      icon: Search,
+      path: "/search",
+      protected: false,
+    },
+    {
+      label: "Content",
+      icon: Library,
+      path: "/my-watchlist",
+      protected: true,
+    },
+    {
+      label: "Notifications",
+      icon: Bell,
+      path: "/notifications",
+      protected: true,
+      badge: isAuthenticated ? unreadCount : 0,
+    },
+    {
+      label: "Profile",
+      icon: User,
+      path: "/profile",
+      protected: true,
+    },
+  ]
 
   return (
-    <motion.div
-      className={cn(
-        "hidden md:flex flex-col min-h-[90%] !my-auto  m-2 bg-card border-r border-border rounded-lg transition-colors relative",
-        collapsed ? "w-14" : "w-56"
-      )}
-      initial={false}
-      animate={{
-        width: collapsed ? "3.5rem" : "14rem",
-        transition: { type: "spring", stiffness: 100, damping: 20, mass: 1 },
-      }}
-    >
-      <div className="flex justify-end px-2 mb-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed(!collapsed)}
-          className="rounded-full"
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={collapsed ? "collapsed" : "expanded"}
-              initial={{ rotate: collapsed ? -180 : 0, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: collapsed ? 0 : -180, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {collapsed ? (
-                <PanelRight className="h-5 w-5" />
-              ) : (
-                <PanelLeft className="h-5 w-5" />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </Button>
-      </div>
-
-      <div className="flex-1 space-y-1 px-2">
-        <TooltipProvider>
-          {[
-            { to: "/", icon: Home, label: "Home" },
-            {
-              to: "/suggested-to-me",
-              icon: BookOpenCheck,
-              label: "Suggested to Me",
-            },
-            { to: "/my-suggestions", icon: User, label: "My Suggestions" },
-            { to: "/my-watchlist", icon: BookMarked, label: "My Watchlist" },
-            { to: "/chat", icon: MessageCircle, label: "Messages" },
-          ].map((item, index) => (
-            <div key={item.to}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    to={item.to}
-                    className={cn(
-                      "flex items-center px-3 py-3 rounded-md transition-colors",
-                      isActive(item.to)
-                        ? "bg-primary-100 text-primary dark:bg-primary-900 dark:text-primary-300"
-                        : "text-foreground/70 hover:bg-accent hover:text-foreground"
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <AnimatePresence mode="wait">
-                      {!collapsed && (
-                        <motion.span
-                          className="ml-3 text-sm"
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          transition={{
-                            duration: 0.4,
-                            delay: index * 0.07,
-                            ease: "easeOut",
-                          }}
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </Link>
-                </TooltipTrigger>
-                {collapsed && (
-                  <TooltipContent side="right">{item.label}</TooltipContent>
-                )}
-              </Tooltip>
+    <>
+      <div
+        className={cn(
+          "hidden md:flex flex-col justify-between bg-card border-r border-border transition-all duration-300 min-h-[90%] !my-auto  m-2  rounded-lg relative",
+          collapsed ? "w-16" : "w-64",
+        )}
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          {!collapsed && (
+            <div className="flex items-center gap-2">
+              <img src="/suggestMeLogo.png" alt="Logo" className="h-6 w-6 hidden dark:block" />
+              <img src="/suggestMeLogoDark.png" alt="Logo" className="h-6 w-6 block dark:hidden" />
+              <span className="font-semibold">SuggestMe</span>
             </div>
-          ))}
-        </TooltipProvider>
-      </div>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8">
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        </div>
 
-      {isAuthenticated && user && (
-        <div className="py-3 px-auto border-t border-border">
-          {collapsed ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to="/profile">
-                    <Avatar className="h-10 w-10 mx-auto">
-                      {user?.avatar ? (
-                        <AvatarImage
-                          src={user.avatar.url || "/placeholder.svg"}
-                          alt={user.fullNameString}
-                        />
-                      ) : (
-                        <AvatarFallback className="bg-primary-100 text-primary-800">
-                          {user.fullName.firstName.charAt(0)}
-                          {user.fullName.lastName.charAt(0)}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Profile</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : (
+        {/* Navigation */}
+        <nav className="flex flex-col p-4 space-y-2">
+          {menuItems.map((item) => {
+            const isItemActive = isActive(item.path)
+
+            return (
+              <div key={item.label} className="relative">
+                {item.protected ? (
+                  <Button
+                    variant={isItemActive ? "default" : "ghost"}
+                    className={cn("w-full justify-start relative", collapsed && "justify-center px-2")}
+                    onClick={() => handleProtectedNavigation(item.path)}
+                  >
+                    <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
+                    {!collapsed && <span>{item.label}</span>}
+                    {item.badge > 0 && (
+                      <span
+                        className={cn(
+                          "absolute bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center",
+                          collapsed ? "top-0 right-0 -mt-1 -mr-1" : "right-2",
+                        )}
+                      >
+                        {item.badge > 9 ? "9+" : item.badge}
+                      </span>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    variant={isItemActive ? "default" : "ghost"}
+                    className={cn("w-full justify-start", collapsed && "justify-center px-2")}
+                    asChild
+                  >
+                    <Link to={item.path}>
+                      <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
+                      {!collapsed && <span>{item.label}</span>}
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            )
+          })}
+        </nav>
+
+        {/* User Section */}
+        <div className="p-4 border-t border-border h-full">
+          {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <motion.div
-                  className="flex items-center justify-center space-x-3 cursor-pointer p-2 rounded-md hover:bg-accent"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <Avatar className="h-10 w-10">
+                <Button variant="ghost" className={cn("w-full justify-start p-2", collapsed && "justify-center")}>
+                  <Avatar className={cn("h-8 w-8", !collapsed && "mr-3")}>
                     {user?.avatar ? (
-                      <AvatarImage
-                        src={user.avatar.url || "/placeholder.svg"}
-                        alt={user.fullNameString}
-                      />
+                      <AvatarImage src={user.avatar.url || "/placeholder.svg"} alt={user.fullNameString} />
                     ) : (
                       <AvatarFallback className="bg-primary-100 text-primary-800">
                         {user.fullName.firstName.charAt(0)}
@@ -188,28 +196,30 @@ const DesktopSidebar = () => {
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {user.fullNameString}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                </motion.div>
+                  {!collapsed && (
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-medium truncate">{user.fullNameString}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                  )}
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{user.fullNameString}</DropdownMenuLabel>
-                <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  {user.email}
-                </DropdownMenuLabel>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="cursor-pointer w-full">
+                  <Link to="/profile" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="cursor-pointer text-destructive focus:text-destructive"
@@ -219,11 +229,49 @@ const DesktopSidebar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : (
+            <div className={cn("space-y-2", collapsed && "space-y-1")}>
+              <Button
+                variant="default"
+                className={cn("w-full", collapsed && "px-2")}
+                onClick={() =>
+                  setAuthDialog({
+                    isOpen: true,
+                    redirectTo: "/profile",
+                    defaultTab: "login",
+                  })
+                }
+              >
+                {collapsed ? <User className="h-4 w-4" /> : "Sign In"}
+              </Button>
+              {!collapsed && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() =>
+                    setAuthDialog({
+                      isOpen: true,
+                      redirectTo: "/profile",
+                      defaultTab: "signup",
+                    })
+                  }
+                >
+                  Sign Up
+                </Button>
+              )}
+            </div>
           )}
         </div>
-      )}
-    </motion.div>
-  );
+      </div>
+
+      <AuthDialog
+        isOpen={authDialog.isOpen}
+        onClose={() => setAuthDialog({ ...authDialog, isOpen: false })}
+        redirectTo={authDialog.redirectTo}
+        defaultTab={authDialog.defaultTab}
+      />
+    </>
+  )
 };
 
 export default DesktopSidebar;

@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { CustomTabsList } from "@/components/layout/CustomTabsList";
 import MyWatchListCard from "@/components/layout/MyWatchListCard";
+import AuthenticationFallback from "@/components/layout/AuthenticationFallback";
 import { getUserContent } from "@/services/contentList.service";
 import { toast } from "@/services/toast.service";
+import { BookmarkCheck } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 interface ContentItem {
   id: string;
@@ -27,6 +30,7 @@ interface ContentItem {
 }
 
 const MyWatchlist = () => {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("all");
   const [watchListItems, setWatchlistItems] = useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,20 +50,33 @@ const MyWatchlist = () => {
         });
         if (response.success) {
           console.log("Watchlist items: ", response.data);
-          setWatchlistItems(response.data?.data);
+          setWatchlistItems(response.data?.data || []);
           setTotalPages(Math.ceil(response?.data?.total / limit));
         } else {
-          toast.error("Abe, watchlist fetch nahi hui!");
+          toast.error("Failed to fetch your collections!");
+          setWatchlistItems([]);
         }
       } catch (error) {
         console.error("Error fetching watchlist:", error);
-        toast.error("Abe, kuch gadbad ho gaya!");
+        toast.error("Something went wrong while fetching your collections!");
+        setWatchlistItems([]);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchWatchlist();
-  }, [activeTab, page]);
+    if (isAuthenticated) fetchWatchlist();
+  }, [activeTab, page, isAuthenticated]);
+
+  // Show fallback if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <AuthenticationFallback
+        title="Please Sign In"
+        description="Sign in or create an account to manage your personal collections and track your favorite content across movies, books, music, and more."
+        icon={<BookmarkCheck className="h-10 w-10 text-primary" />}
+      />
+    );
+  }
 
   return (
     <main className="w-full mx-auto pb-[10vh] pt-0 px-4 sm:px-6 lg:px-8">

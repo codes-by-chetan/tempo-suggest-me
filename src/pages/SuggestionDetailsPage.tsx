@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Film, Clapperboard, ArrowLeft } from "lucide-react";
+import { Film, Clapperboard, ArrowLeft, FileText } from "lucide-react";
+import AuthenticationFallback from "@/components/layout/AuthenticationFallback";
 import { getSuggestionDetails } from "@/services/suggestion.service";
+import { useAuth } from "@/lib/auth-context";
 
 const SuggestionDetails = () => {
-  const { suggestionId } = useParams(); // Extract suggestionId from route parameters
+  const { isAuthenticated } = useAuth();
+  const { suggestionId } = useParams();
   const [suggestion, setSuggestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFullPlot, setShowFullPlot] = useState(false);
   const navigate = useNavigate();
+
   const getRouteForType = (type: string, contentId: string) => {
     switch (type) {
       case "Movie":
@@ -33,12 +37,11 @@ const SuggestionDetails = () => {
         return "#";
     }
   };
-  console.log("inside the suggestion details page");
+
   useEffect(() => {
     const fetchSuggestion = async () => {
       setLoading(true);
       try {
-        // Placeholder for API call
         const response = await getSuggestionDetails(suggestionId);
         if (response.success && response.data) {
           setSuggestion(response.data);
@@ -48,54 +51,27 @@ const SuggestionDetails = () => {
         }
       } catch (err) {
         setError("An error occurred while fetching suggestion details");
-        // Using static data for now
-        const staticData = {
-          _id: "681c5d08233271ceb3481322",
-          sender: {
-            fullNameString: "Chetan Mohite",
-            profile: {
-              avatar: {
-                url: "http://res.cloudinary.com/dxjkhxcvc/image/upload/v1746617128/SUGGEST-ME/profile_picutres/xijcoet1kdaijh6byxnr.webp",
-              },
-              displayName: "Chetan_M",
-            },
-          },
-          recipients: [
-            {
-              fullNameString: "hailey bieber",
-              profile: {
-                avatar: {
-                  url: "http://res.cloudinary.com/dxjkhxcvc/image/upload/v1745577135/SUGGEST-ME/profile_picutres/paxwln1vnq1eobigdhbu.jpg",
-                },
-              },
-            },
-          ],
-          content: {
-            title: "Wreck-It Ralph",
-            year: 2012,
-            poster: {
-              url: "https://image.tmdb.org/t/p/w500/zWoIgZ7mgmPkaZjG0102BSKFIqQ.jpg",
-            },
-            director: ["Rich Moore"],
-            production: {
-              studios: [
-                "Walt Disney Animation Studios",
-                "Walt Disney Pictures",
-              ],
-            },
-            plot: "Wreck-It Ralph is the 9-foot-tall, 643-pound villain of an arcade video game named Fix-It Felix Jr., in which the game's titular hero fixes buildings that Ralph destroys. Wanting to prove he can be a good guy and not just a villain, Ralph escapes his game and lands in Hero's Duty, a first-person shooter where he helps the game's hero battle against alien invaders. He later enters Sugar Rush, a kart racing game set on tracks made of candies, cookies and other sweets. There, Ralph meets Vanellope von Schweetz who has learned that her game is faced with a dire threat that could affect the entire arcade, and one that Ralph may have inadvertently started.",
-          },
-          contentType: "Movie",
-          createdAt: "2025-05-08T07:28:08.595Z",
-        };
-        setSuggestion(staticData);
+        console.error("Error fetching suggestion details:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSuggestion();
+    if (suggestionId) {
+      fetchSuggestion();
+    }
   }, [suggestionId]);
+
+  // Show fallback if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <AuthenticationFallback
+        title="Please Sign In"
+        description="Sign in or create an account to view detailed suggestion information and discover what your friends are recommending."
+        icon={<FileText className="h-10 w-10 text-primary" />}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -115,6 +91,13 @@ const SuggestionDetails = () => {
           <p className="text-muted-foreground mt-2">
             {error || "The suggestion you're looking for doesn't exist."}
           </p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => navigate(-1)}
+          >
+            Go Back
+          </Button>
         </div>
       </div>
     );
@@ -137,19 +120,22 @@ const SuggestionDetails = () => {
           <div className="rounded-lg overflow-hidden bg-muted shadow-lg">
             {suggestion.content.poster?.url ? (
               <img
-                src={suggestion.content?.poster?.url}
+                src={suggestion.content?.poster?.url || "/placeholder.svg"}
                 alt={suggestion.content.title}
                 className="w-full h-auto object-cover"
               />
             ) : suggestion.content?.coverImage?.url ? (
               <img
-                src={suggestion.content?.coverImage?.url}
+                src={suggestion.content?.coverImage?.url || "/placeholder.svg"}
                 alt={suggestion.content.title}
                 className="w-full h-auto object-cover"
               />
             ) : suggestion.content?.album?.coverImage?.url ? (
               <img
-                src={suggestion.content?.album?.coverImage?.url}
+                src={
+                  suggestion.content?.album?.coverImage?.url ||
+                  "/placeholder.svg"
+                }
                 alt={suggestion.content.title}
                 className="w-full h-auto object-cover"
               />
@@ -196,21 +182,23 @@ const SuggestionDetails = () => {
           </p>
 
           {/* Plot */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Plot</h2>
-            <p className="text-foreground">
-              {showFullPlot ? suggestion?.content?.plot : shortPlot}
-            </p>
-            {plotLines.length > 3 && (
-              <Button
-                variant="link"
-                className="mt-2 p-0"
-                onClick={() => setShowFullPlot(!showFullPlot)}
-              >
-                {showFullPlot ? "Show Less" : "Show More"}
-              </Button>
-            )}
-          </div>
+          {suggestion?.content?.plot && (
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-2">Plot</h2>
+              <p className="text-foreground">
+                {showFullPlot ? suggestion?.content?.plot : shortPlot}
+              </p>
+              {plotLines.length > 3 && (
+                <Button
+                  variant="link"
+                  className="mt-2 p-0"
+                  onClick={() => setShowFullPlot(!showFullPlot)}
+                >
+                  {showFullPlot ? "Show Less" : "Show More"}
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Studios */}
           {suggestion.content?.production?.studios?.length > 0 && (
@@ -239,7 +227,10 @@ const SuggestionDetails = () => {
             <div className="flex items-center">
               <Avatar className="h-10 w-10 mr-3 ring-2 ring-primary/20">
                 <AvatarImage
-                  src={suggestion?.sender?.profile?.avatar?.url}
+                  src={
+                    suggestion?.sender?.profile?.avatar?.url ||
+                    "/placeholder.svg"
+                  }
                   alt={suggestion?.sender?.fullNameString}
                 />
                 <AvatarFallback>
@@ -269,7 +260,7 @@ const SuggestionDetails = () => {
                   >
                     <Avatar className="h-6 w-6 mr-2 ring-1 ring-primary/20">
                       <AvatarImage
-                        src={recipient.profile.avatar.url}
+                        src={recipient.profile.avatar.url || "/placeholder.svg"}
                         alt={recipient.fullNameString}
                       />
                       <AvatarFallback>

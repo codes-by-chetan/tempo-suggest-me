@@ -271,6 +271,7 @@ const Navbar = () => {
                                     notification.sender.avatar?.url ||
                                     notification.sender?.profile?.avatar?.url ||
                                     null,
+                                    profile: notification.sender.profile || {}
                                 }
                               : undefined,
                           }}

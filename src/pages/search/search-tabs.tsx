@@ -55,8 +55,8 @@ export function SearchTabs({
 
   // Desktop view
   return (
-    <div className="mb-4 w-full max-w-[100%] overflow-x-hidden">
-      <div className="flex flex-row gap-2 overflow-x-auto snap-x snap-mandatory whitespace-nowrap w-full max-w-[100%] pb-1">
+    <div className="mb-4 w-full max-w-[100%] overflow-x-hidden flex items-center justify-center">
+      <div className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory whitespace-nowrap  max-w-[100%] pb-1">
         {tabs.map((tab) => (
           <Button
             key={tab.value}

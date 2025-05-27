@@ -72,7 +72,7 @@ function MainContent() {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <main className="flex items-center justify-center pb-0 my-auto">
+        <main className="flex items-center justify-center pb-10 my-auto">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/suggested-to-me" element={<SuggestedToMe />} />
@@ -157,7 +157,7 @@ function App() {
         <SidebarProvider>
           <div className="flex hide-scroll flex-col flex-1 h-screen max-h-svh  overflow-hidden md:overflow-auto">
             <Navbar />
-            <div className="flex flex-col md:flex-row !w-full min-h-[105vh] max-h-[105vh] md:min-h-[92vh] md:max-h-[100vh]   pt-2 ">
+            <div className="flex flex-col md:flex-row !w-full min-h-[105vh] max-h-[105vh] md:min-h-[92vh] md:max-h-[100vh] pt-0 ">
               <DesktopSidebar />
               <div className="w-full min-h-[100%] max-h-[100%]">
                 <MainContent />

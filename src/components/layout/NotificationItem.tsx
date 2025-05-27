@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router";
+import VerifiedBadgeIcon from "../profile/VerifiedBadgeIcon";
 
 interface Notification {
   id: string;
@@ -30,12 +31,13 @@ interface Notification {
     };
     avatar: string;
     fullNameString: string;
+    profile: any
   };
 }
 interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
-  closePopup?: ()=> void;
+  closePopup?: () => void;
 }
 
 const NotificationItem = ({
@@ -45,7 +47,6 @@ const NotificationItem = ({
 }: NotificationItemProps) => {
   const navigate = useNavigate();
   const getIconForContentType = (type?: string, notificationType?: string) => {
-
     if (!type && !notificationType) return <Bell className="h-4 w-4" />;
 
     // Handle notification types without contentType (e.g., FollowRequest)
@@ -89,7 +90,7 @@ const NotificationItem = ({
     if (!notification.read) {
       onMarkAsRead(notification.id);
     }
-  }
+  };
   const handleClick = () => {
     if (!notification.read) {
       onMarkAsRead(notification.id);
@@ -105,7 +106,10 @@ const NotificationItem = ({
       onClick={handleClick}
     >
       {notification.user ? (
-        <Avatar className="h-8 w-8 ring-1 ring-primary/20" onClick={handleUserClick}>
+        <Avatar
+          className="h-8 w-8 ring-1 ring-primary/20"
+          onClick={handleUserClick}
+        >
           <AvatarImage
             src={notification.user.avatar}
             alt={notification.user.fullNameString}
@@ -122,9 +126,17 @@ const NotificationItem = ({
       )}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
-          <p className="font-medium text-sm line-clamp-1" onClick={handleUserClick}>
-            {notification.user.fullNameString}
-          </p>
+          <div>
+            <p
+              className="font-medium text-sm line-clamp-1"
+              onClick={handleUserClick}
+            >
+              {notification.user.fullNameString}
+            </p>
+            {notification.user?.profile.isVerified && (
+              <VerifiedBadgeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            )}
+          </div>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             {formatDistanceToNow(new Date(notification.timestamp), {
               addSuffix: true,

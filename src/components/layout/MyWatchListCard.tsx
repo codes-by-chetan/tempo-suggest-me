@@ -183,7 +183,7 @@ function MyWatchListCard({ item }: MyWatchListCardProps) {
         <CardContent className="p-4 flex flex-col flex-1">
           <div className="flex mb-4 relative">
             {status && (
-              <div className="absolute top-1 right-1 z-10">
+              <div className={cn("absolute top-1 right-1 z-10")}>
                 <motion.span
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -216,7 +216,8 @@ function MyWatchListCard({ item }: MyWatchListCardProps) {
             <div
               className={cn(
                 "relative overflow-hidden rounded-md cursor-pointer w-24 md:w-32 flex-shrink-0 mr-4",
-                getImageClass(item.type)
+                getImageClass(item.type),
+                item.type === "music" ? "mt-10":""
               )}
               onClick={() => navigate(getRouteForType(item.type, item.contentId))}
             >
@@ -228,8 +229,8 @@ function MyWatchListCard({ item }: MyWatchListCardProps) {
                 />
               )}
             </div>
-            <div className="flex flex-col justify-center">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="w-full flex flex-col justify-center">
+              <div className={cn("flex items-center gap-2 mb-1", item.type === "music" ? "pt-10":"")}>
                 <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
                   {getIconForType(item.type)}
                 </div>
