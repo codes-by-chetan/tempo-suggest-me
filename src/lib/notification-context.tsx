@@ -10,6 +10,7 @@ import {
   dismissAllNotifications,
 } from "@/services/notification.service";
 import { useSocket } from "./socket-context";
+import { toast } from "@/services/toast.service";
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -51,6 +52,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     loadNotifications();
 
     subscribeToNotifications(socket, (notification: Notification) => {
+      toast.info(notification.message)
       setNotifications((prev) => {
         const existingIds = new Set(prev.map((n) => n._id)); // Declare inside callback
         if (notification.status === "Dismissed") {
@@ -77,7 +79,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
           );
         }
       });
-      console.log("updated notifications:  ", notifications);
+      // console.log("updated notifications:  ", notifications);
       setUnreadCount((prev) => {
         const existingIds = new Set(notifications.map((n) => n._id)); // Use current notifications state
         if (existingIds.has(notification._id)) {

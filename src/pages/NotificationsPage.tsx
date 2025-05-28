@@ -42,6 +42,8 @@ interface Notification {
 const NotificationsPage = () => {
   const { isAuthenticated } = useAuth()
   const { notifications, markAsRead, dismiss } = useNotifications()
+  console.log(notifications);
+  
   const [activeTab, setActiveTab] = useState("followRequests")
   const [currentPage, setCurrentPage] = useState({
     followRequests: 1,
@@ -186,6 +188,7 @@ const NotificationsPage = () => {
                         notification.sender.fullNameString ||
                         `${notification.sender.fullName.firstName} ${notification.sender.fullName.lastName}`,
                       avatar: notification.sender.avatar?.url || notification.sender?.profile?.avatar?.url || null,
+                      isVerified: notification.sender.isVerified || notification.sender?.profile?.isVerified || false,
                     }
                   : undefined,
                 metadata: notification.metadata,

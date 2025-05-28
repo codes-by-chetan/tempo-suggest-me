@@ -180,6 +180,7 @@ const Navbar = () => {
                     globalResults={globalResults}
                     peopleResults={peopleResults}
                     isSearching={isSearching}
+                    searchTerm={searchTerm}
                   />
                 </div>
               )}
@@ -417,6 +418,7 @@ const Navbar = () => {
                   globalResults={globalResults}
                   peopleResults={peopleResults}
                   isSearching={isSearching}
+                  searchTerm={searchTerm}
                 />
               </div>
             )}

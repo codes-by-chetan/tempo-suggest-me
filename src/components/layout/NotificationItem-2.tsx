@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import UserService from "@/services/user.service";
+import VerifiedBadgeIcon from "../profile/VerifiedBadgeIcon";
 
 interface Notification {
   id: string;
@@ -33,6 +34,7 @@ interface Notification {
     };
     avatar: string;
     fullNameString: string;
+    isVerified: boolean;
   };
   metadata: {
     followRequestStatus: string;
@@ -104,7 +106,7 @@ const BaseNotificationItem = ({
       navigate(`/profile/${notification.user.id}`);
     }
   };
-
+console.log("notification: ", notification)
   return (
     <div
       className={cn(
@@ -134,12 +136,17 @@ const BaseNotificationItem = ({
       )}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
-          <p
+          <div className="flex items-center justify-center gap-1">
+            <p
             className="font-medium text-sm line-clamp-1 cursor-pointer"
             onClick={handleUserClick}
           >
             {notification.user.fullNameString}
           </p>
+          {notification.user?.isVerified && (
+                <VerifiedBadgeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+              )}
+          </div>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             {formatDistanceToNow(new Date(notification.timestamp), {
               addSuffix: true,

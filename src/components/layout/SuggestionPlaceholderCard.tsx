@@ -9,7 +9,7 @@ export default function SuggestionPlaceholderCard() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="overflow-hidden shadow-social dark:shadow-social-dark border-0">
+      <Card className="overflow-hidden shadow-social max-w-[calc(100vw-35px)] dark:shadow-social-dark border-0">
         <div className="flex flex-col h-full relative">
           <div className="w-full h-40 bg-muted/60 animate-pulse" />
           <CardContent className="flex-1 p-5">

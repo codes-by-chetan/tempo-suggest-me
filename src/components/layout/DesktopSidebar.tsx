@@ -133,7 +133,7 @@ const DesktopSidebar = () => {
     <>
       <div
         className={cn(
-          "hidden md:flex flex-col justify-between bg-card border-r border-border transition-all duration-300 min-h-[90%] !my-auto  m-2  rounded-lg relative",
+          "hidden md:flex flex-col justify-center bg-card border-r border-border transition-all duration-300  !my-auto  m-2  rounded-lg relative",
           collapsed ? "w-16" : "w-64",
         )}
       >
@@ -152,7 +152,7 @@ const DesktopSidebar = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex flex-col p-4 space-y-2">
+        <nav className="flex flex-col gap-1.5 p-4">
           {menuItems.map((item) => {
             const isItemActive = isActive(item.path)
 

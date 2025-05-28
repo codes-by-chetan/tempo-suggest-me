@@ -126,7 +126,7 @@ const NotificationItem = ({
       )}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
-          <div>
+          <div className="flex justify-center items-center gap-1">
             <p
               className="font-medium text-sm line-clamp-1"
               onClick={handleUserClick}

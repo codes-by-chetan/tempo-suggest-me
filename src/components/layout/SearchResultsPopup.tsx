@@ -4,6 +4,7 @@ import { Film, BookOpen, Tv, Music, Users, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import VerifiedBadgeIcon from "../profile/VerifiedBadgeIcon";
+import { Button } from "../ui/button";
 
 interface SearchResult {
   _id: string;
@@ -32,7 +33,7 @@ interface SearchResults {
 }
 
 interface SearchResponse {
-  results?: SearchResults;
+  results?: SearchResult[];
   pagination?: {
     page: number;
     limit: number;
@@ -46,12 +47,14 @@ interface SearchResultsPopupProps {
   globalResults: SearchResponse | null;
   peopleResults: SearchResponse | null;
   isSearching: boolean;
+  searchTerm: string;
 }
 
 const SearchResultsPopup = ({
   globalResults,
   peopleResults,
   isSearching,
+  searchTerm,
 }: SearchResultsPopupProps) => {
   const navigate = useNavigate();
   const getIconForType = (type: string) => {
@@ -173,7 +176,8 @@ const SearchResultsPopup = ({
     hidden: { transition: { staggerChildren: 0.05 } },
     visible: { transition: { staggerChildren: 0.05 } },
   };
-
+  console.log("globalResults: ", globalResults);
+  console.log("peopleResults: ", peopleResults);
   return (
     <motion.div
       className="w-80 p-0 bg-card border border-border rounded-md shadow-lg"
@@ -202,7 +206,7 @@ const SearchResultsPopup = ({
             </motion.div>
           ) : globalResults && Object.keys(globalResults).length > 0 ? (
             <>
-              {peopleResults?.data && peopleResults.data.length > 0 && (
+              {peopleResults?.results && peopleResults?.results.length > 0 && (
                 <motion.div
                   key="people-results"
                   variants={containerVariants}
@@ -214,7 +218,7 @@ const SearchResultsPopup = ({
                     <Users className="h-4 w-4" />
                     Users
                   </div>
-                  {peopleResults.data.map((item) =>
+                  {peopleResults.results.map((item) =>
                     renderResultItem(item, "users")
                   )}
                 </motion.div>
@@ -239,7 +243,7 @@ const SearchResultsPopup = ({
                 )}
               </motion.div>
             </>
-          ) : peopleResults?.data && peopleResults.data.length > 0 ? (
+          ) : peopleResults?.results && peopleResults.results.length > 0 ? (
             <motion.div
               key="people-results"
               variants={containerVariants}
@@ -251,7 +255,7 @@ const SearchResultsPopup = ({
                 <Users className="h-4 w-4" />
                 Users
               </div>
-              {peopleResults.data.map((item) =>
+              {peopleResults.results.map((item) =>
                 renderResultItem(item, "users")
               )}
             </motion.div>
@@ -269,6 +273,20 @@ const SearchResultsPopup = ({
           )}
         </AnimatePresence>
       </ScrollArea>
+      <Separator />
+      <div className="p-3">
+        <Button
+          variant="default"
+          size="sm"
+          className="w-full text-xs"
+          onClick={() => {
+            navigate(`/search?q=${searchTerm}`);
+            document.dispatchEvent(new Event("closeSearchPopups"));
+          }}
+        >
+          View All Results
+        </Button>
+      </div>
     </motion.div>
   );
 };

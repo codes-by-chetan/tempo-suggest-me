@@ -1,3 +1,4 @@
+import { useMobile } from "@/lib/use-mobile";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -26,6 +27,7 @@ interface ExploreSectionProps {
 }
 
 const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
+  const isMobile = useMobile();
   const navigate = useNavigate();
   const [exploreContent, setExploreContent] = useState<{
     trending: ContentItem[];
@@ -262,7 +264,11 @@ const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
         </div>
 
         {/* Fade overlay */}
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-40 bg-gradient-to-l from-background to-transparent" />
+        {!isMobile ? (
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-40 bg-gradient-to-l from-background to-transparent" />
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );

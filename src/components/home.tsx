@@ -16,7 +16,7 @@ const Home = () => {
   const [recentSuggestions, setRecentSuggestions] =
     useState<ContentItem[]>(contentItemArray);
   const [suggestors, setSuggestors] = useState<Suggestor[]>(suggestorsArray);
-
+const [isAuthenticationOpen, setIsAuthenticationOpen] = useState(false);
   const navigate = useNavigate();
 
   // Mock function to fetch suggestors data and recent suggestions
@@ -50,13 +50,13 @@ const Home = () => {
   return (
     <main className="w-full pt-0 pb-[10vh]  px-4">
       <div className="py-6">
-        <h1 className="text-3xl font-bold text-foreground mb-8 flex gap-2">
+        {/* <h1 className="text-3xl font-bold text-foreground mb-8 flex gap-2">
           Welcome to
           <AppName
             className="text-3xl text-primary"
             className2="text-3xl text-primary"
           />
-        </h1>
+        </h1> */}
 
         <div className="mb-8 bg-card rounded-lg shadow-social dark:shadow-social-dark p-6 transition-all hover:shadow-social-hover dark:hover:shadow-social-dark-hover">
           <h2 className="text-2xl font-bold mb-4 text-foreground">
@@ -231,7 +231,7 @@ const Home = () => {
           )}
         </div>
         <SuggestionButton
-          onClick={() => setIsSuggestionFlowOpen(true)}
+          onClick={() => isAuthenticated ? setIsSuggestionFlowOpen(true) : setIsAuthenticationOpen(true)}
           label="Suggest"
           tooltipText="Suggest content to your friends"
         />

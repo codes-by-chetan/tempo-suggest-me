@@ -69,8 +69,8 @@ const MobileTabBar = () => {
 
   return (
     <>
-      <div className="md:hidden sticky bottom-0 left-0 right-0 bg-card border-t border-border z-1000">
-        <div className="flex justify-around items-center h-16">
+      <div className="md:hidden absolute !bottom-0 !left-0 !right-0 bg-card border-t border-border z-[10000]">
+        <div className="flex justify-around items-center h-[10vh]">
           <Link
             to="/"
             className={cn(

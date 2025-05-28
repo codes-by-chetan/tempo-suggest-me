@@ -43,7 +43,7 @@ export function SearchResultItemComponent({
 
   const clipPlot = (plot: string | undefined) => {
     if (!plot) return "";
-    return plot.length > 50 ? `${plot.slice(0, 50)}...` : plot;
+    return plot.length > 40 ? `${plot.slice(0, 40)}...` : plot;
   };
 
   const handleItemClick = () => {
@@ -101,7 +101,7 @@ export function SearchResultItemComponent({
     }
     return "";
   };
-
+  
   return (
     <div
       className="flex items-start gap-2 p-2 rounded-md cursor-pointer hover:bg-accent/50 transition-colors w-full box-border overflow-hidden min-h-16"
@@ -133,12 +133,12 @@ export function SearchResultItemComponent({
             </div>
             {item.profile?.bio && (
               <p className="text-xs text-muted-foreground truncate break-words">
-                {item.profile.bio}
+                {clipPlot(item.profile.bio)}
               </p>
             )}
             {item.profile?.displayName && (
               <p className="text-xs text-muted-foreground truncate break-words">
-                {item.profile.displayName}
+                {clipPlot(item.profile.displayName)}
               </p>
             )}
           </div>
@@ -164,7 +164,7 @@ export function SearchResultItemComponent({
             <p className="text-xs text-muted-foreground truncate break-words">
               {item.category || activeTab} {item.year ? `(${item.year})` : ""}
             </p>
-            <p className="text-xs text-muted-foreground truncate break-words">
+            <p className="text-xs max-w-full text-muted-foreground truncate break-words">
               {clipPlot(item.plot)}
             </p>
           </div>
