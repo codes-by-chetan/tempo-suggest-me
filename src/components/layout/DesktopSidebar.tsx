@@ -42,29 +42,31 @@ import { useState } from "react";
 import AuthDialog from "./AuthDialog";
 
 const DesktopSidebar = () => {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { user, isAuthenticated, logout } = useAuth()
-  const { unreadCount } = useNotifications()
-  const { collapsed, setCollapsed } = useSidebar()
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { unreadCount } = useNotifications();
+  const { collapsed, setCollapsed } = useSidebar();
   const [authDialog, setAuthDialog] = useState<{
-    isOpen: boolean
-    redirectTo: string
-    defaultTab: "login" | "signup"
+    isOpen: boolean;
+    redirectTo: string;
+    defaultTab: "login" | "signup";
   }>({
     isOpen: false,
     redirectTo: "/",
     defaultTab: "login",
-  })
+  });
 
   const isActive = (path: string) => {
     if (path === "/profile") {
       return (
-        location.pathname === path || location.pathname.startsWith("/profile/") || location.pathname === "/edit-profile"
-      )
+        location.pathname === path ||
+        location.pathname.startsWith("/profile/") ||
+        location.pathname === "/edit-profile"
+      );
     }
-    return location.pathname === path
-  }
+    return location.pathname === path;
+  };
 
   const handleProtectedNavigation = (path: string) => {
     if (!isAuthenticated) {
@@ -72,16 +74,28 @@ const DesktopSidebar = () => {
         isOpen: true,
         redirectTo: path,
         defaultTab: "login",
-      })
+      });
     } else {
-      navigate(path)
+      navigate(path);
     }
-  }
+  };
+
+  const handleUnProtectedNavigation = (path: string) => {
+    if (!isAuthenticated) {
+      setAuthDialog({
+        isOpen: true,
+        redirectTo: path,
+        defaultTab: "login",
+      });
+    }
+
+    navigate(path);
+  };
 
   const handleLogout = () => {
-    logout()
-    navigate("/")
-  }
+    logout();
+    navigate("/");
+  };
 
   const menuItems = [
     {
@@ -127,50 +141,97 @@ const DesktopSidebar = () => {
       path: "/chat",
       protected: true,
     },
-  ]
+  ];
 
   return (
     <>
       <div
         className={cn(
           "hidden md:flex flex-col justify-center bg-card border-r border-border transition-all duration-300  !my-auto  m-2  rounded-lg relative",
-          collapsed ? "w-16" : "w-64",
+          collapsed ? "w-16" : "w-64"
         )}
       >
         {/* Header */}
         <div className="p-4 border-b border-border flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <img src="/suggestMeLogo.png" alt="Logo" className="h-6 w-6 hidden dark:block" />
-              <img src="/suggestMeLogoDark.png" alt="Logo" className="h-6 w-6 block dark:hidden" />
+              <img
+                src="/suggestMeLogo.png"
+                alt="Logo"
+                className="h-6 w-6 hidden dark:block"
+              />
+              <img
+                src="/suggestMeLogoDark.png"
+                alt="Logo"
+                className="h-6 w-6 block dark:hidden"
+              />
               <span className="font-semibold">SuggestMe</span>
             </div>
           )}
-          <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8">
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(!collapsed)}
+            className="h-8 w-8"
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
         {/* Navigation */}
         <nav className="flex flex-col gap-1.5 p-4">
           {menuItems.map((item) => {
-            const isItemActive = isActive(item.path)
+            const isItemActive = isActive(item.path);
 
             return (
               <div key={item.label} className="relative">
-                {item.protected ? (
+                <Button
+                  variant={isItemActive ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start relative",
+                    collapsed && "justify-center px-2"
+                  )}
+                  onClick={() =>
+                    item.protected
+                      ? handleProtectedNavigation(item.path)
+                      : handleUnProtectedNavigation(item.path)
+                  }
+                >
+                  <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
+                  {!collapsed && <span>{item.label}</span>}
+                  {item.badge > 0 && (
+                    <span
+                      className={cn(
+                        "absolute bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center",
+                        collapsed ? "top-0 right-0 -mt-1 -mr-1" : "right-2"
+                      )}
+                    >
+                      {item.badge > 9 ? "9+" : item.badge}
+                    </span>
+                  )}
+                </Button>
+                {/* {item.protected ? (
                   <Button
                     variant={isItemActive ? "default" : "ghost"}
-                    className={cn("w-full justify-start relative", collapsed && "justify-center px-2")}
+                    className={cn(
+                      "w-full justify-start relative",
+                      collapsed && "justify-center px-2"
+                    )}
                     onClick={() => handleProtectedNavigation(item.path)}
                   >
-                    <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
+                    <item.icon
+                      className={cn("h-5 w-5", !collapsed && "mr-3")}
+                    />
                     {!collapsed && <span>{item.label}</span>}
                     {item.badge > 0 && (
                       <span
                         className={cn(
                           "absolute bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center",
-                          collapsed ? "top-0 right-0 -mt-1 -mr-1" : "right-2",
+                          collapsed ? "top-0 right-0 -mt-1 -mr-1" : "right-2"
                         )}
                       >
                         {item.badge > 9 ? "9+" : item.badge}
@@ -180,17 +241,30 @@ const DesktopSidebar = () => {
                 ) : (
                   <Button
                     variant={isItemActive ? "default" : "ghost"}
-                    className={cn("w-full justify-start", collapsed && "justify-center px-2")}
-                    asChild
+                    className={cn(
+                      "w-full justify-start relative",
+                      collapsed && "justify-center px-2"
+                    )}
+                    onClick={() => handleProtectedNavigation(item.path)}
                   >
-                    <Link to={item.path}>
-                      <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
-                      {!collapsed && <span>{item.label}</span>}
-                    </Link>
+                    <item.icon
+                      className={cn("h-5 w-5", !collapsed && "mr-3")}
+                    />
+                    {!collapsed && <span>{item.label}</span>}
+                    {item.badge > 0 && (
+                      <span
+                        className={cn(
+                          "absolute bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center",
+                          collapsed ? "top-0 right-0 -mt-1 -mr-1" : "right-2"
+                        )}
+                      >
+                        {item.badge > 9 ? "9+" : item.badge}
+                      </span>
+                    )}
                   </Button>
-                )}
+                )} */}
               </div>
-            )
+            );
           })}
         </nav>
 
@@ -199,10 +273,19 @@ const DesktopSidebar = () => {
           {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className={cn("w-full justify-start p-2", collapsed && "justify-center")}>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start p-2",
+                    collapsed && "justify-center"
+                  )}
+                >
                   <Avatar className={cn("h-8 w-8", !collapsed && "mr-3")}>
                     {user?.avatar ? (
-                      <AvatarImage src={user.avatar.url || "/placeholder.svg"} alt={user.fullNameString} />
+                      <AvatarImage
+                        src={user.avatar.url || "/placeholder.svg"}
+                        alt={user.fullNameString}
+                      />
                     ) : (
                       <AvatarFallback className="bg-primary-100 text-primary-800">
                         {user.fullName.firstName.charAt(0)}
@@ -212,8 +295,12 @@ const DesktopSidebar = () => {
                   </Avatar>
                   {!collapsed && (
                     <div className="flex-1 text-left">
-                      <p className="text-sm font-medium truncate">{user.fullNameString}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                      <p className="text-sm font-medium truncate">
+                        {user.fullNameString}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
                     </div>
                   )}
                 </Button>
@@ -285,7 +372,7 @@ const DesktopSidebar = () => {
         defaultTab={authDialog.defaultTab}
       />
     </>
-  )
+  );
 };
 
 export default DesktopSidebar;

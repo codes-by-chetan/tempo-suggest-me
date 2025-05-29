@@ -57,10 +57,10 @@ export function SearchResultItemComponent({
 
       switch (category) {
         case "movie":
-          route = `/movies/${item.imdbId || item._id}`;
+          route = `/movies/${item.imdbId || item._id || item.tmdbId}`;
           break;
         case "series":
-          route = `/series/${item.imdbId || item._id}`;
+          route = `/series/${item.imdbId || item._id || item.tmdbId}`;
           break;
         case "book":
           route = `/books/${item.googleBooksId || item._id}`;
@@ -70,7 +70,7 @@ export function SearchResultItemComponent({
           break;
         default:
           // For "all" tab or unknown categories, try to determine from available IDs
-          if (item.imdbId) {
+          if (item.tmdbId) {
             route = `/movies/${item.imdbId}`;
           } else if (item.googleBooksId) {
             route = `/books/${item.googleBooksId}`;
