@@ -24,25 +24,33 @@ export const suggestContent = async (data: SuggestContentParams) => {
     return response.data; // Extract the data field from ApiResponse
   } catch (err: any) {
     console.error("Error suggesting content:", err);
-    throw new Error(err.response?.data?.message || "Abe, suggestion add nahi hua!");
+    throw new Error(
+      err.response?.data?.message || "Abe, suggestion add nahi hua!"
+    );
   }
 };
 
 export const getSuggestionDetails = async (id: string) => {
-  try {
-    const response = await api.get(`suggestions/suggestion/details/${id}`, {
+  return api
+    .get(`suggestions/suggestion/details/${id}`, {
       headers: {
         Authorization: `Bearer ${getAccessToken()}`,
       },
+    })
+    .then((response: any) => {
+      return response.data;
+    })
+    .catch((err) => {
+      console.log(err);
+      return err.response.data;
     });
-    return response.data.data; // Extract the data field from ApiResponse
-  } catch (err: any) {
-    console.error("Error fetching suggestion details:", err);
-    throw new Error(err.response?.data?.message || "Abe, suggestion details nahi mile!");
-  }
 };
 
-export const getSuggestedByYou = async ({ page = 1, limit = 12, type }: PaginationParams = {}) => {
+export const getSuggestedByYou = async ({
+  page = 1,
+  limit = 12,
+  type,
+}: PaginationParams = {}) => {
   try {
     const response = await api.get(`suggestions/suggested/by/you`, {
       headers: {
@@ -53,11 +61,17 @@ export const getSuggestedByYou = async ({ page = 1, limit = 12, type }: Paginati
     return response.data.data; // Extract the data field from ApiResponse
   } catch (err: any) {
     console.error("Error fetching suggestions sent by you:", err);
-    throw new Error(err.response?.data?.message || "Abe, suggestions fetch nahi hui!");
+    throw new Error(
+      err.response?.data?.message || "Abe, suggestions fetch nahi hui!"
+    );
   }
 };
 
-export const getSuggestedToYou = async ({ page = 1, limit = 12, type }: PaginationParams = {}) => {
+export const getSuggestedToYou = async ({
+  page = 1,
+  limit = 12,
+  type,
+}: PaginationParams = {}) => {
   try {
     const response = await api.get(`suggestions/suggested/to/you`, {
       headers: {
@@ -68,7 +82,9 @@ export const getSuggestedToYou = async ({ page = 1, limit = 12, type }: Paginati
     return response.data.data; // Extract the data field from ApiResponse
   } catch (err: any) {
     console.error("Error fetching suggestions for you:", err);
-    throw new Error(err.response?.data?.message || "Abe, suggestions fetch nahi hui!");
+    throw new Error(
+      err.response?.data?.message || "Abe, suggestions fetch nahi hui!"
+    );
   }
 };
 

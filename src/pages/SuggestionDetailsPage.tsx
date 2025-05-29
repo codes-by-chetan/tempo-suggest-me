@@ -43,7 +43,8 @@ const SuggestionDetails = () => {
       setLoading(true);
       try {
         const response = await getSuggestionDetails(suggestionId);
-        if (response.success && response.data) {
+        console.log(response);
+        if (response.success) {
           setSuggestion(response.data);
           console.log(response.data);
         } else {
@@ -260,11 +261,11 @@ const SuggestionDetails = () => {
                   >
                     <Avatar className="h-6 w-6 mr-2 ring-1 ring-primary/20">
                       <AvatarImage
-                        src={recipient.profile.avatar.url || "/placeholder.svg"}
+                        src={recipient?.profile?.avatar?.url }
                         alt={recipient.fullNameString}
                       />
                       <AvatarFallback>
-                        {recipient.fullNameString.charAt(0)}
+                        {recipient?.fullName?.firstName?.charAt(0)}{recipient?.fullName?.lastName.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">
