@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,8 +25,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getMusicDetails, MusicDetails } from "@/services/content.service";
-import { checkContent, addContent, updateContentStatus } from "@/services/contentList.service";
+import {
+  checkContent,
+  addContent,
+  updateContentStatus,
+} from "@/services/contentList.service";
 import { toast } from "@/services/toast.service";
+import { useAuth } from "@/lib/auth-context";
+import AuthDialog from "@/components/layout/AuthDialog";
 
 const formatPlays = (plays: string): string => {
   const num = parseInt(plays.replace(/,/g, ""));
@@ -50,7 +56,9 @@ const MusicDetailsPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState<boolean>(false);
+  const [newStatus, setNewStatus] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
   useEffect(() => {
     const fetchMusicContent = async () => {
       if (!id) return;
@@ -91,20 +99,23 @@ const MusicDetailsPage = () => {
     };
 
     fetchStatus();
-  }, [content?._id]);
-
-  const handleStatusChange = async (newStatus: string) => {
+  }, [content?._id, isAuthenticated]);
+  const updateStatus = async (newStatus: string) => {
     if (!content) return;
     if (newStatus === "add-to-list") return;
     try {
       let response;
       if (contentRecordId) {
-        response = await updateContentStatus(contentRecordId, { status: newStatus });
+        response = await updateContentStatus(contentRecordId, {
+          status: newStatus,
+        });
         if (response.success) {
           setContentStatus(newStatus);
           toast.success("Content status updated successfully.");
         } else {
-          throw new Error(response.message || "Failed to update content status.");
+          throw new Error(
+            response.message || "Failed to update content status."
+          );
         }
       } else {
         response = await addContent({
@@ -125,6 +136,27 @@ const MusicDetailsPage = () => {
     } finally {
       setIsPopoverOpen(false);
     }
+  };
+  const handleAuthDialogClose = useCallback(
+    (success: boolean = false) => {
+      if (success) {
+        updateStatus(newStatus);
+      } else {
+        toast.error("Failed : Login first to change status");
+      }
+      setIsAuthDialogOpen(false);
+      setNewStatus(null);
+    },
+    [isAuthenticated, newStatus]
+  );
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!isAuthenticated) {
+      setIsAuthDialogOpen(true);
+      setNewStatus(newStatus);
+      return;
+    }
+    updateStatus(newStatus);
   };
 
   const getStatusBadgeColor = (status: string | null) => {
@@ -149,7 +181,10 @@ const MusicDetailsPage = () => {
       { value: "NotInterested", label: "Not Interested" },
     ];
     if (!contentRecordId) {
-      return [{ value: "add-to-list", label: "Add to Your List" }, ...baseOptions];
+      return [
+        { value: "add-to-list", label: "Add to Your List" },
+        ...baseOptions,
+      ];
     }
     return baseOptions;
   };
@@ -186,7 +221,8 @@ const MusicDetailsPage = () => {
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold">Music Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              {error || "The music you are looking for does not exist or could not be loaded."}
+              {error ||
+                "The music you are looking for does not exist or could not be loaded."}
             </p>
           </div>
         </div>
@@ -227,7 +263,9 @@ const MusicDetailsPage = () => {
                     className="flex items-center justify-between p-2 hover:bg-accent rounded-md transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-primary">Spotify</span>
+                      <span className="font-semibold text-primary">
+                        Spotify
+                      </span>
                       <span className="text-sm text-muted-foreground">
                         {formatPlays(content.availableOn.spotify.plays)} plays
                       </span>
@@ -246,7 +284,9 @@ const MusicDetailsPage = () => {
               <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
                 <Music className="h-5 w-5" />
               </div>
-              <span className="text-sm font-medium text-primary capitalize">Music</span>
+              <span className="text-sm font-medium text-primary capitalize">
+                Music
+              </span>
             </div>
 
             <div className="flex items-center gap-4 mb-2">
@@ -254,7 +294,9 @@ const MusicDetailsPage = () => {
               <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <PopoverTrigger asChild>
                   <button
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(contentStatus)} hover:opacity-80 transition-opacity`}
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(
+                      contentStatus
+                    )} hover:opacity-80 transition-opacity`}
                     aria-label="Change content status"
                   >
                     {contentStatus === "Consumed" ? (
@@ -283,7 +325,10 @@ const MusicDetailsPage = () => {
                             ? "bg-primary/10 text-foreground cursor-not-allowed"
                             : "hover:bg-accent"
                         } disabled:opacity-50`}
-                        disabled={option.value === "add-to-list" || option.value === contentStatus}
+                        disabled={
+                          option.value === "add-to-list" ||
+                          option.value === contentStatus
+                        }
                       >
                         {option.value === "add-to-list" ? (
                           <Bookmark className="h-4 w-4" />
@@ -323,7 +368,10 @@ const MusicDetailsPage = () => {
                 <h3 className="font-medium text-lg">Genres</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.genres.map((genre, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {genre}
                     </span>
                   ))}
@@ -338,7 +386,10 @@ const MusicDetailsPage = () => {
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.mood.map((mood, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {mood}
                     </span>
                   ))}
@@ -352,14 +403,17 @@ const MusicDetailsPage = () => {
               </h3>
               <div className="mt-2">
                 <p>
-                  Grammys: {content.awards.grammys.wins} wins, {content.awards.grammys.nominations} nominations
+                  Grammys: {content.awards.grammys.wins} wins,{" "}
+                  {content.awards.grammys.nominations} nominations
                 </p>
                 <p>
-                  Billboard Music Awards: {content.awards.billboardMusicAwards.wins} wins,{" "}
+                  Billboard Music Awards:{" "}
+                  {content.awards.billboardMusicAwards.wins} wins,{" "}
                   {content.awards.billboardMusicAwards.nominations} nominations
                 </p>
                 <p>
-                  Total: {content.awards.wins} wins, {content.awards.nominations} nominations
+                  Total: {content.awards.wins} wins,{" "}
+                  {content.awards.nominations} nominations
                 </p>
               </div>
             </div>
@@ -369,7 +423,10 @@ const MusicDetailsPage = () => {
                 <h3 className="font-medium text-lg">Production</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.productionCompanies.map((company, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {company.name}
                     </span>
                   ))}
@@ -377,13 +434,21 @@ const MusicDetailsPage = () => {
               </div>
             )}
 
-            {(content.writers.length > 0 || content.producers.length > 0 || content.engineers.length > 0) && (
+            {(content.writers.length > 0 ||
+              content.producers.length > 0 ||
+              content.engineers.length > 0) && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg">Crew</h3>
                 <div className="mt-2">
-                  {content.writers.length > 0 && <p>Writers: {content.writers.join(", ")}</p>}
-                  {content.producers.length > 0 && <p>Producers: {content.producers.join(", ")}</p>}
-                  {content.engineers.length > 0 && <p>Engineers: {content.engineers.join(", ")}</p>}
+                  {content.writers.length > 0 && (
+                    <p>Writers: {content.writers.join(", ")}</p>
+                  )}
+                  {content.producers.length > 0 && (
+                    <p>Producers: {content.producers.join(", ")}</p>
+                  )}
+                  {content.engineers.length > 0 && (
+                    <p>Engineers: {content.engineers.join(", ")}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -393,7 +458,10 @@ const MusicDetailsPage = () => {
                 <h3 className="font-medium text-lg">Formats</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.formats.map((format, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {format}
                     </span>
                   ))}
@@ -406,7 +474,10 @@ const MusicDetailsPage = () => {
                 <h3 className="font-medium text-lg">Remixes</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.remixes.map((remix, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {remix}
                     </span>
                   ))}
@@ -424,31 +495,48 @@ const MusicDetailsPage = () => {
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Artists</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[content.artist, ...content.featuredArtists].map((artist, index) => (
-                  <div key={index} className="flex items-center">
-                    <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20">
-                      <AvatarImage src={artist.profileImage?.url} alt={artist.name} />
-                      <AvatarFallback>{artist.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{artist.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {artist.professions.join(", ")}
-                      </p>
+                {[content.artist, ...content.featuredArtists].map(
+                  (artist, index) => (
+                    <div key={index} className="flex items-center">
+                      <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20">
+                        <AvatarImage
+                          src={artist.profileImage?.url}
+                          alt={artist.name}
+                        />
+                        <AvatarFallback>{artist.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{artist.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {artist.professions.join(", ")}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
 
             <div className="flex items-center gap-4 mb-6">
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <Heart className="h-4 w-4" /> Like
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <MessageCircle className="h-4 w-4" /> Comment
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <Share2 className="h-4 w-4" /> Share
               </Button>
             </div>
@@ -457,6 +545,7 @@ const MusicDetailsPage = () => {
           </div>
         </div>
       </div>
+      <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthDialogClose} />
     </main>
   );
 };

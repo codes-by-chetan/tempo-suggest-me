@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   useParams,
   useLocation,
@@ -46,8 +46,15 @@ import {
   BookDetails,
   MusicDetails,
 } from "@/services/content.service";
-import { checkContent, addContent, updateContentStatus } from "@/services/contentList.service";
+import {
+  checkContent,
+  addContent,
+  updateContentStatus,
+} from "@/services/contentList.service";
 import { toast } from "@/services/toast.service";
+import { useSocket } from "@/lib/socket-context";
+import { useAuth } from "@/lib/auth-context";
+import AuthDialog from "@/components/layout/AuthDialog";
 
 // Unified interface for frontend rendering
 interface DisplayContent {
@@ -122,6 +129,8 @@ interface DisplayContent {
   artists?: string;
   album?: string;
   duration?: number;
+  tmdbId?: string;
+  imdbId?: string;
   [key: string]: any;
 }
 
@@ -133,7 +142,11 @@ const ContentDetailsPage = () => {
   const isSeriesRoute = useMatch("/series/:id");
   const isBookRoute = useMatch("/books/:id");
   const isMusicRoute = useMatch("/music/:id");
-  const stateContentDetails = location.state?.contentDetails as DisplayContent | undefined;
+  const stateContentDetails = location.state?.contentDetails as
+    | DisplayContent
+    | undefined;
+  const { socket } = useSocket();
+  const { isAuthenticated } = useAuth();
 
   const [content, setContent] = useState<DisplayContent | null>(null);
   const [contentStatus, setContentStatus] = useState<string | null>(null);
@@ -142,6 +155,8 @@ const ContentDetailsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showFullCast, setShowFullCast] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState<boolean>(false);
+  const [newStatus, setNewStatus] = useState<string | null>(null);
 
   const getPublisher = (isBookData: any, item: any) => {
     if (isBookData) {
@@ -155,13 +170,23 @@ const ContentDetailsPage = () => {
   };
 
   const normalizeContent = (
-    data: DisplayContent | MovieDetails | SeriesDetails | BookDetails | MusicDetails,
+    data:
+      | DisplayContent
+      | MovieDetails
+      | SeriesDetails
+      | BookDetails
+      | MusicDetails,
     isFromApi: boolean,
     contentType: "movie" | "series" | "book" | "music"
   ): DisplayContent => {
     if (isFromApi) {
-      const item = data as MovieDetails | SeriesDetails | BookDetails | MusicDetails;
-      const isBookData = !!(item as BookDetails).author && !!(item as BookDetails).coverImage;
+      const item = data as
+        | MovieDetails
+        | SeriesDetails
+        | BookDetails
+        | MusicDetails;
+      const isBookData =
+        !!(item as BookDetails).author && !!(item as BookDetails).coverImage;
 
       return {
         id: item._id || (item.references?.tmdbId ?? ""),
@@ -186,21 +211,35 @@ const ContentDetailsPage = () => {
         status: null,
         whereToConsume: isBookData
           ? [
-              ...((item as BookDetails).availableOn?.bookstores?.map((b: any) => b.name) || []),
-              ...((item as BookDetails).availableOn?.ebooks?.map((e: any) => e.name) || []),
-              ...((item as BookDetails).availableOn?.audiobooks?.map((a: any) => a.name) || []),
+              ...((item as BookDetails).availableOn?.bookstores?.map(
+                (b: any) => b.name
+              ) || []),
+              ...((item as BookDetails).availableOn?.ebooks?.map(
+                (e: any) => e.name
+              ) || []),
+              ...((item as BookDetails).availableOn?.audiobooks?.map(
+                (a: any) => a.name
+              ) || []),
             ].filter(Boolean).length > 0
             ? [
-                ...((item as BookDetails).availableOn?.bookstores?.map((b: any) => b.name) || []),
-                ...((item as BookDetails).availableOn?.ebooks?.map((e: any) => e.name) || []),
-                ...((item as BookDetails).availableOn?.audiobooks?.map((a: any) => a.name) || []),
+                ...((item as BookDetails).availableOn?.bookstores?.map(
+                  (b: any) => b.name
+                ) || []),
+                ...((item as BookDetails).availableOn?.ebooks?.map(
+                  (e: any) => e.name
+                ) || []),
+                ...((item as BookDetails).availableOn?.audiobooks?.map(
+                  (a: any) => a.name
+                ) || []),
               ].filter(Boolean)
             : ["Amazon", "Barnes & Noble", "Local Library"]
-          : (item.availableOn?.streaming?.map((s: any) => s.platform) || []).filter(Boolean).length > 0
+          : [
+              item.availableOn?.streaming?.map((s: any) => s.platform) || []
+            ].filter(Boolean).length > 0
           ? item.availableOn?.streaming?.map((s: any) => s.platform) || []
           : contentType === "music"
-          ? ["Spotify", "Apple Music", "YouTube Music"]
-          : ["Netflix", "Hulu", "Amazon Prime"],
+            ? ["Spotify", "Apple Music", "YouTube Music"]
+            : ["Netflix", "Hulu", "Amazon Prime"],
         runtime: (item as MovieDetails).runtime,
         genres: item.genres || [],
         cast: (item as MovieDetails | SeriesDetails).cast,
@@ -209,14 +248,20 @@ const ContentDetailsPage = () => {
         awards: item.awards as any,
         boxOffice: (item as MovieDetails).boxOffice,
         production: {
-          companies: (item as MovieDetails | SeriesDetails).production?.companies || [],
+          companies:
+            (item as MovieDetails | SeriesDetails).production?.companies || [],
         },
         keywords: (item as MovieDetails | SeriesDetails).keywords || [],
         language: isBookData
           ? (item as BookDetails).language
-          : Array.isArray((item as MovieDetails | SeriesDetails | MusicDetails).language)
-          ? (item as MovieDetails | SeriesDetails | MusicDetails).language.join(", ")
-          : (item as MovieDetails | SeriesDetails | MusicDetails).language as any,
+          : Array.isArray(
+              (item as MovieDetails | SeriesDetails | MusicDetails).language
+            )
+          ? (item as MovieDetails | SeriesDetails | MusicDetails).language.join(
+              ", "
+            )
+          : ((item as MovieDetails | SeriesDetails | MusicDetails)
+              .language as any),
         country: (item as MovieDetails | SeriesDetails).country,
         seasons: (item as SeriesDetails).seasons,
         authors: isBookData
@@ -229,8 +274,16 @@ const ContentDetailsPage = () => {
           contentType === "music" && !isBookData
             ? (item as MusicDetails).artists?.map((a) => a.name).join(", ")
             : undefined,
-        album: contentType === "music" && !isBookData ? (item as MusicDetails).album as any : undefined,
-        duration: contentType === "music" && !isBookData ? (item as MusicDetails).duration as any : undefined,
+        album:
+          contentType === "music" && !isBookData
+            ? ((item as MusicDetails).album as any)
+            : undefined,
+        duration:
+          contentType === "music" && !isBookData
+            ? ((item as MusicDetails).duration as any)
+            : undefined,
+        tmdbId: item.references?.tmdbId || undefined,
+        imdbId: item.references?.imdbId || undefined,
       };
     }
     return {
@@ -254,12 +307,20 @@ const ContentDetailsPage = () => {
           : ["Netflix", "Hulu", "Amazon Prime"]),
       genres: data.genres,
       language: data.language as any,
+      tmdbId: data.tmdbId,
+      imdbId: data.imdbId,
     };
   };
 
   useEffect(() => {
     if (stateContentDetails) {
-      setContent(normalizeContent(stateContentDetails, false, stateContentDetails.type as any));
+      setContent(
+        normalizeContent(
+          stateContentDetails,
+          false,
+          stateContentDetails.type as any
+        )
+      );
       return;
     }
 
@@ -308,7 +369,14 @@ const ContentDetailsPage = () => {
     };
 
     fetchContent();
-  }, [id, stateContentDetails, isMovieRoute, isSeriesRoute, isBookRoute, isMusicRoute]);
+  }, [
+    id,
+    stateContentDetails,
+    isMovieRoute,
+    isSeriesRoute,
+    isBookRoute,
+    isMusicRoute,
+  ]);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -328,41 +396,114 @@ const ContentDetailsPage = () => {
     };
 
     fetchStatus();
-  }, [content?.id]);
+  }, [content?.id, isAuthenticated]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (!content) return;
-    if (newStatus === "add-to-list") return;
-    try {
-      let response;
-      if (contentRecordId) {
-        response = await updateContentStatus(contentRecordId, { status: newStatus });
-        if (response.success) {
-          setContentStatus(newStatus);
-          toast.success("Content status updated successfully.");
-        } else {
-          throw new Error(response.message || "Failed to update content status.");
-        }
-      } else {
-        response = await addContent({
-          content: { id: content.id, type: content.type.charAt(0).toUpperCase() + content.type.slice(1) },
-          status: newStatus,
-          suggestionId: undefined,
-        });
-        if (response.success && response.data) {
-          setContentStatus(newStatus);
-          setContentRecordId(response.data.id);
-          toast.success("Content added successfully.");
-        } else {
-          throw new Error(response.message || "Failed to add content.");
-        }
+  // Socket.IO listener for enriched movie and series data
+  useEffect(() => {
+    if (!socket || !id || !content) return;
+
+    const handleMovieEnriched = (enrichedContent: any) => {
+      if (
+        enrichedContent._id === content.id ||
+        enrichedContent.tmdbId === content.tmdbId ||
+        enrichedContent.imdbId === content.imdbId
+      ) {
+        console.log("Received matching enriched movie data:", enrichedContent);
+        setContent(normalizeContent(enrichedContent, true, "movie"));
+        toast.success("Movie details updated with enriched data!");
       }
-    } catch (err: any) {
-      toast.error(err.message || "An error occurred. Please try again.");
-    } finally {
-      setIsPopoverOpen(false);
-    }
-  };
+    };
+
+    const handleSeriesEnriched = (enrichedContent: any) => {
+      if (
+        enrichedContent._id === content.id ||
+        enrichedContent.tmdbId === content.tmdbId ||
+        enrichedContent.imdbId === content.imdbId
+      ) {
+        console.log("Received matching enriched series data:", enrichedContent);
+        setContent(normalizeContent(enrichedContent, true, "series"));
+        toast.success("Series details updated with enriched data!");
+      }
+    };
+
+    socket.on("movieEnriched", handleMovieEnriched);
+    socket.on("seriesEnriched", handleSeriesEnriched);
+
+    return () => {
+      socket.off("movieEnriched", handleMovieEnriched);
+      socket.off("seriesEnriched", handleSeriesEnriched);
+    };
+  }, [socket, id, content?.id, content?.tmdbId, content?.imdbId]);
+
+  const updateStatus = useCallback(
+    async (newStatus: string) => {
+      if (!content) return;
+      if (newStatus === "add-to-list") return;
+      try {
+        let response;
+        if (contentRecordId) {
+          response = await updateContentStatus(contentRecordId, {
+            status: newStatus,
+          });
+          if (response.success) {
+            setContentStatus(newStatus);
+            toast.success("Content status updated successfully.");
+          } else {
+            throw new Error(
+              response.message || "Failed to update content status."
+            );
+          }
+        } else {
+          response = await addContent({
+            content: {
+              id: content.id,
+              type:
+                content.type.charAt(0).toUpperCase() + content.type.slice(1),
+            },
+            status: newStatus,
+            suggestionId: undefined,
+          });
+          if (response.success && response.data) {
+            setContentStatus(newStatus);
+            setContentRecordId(response.data.id);
+            toast.success("Content added successfully.");
+          } else {
+            throw new Error(response.message || "Failed to add content.");
+          }
+        }
+      } catch (err: any) {
+        toast.error(err.message || "An error occurred. Please try again.");
+      } finally {
+        setIsPopoverOpen(false);
+      }
+    },
+    [content, contentRecordId]
+  );
+
+  const handleAuthDialogClose = useCallback(
+    (success: boolean = false) => {
+      if (success) {
+        updateStatus(newStatus);
+      } else {
+        toast.error("Failed: Login first to change status");
+      }
+      setIsAuthDialogOpen(false);
+      setNewStatus(null);
+    },
+    [newStatus, updateStatus]
+  );
+
+  const handleStatusChange = useCallback(
+    (newStatus: string) => {
+      if (!isAuthenticated) {
+        setIsAuthDialogOpen(true);
+        setNewStatus(newStatus);
+        return;
+      }
+      updateStatus(newStatus);
+    },
+    [isAuthenticated, updateStatus]
+  );
 
   if (loading) {
     return (
@@ -389,7 +530,8 @@ const ContentDetailsPage = () => {
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold">Content Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              {error || "The content you are looking for does not exist or could not be loaded."}
+              {error ||
+                "The content you are looking for does not exist or could not be loaded."}
             </p>
           </div>
         </div>
@@ -420,11 +562,18 @@ const ContentDetailsPage = () => {
     }
   };
 
-  const getContentSpecificStatusLabel = (status: string | null, type: string): string => {
+  const getContentSpecificStatusLabel = (
+    status: string | null,
+    type: string
+  ): string => {
     if (!status) return "Add to Your List";
     if (status === "NotInterested") return "Not Interested";
     if (status === "WantToConsume") {
-      return type === "book" ? "Reading List" : type === "music" || type === "song" ? "Listening List" : "Watchlist";
+      return type === "book"
+        ? "Reading List"
+        : type === "music" || type === "song"
+        ? "Listening List"
+        : "Watchlist";
     }
     switch (type) {
       case "book":
@@ -464,6 +613,7 @@ const ContentDetailsPage = () => {
   };
 
   const formatCurrency = (amount: string) => {
+    if (!amount || typeof amount !== "string") return "N/A";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -471,6 +621,7 @@ const ContentDetailsPage = () => {
   };
 
   const formatDuration = (seconds: number) => {
+    if (!seconds || isNaN(seconds)) return "N/A";
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
@@ -478,13 +629,40 @@ const ContentDetailsPage = () => {
 
   const getStatusOptions = (type: string) => {
     const baseOptions = [
-      { value: "Consumed", label: type === "book" ? "Finished" : type === "music" || type === "song" ? "Listened" : "Watched" },
-      { value: "Consuming", label: type === "book" ? "Reading" : type === "music" || type === "song" ? "Listening" : "Watching" },
-      { value: "WantToConsume", label: type === "book" ? "Reading List" : type === "music" || type === "song" ? "Listening List" : "Watchlist" },
+      {
+        value: "Consumed",
+        label:
+          type === "book"
+            ? "Finished"
+            : type === "music" || type === "song"
+            ? "Listened"
+            : "Watched",
+      },
+      {
+        value: "Consuming",
+        label:
+          type === "book"
+            ? "Reading"
+            : type === "music" || type === "song"
+            ? "Listening"
+            : "Watching",
+      },
+      {
+        value: "WantToConsume",
+        label:
+          type === "book"
+            ? "Reading List"
+            : type === "music" || type === "song"
+            ? "Listening List"
+            : "Watchlist",
+      },
       { value: "NotInterested", label: "Not Interested" },
     ];
     if (!contentRecordId) {
-      return [{ value: "add-to-list", label: "Add to Your List" }, ...baseOptions];
+      return [
+        { value: "add-to-list", label: "Add to Your List" },
+        ...baseOptions,
+      ];
     }
     return baseOptions;
   };
@@ -538,7 +716,9 @@ const ContentDetailsPage = () => {
               <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-full">
                 {getIconForType(content.type)}
               </div>
-              <span className="text-sm font-medium text-primary capitalize">{content.type}</span>
+              <span className="text-sm font-medium text-primary capitalize">
+                {content.type}
+              </span>
             </div>
 
             <div className="flex items-center gap-4 mb-2">
@@ -546,7 +726,9 @@ const ContentDetailsPage = () => {
               <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <PopoverTrigger asChild>
                   <button
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(contentStatus)} hover:opacity-80 transition-opacity`}
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(
+                      contentStatus
+                    )} hover:opacity-80 transition-opacity`}
                     aria-label="Change content status"
                   >
                     {contentStatus === "Consumed" ? (
@@ -575,7 +757,10 @@ const ContentDetailsPage = () => {
                             ? "bg-primary/10 text-foreground cursor-not-allowed"
                             : "hover:bg-accent"
                         } disabled:opacity-50`}
-                        disabled={option.value === "add-to-list" || option.value === contentStatus}
+                        disabled={
+                          option.value === "add-to-list" ||
+                          option.value === contentStatus
+                        }
                       >
                         {option.value === "add-to-list" ? (
                           <Bookmark className="h-4 w-4" />
@@ -605,7 +790,9 @@ const ContentDetailsPage = () => {
                 content.duration && formatDuration(content.duration),
                 content.language,
                 content.country,
-                typeof content.publisher === "string" ? content.publisher : content.publisher?.name,
+                typeof content.publisher === "string" && content.publisher
+                  ? content.publisher
+                  : content.publisher?.name,
                 content.isbn && `ISBN: ${content.isbn}`,
                 content.album,
                 content.pages && `${content.pages} pages`,
@@ -614,31 +801,37 @@ const ContentDetailsPage = () => {
                 .join(" • ")}
             </p>
 
-            {content.type === "series" && content.seasons && content.seasons.length > 0 && (
-              <div className="mb-4">
-                <h3 className="font-medium text-lg">Seasons</h3>
-                <div className="mt-2">
-                  <p>
-                    {content.seasons.length} Season{content.seasons.length > 1 ? "s" : ""}
-                  </p>
-                  <ul className="list-disc pl-5 mt-2">
-                    {content.seasons.map((season, index) => (
-                      <li key={index}>
-                        Season {season.seasonNumber}: {season.episodeCount} Episode
-                        {season.episodeCount > 1 ? "s" : ""}
-                      </li>
-                    ))}
-                  </ul>
+            {content.type === "series" &&
+              content.seasons &&
+              content.seasons.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-medium text-lg">Seasons</h3>
+                  <div className="mt-2">
+                    <p>
+                      {content.seasons.length} Season
+                      {content.seasons.length > 1 ? "s" : ""}
+                    </p>
+                    <ul className="list-disc pl-5 mt-2">
+                      {content.seasons.map((season, index) => (
+                        <li key={index}>
+                          Season {season.seasonNumber}: {season.episodeCount}{" "}
+                          Episode{season.episodeCount > 1 ? "s" : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {content.genres && content.genres.length > 0 && (
               <div className="mb-4">
                 <h3 className="font-medium text-lg">Genres</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.genres.map((genre, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {genre}
                     </span>
                   ))}
@@ -652,7 +845,8 @@ const ContentDetailsPage = () => {
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-yellow-400 fill-current" />
                   <span>
-                    {content.ratings.imdb.score.toFixed(1)}/10 ({content.ratings.imdb.votes.toLocaleString()} votes)
+                    {content.ratings.imdb.score.toFixed(1)}/10 (
+                    {content.ratings.imdb.votes.toLocaleString()} votes)
                   </span>
                 </div>
               </div>
@@ -664,26 +858,31 @@ const ContentDetailsPage = () => {
                   <Award className="h-5 w-5" /> Awards
                 </h3>
                 <div className="mt-2">
-                  {content.awards.oscars?.wins || content.awards.oscars?.nominations ? (
+                  {content.awards.oscars?.wins ||
+                  content.awards.oscars?.nominations ? (
                     <p>
-                      Oscars: {content.awards.oscars.wins} wins, {content.awards.oscars.nominations} nominations
+                      Oscars: {content.awards.oscars.wins} wins,{" "}
+                      {content.awards.oscars.nominations} nominations
                     </p>
                   ) : (
                     <p>No Oscar wins or nominations</p>
                   )}
                   {(content.awards.wins || content.awards.nominations) && (
                     <p>
-                      Total: {content.awards.wins} wins, {content.awards.nominations} nominations
+                      Total: {content.awards.wins} wins,{" "}
+                      {content.awards.nominations} nominations
                     </p>
-                  )}
-                  {content.awards.awardsDetails?.length ? (
+                    )}
+                    {content.awards.awardsDetails?.length ? (
                     <ul className="list-disc pl-5 mt-2">
                       {content.awards.awardsDetails.map((award, index) => (
                         <li key={index}>{award}</li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No additional award details</p>
+                    <p className="text-sm text-muted-foreground">
+                      No additional award details
+                    </p>
                   )}
                 </div>
               </div>
@@ -695,9 +894,14 @@ const ContentDetailsPage = () => {
                   <DollarSign className="h-5 w-5" /> Box Office
                 </h3>
                 <div className="mt-2">
-                  {content.boxOffice.budget && <p>Budget: {formatCurrency(content.boxOffice.budget)}</p>}
+                  {content.boxOffice.budget && (
+                    <p>Budget: {formatCurrency(content.boxOffice.budget)}</p>
+                  )}
                   {content.boxOffice.grossWorldwide && (
-                    <p>Gross Worldwide: {formatCurrency(content.boxOffice.grossWorldwide)}</p>
+                    <p>
+                      Gross Worldwide:{" "}
+                      {formatCurrency(content.boxOffice.grossWorldwide)}
+                    </p>
                   )}
                 </div>
               </div>
@@ -710,7 +914,10 @@ const ContentDetailsPage = () => {
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.production.companies.map((company, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {company.name}
                     </span>
                   ))}
@@ -725,7 +932,10 @@ const ContentDetailsPage = () => {
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {content.keywords.map((keyword, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {keyword}
                     </span>
                   ))}
@@ -747,39 +957,61 @@ const ContentDetailsPage = () => {
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-2">Cast</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {content.cast.slice(0, showFullCast ? undefined : 10).map((actor, index) => (
-                    <div key={index} className="flex items-center">
-                      <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20 cursor-pointer">
-                        <AvatarImage
-                          src={actor.person?.profileImage?.url}
-                          alt={actor.person?.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <AvatarFallback>{actor.person?.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{actor.person?.name}</p>
-                        <p className="text-sm text-muted-foreground">as {actor?.character}</p>
+                  {content.cast
+                    .slice(0, showFullCast ? undefined : 10)
+                    .map((actor, index) => (
+                      <div key={index} className="flex items-center">
+                        <Avatar className="h-16 w-16 mr-3 ring-1 ring-primary/20 cursor-pointer">
+                          <AvatarImage
+                            src={actor.person?.profileImage?.url}
+                            alt={actor.person?.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <AvatarFallback>
+                            {actor.person?.name?.charAt(0) || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{actor.person?.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            as {actor?.character}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
                 {content.cast.length > 10 && (
-                  <Button variant="link" className="mt-4" onClick={() => setShowFullCast(!showFullCast)}>
+                  <Button
+                    variant="link"
+                    className="mt-4"
+                    onClick={() => setShowFullCast(!showFullCast)}
+                  >
                     {showFullCast ? "Show Less" : "Show More"}
                   </Button>
                 )}
               </div>
             )}
 
-            <div className="flex items-center gap-4 mb-6">
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+            <div className="flex items-center flex-wrap gap-4 mb-6">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <Heart className="h-4 w-4" /> Like
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <MessageCircle className="h-4 w-4" /> Comment
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <Share2 className="h-4 w-4" /> Share
               </Button>
             </div>
@@ -788,11 +1020,16 @@ const ContentDetailsPage = () => {
 
             {content.suggestedBy && (
               <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-3">Suggested by</h2>
+                <h2 className="text-lg font-semibold mb-2">Suggested By</h2>
                 <div className="flex items-center">
                   <Avatar className="h-10 w-10 mr-3 ring-2 ring-primary/20">
-                    <AvatarImage src={content.suggestedBy.avatar} alt={content.suggestedBy.name} />
-                    <AvatarFallback>{content.suggestedBy.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src={content.suggestedBy.avatar}
+                      alt={content.suggestedBy.name}
+                    />
+                    <AvatarFallback>
+                      {content.suggestedBy.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{content.suggestedBy.name}</p>
@@ -808,7 +1045,7 @@ const ContentDetailsPage = () => {
 
             {content.suggestedTo && content.suggestedTo.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-3">Suggested to</h2>
+                <h2 className="text-lg font-semibold mb-2">Suggested To</h2>
                 <div className="flex flex-wrap gap-2">
                   {content.suggestedTo.map((recipient) => (
                     <div
@@ -816,8 +1053,13 @@ const ContentDetailsPage = () => {
                       className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-3 transition-colors"
                     >
                       <Avatar className="h-6 w-6 mr-2 ring-1 ring-primary/20">
-                        <AvatarImage src={recipient.avatar} alt={recipient.name} />
-                        <AvatarFallback>{recipient.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage
+                          src={recipient.avatar}
+                          alt={recipient.name}
+                        />
+                        <AvatarFallback>
+                          {recipient.name.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
                       <span className="text-sm font-medium">{recipient.name}</span>
                     </div>
@@ -828,6 +1070,7 @@ const ContentDetailsPage = () => {
           </div>
         </div>
       </div>
+      <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthDialogClose} />
     </main>
   );
 };

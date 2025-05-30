@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,9 +22,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getBookDetails, BookDetails } from "@/services/content.service";
-import { checkContent, addContent, updateContentStatus } from "@/services/contentList.service";
+import {
+  checkContent,
+  addContent,
+  updateContentStatus,
+} from "@/services/contentList.service";
 import { toast } from "@/services/toast.service";
 import { useSocket } from "@/lib/socket-context";
+import { useAuth } from "@/lib/auth-context";
+import AuthDialog from "@/components/layout/AuthDialog";
 
 interface DisplayBook {
   id: string;
@@ -72,7 +78,9 @@ const BookDetailsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState<boolean>(false);
+  const [newStatus, setNewStatus] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
   const normalizeBookData = (data: any): DisplayBook => {
     return {
       id: data._id || "",
@@ -85,8 +93,10 @@ const BookDetailsPage = () => {
       publisher: data.publisher?.name || data.publisher || "",
       pages: data.pages,
       isbn:
-        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_13")?.identifier ||
-        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_10")?.identifier,
+        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_13")
+          ?.identifier ||
+        data.industryIdentifiers?.find((id: any) => id.type === "ISBN_10")
+          ?.identifier,
       genres: data.genres || [],
       language: data.language,
       status: null,
@@ -158,7 +168,8 @@ const BookDetailsPage = () => {
       if (
         enrichedBook._id === book.id ||
         enrichedBook.googleBooksId === book.googleBooksId ||
-        (enrichedBook.openLibraryId && enrichedBook.openLibraryId === book.openLibraryId)
+        (enrichedBook.openLibraryId &&
+          enrichedBook.openLibraryId === book.openLibraryId)
       ) {
         console.log("Received matching enriched book data:", enrichedBook);
         setBook(normalizeBookData(enrichedBook));
@@ -172,19 +183,22 @@ const BookDetailsPage = () => {
       socket.off("bookEnriched", handleBookEnriched);
     };
   }, [socket, id, book?.id, book?.googleBooksId, book?.openLibraryId]);
-
-  const handleStatusChange = async (newStatus: string) => {
+  const updateStatus = async (newStatus: string) => {
     if (!book) return;
     if (newStatus === "add-to-list") return;
     try {
       let response;
       if (contentRecordId) {
-        response = await updateContentStatus(contentRecordId, { status: newStatus });
+        response = await updateContentStatus(contentRecordId, {
+          status: newStatus,
+        });
         if (response.success) {
           setContentStatus(newStatus);
           toast.success("Content status updated successfully.");
         } else {
-          throw new Error(response.message || "Failed to update content status.");
+          throw new Error(
+            response.message || "Failed to update content status."
+          );
         }
       } else {
         response = await addContent({
@@ -205,6 +219,28 @@ const BookDetailsPage = () => {
     } finally {
       setIsPopoverOpen(false);
     }
+  };
+
+  const handleAuthDialogClose = useCallback(
+    (success: boolean = false) => {
+      if (success) {
+        updateStatus(newStatus);
+      } else {
+        toast.error("Failed : Login first to change status");
+      }
+      setIsAuthDialogOpen(false);
+      setNewStatus(null);
+    },
+    [isAuthenticated, newStatus]
+  );
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!isAuthenticated) {
+      setIsAuthDialogOpen(true);
+      setNewStatus(newStatus);
+      return;
+    }
+    updateStatus(newStatus);
   };
 
   const getStatusBadgeColor = (status: string | null) => {
@@ -229,7 +265,10 @@ const BookDetailsPage = () => {
       { value: "NotInterested", label: "Not Interested" },
     ];
     if (!contentRecordId) {
-      return [{ value: "add-to-list", label: "Add to Your List" }, ...baseOptions];
+      return [
+        { value: "add-to-list", label: "Add to Your List" },
+        ...baseOptions,
+      ];
     }
     return baseOptions;
   };
@@ -266,7 +305,8 @@ const BookDetailsPage = () => {
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold">Book Not Found</h2>
             <p className="text-muted-foreground mt-2">
-              {error || "The book you are looking for does not exist or could not be loaded."}
+              {error ||
+                "The book you are looking for does not exist or could not be loaded."}
             </p>
           </div>
         </div>
@@ -325,7 +365,9 @@ const BookDetailsPage = () => {
               </div>
               <span className="text-sm font-medium text-primary">Book</span>
               {book.publishedYear && (
-                <span className="text-sm text-muted-foreground">({book.publishedYear})</span>
+                <span className="text-sm text-muted-foreground">
+                  ({book.publishedYear})
+                </span>
               )}
             </div>
 
@@ -334,7 +376,9 @@ const BookDetailsPage = () => {
               <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <PopoverTrigger asChild>
                   <button
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(contentStatus)} hover:opacity-80 transition-opacity`}
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(
+                      contentStatus
+                    )} hover:opacity-80 transition-opacity`}
                     aria-label="Change content status"
                   >
                     {contentStatus === "Consumed" ? (
@@ -363,7 +407,10 @@ const BookDetailsPage = () => {
                             ? "bg-primary/10 text-foreground cursor-not-allowed"
                             : "hover:bg-accent"
                         } disabled:opacity-50`}
-                        disabled={option.value === "add-to-list" || option.value === contentStatus}
+                        disabled={
+                          option.value === "add-to-list" ||
+                          option.value === contentStatus
+                        }
                       >
                         {option.value === "add-to-list" ? (
                           <Bookmark className="h-4 w-4" />
@@ -385,13 +432,19 @@ const BookDetailsPage = () => {
             </div>
 
             {book.subtitle && (
-              <h2 className="text-xl text-muted-foreground mb-3">{book.subtitle}</h2>
+              <h2 className="text-xl text-muted-foreground mb-3">
+                {book.subtitle}
+              </h2>
             )}
 
             <p className="text-muted-foreground mb-4">
               {[
-                book.authors && <span className="font-medium">By {book.authors}</span>,
-                typeof book.publisher === "string" ? book.publisher : book.publisher?.name,
+                book.authors && (
+                  <span className="font-medium">By {book.authors}</span>
+                ),
+                typeof book.publisher === "string"
+                  ? book.publisher
+                  : book.publisher?.name,
                 book.isbn && `ISBN: ${book.isbn}`,
                 book.pages && `${book.pages} pages`,
                 book.language && `Language: ${book.language.toUpperCase()}`,
@@ -410,7 +463,10 @@ const BookDetailsPage = () => {
                 <h3 className="font-medium text-lg">Genres</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {book.genres.map((genre, index) => (
-                    <span key={index} className="px-3 py-1 bg-accent text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent text-sm rounded-full"
+                    >
                       {genre}
                     </span>
                   ))}
@@ -418,23 +474,25 @@ const BookDetailsPage = () => {
               </div>
             )}
 
-            {book.awards && (book.awards.wins > 0 || book.awards.nominations > 0) && (
-              <div className="mb-4">
-                <h3 className="font-medium text-lg">Awards</h3>
-                <div className="mt-2">
-                  <p>
-                    {book.awards.wins} wins, {book.awards.nominations} nominations
-                  </p>
-                  {book.awards.awardsDetails?.length > 0 && (
-                    <ul className="list-disc pl-5 mt-2">
-                      {book.awards.awardsDetails.map((award, index) => (
-                        <li key={index}>{award}</li>
-                      ))}
-                    </ul>
-                  )}
+            {book.awards &&
+              (book.awards.wins > 0 || book.awards.nominations > 0) && (
+                <div className="mb-4">
+                  <h3 className="font-medium text-lg">Awards</h3>
+                  <div className="mt-2">
+                    <p>
+                      {book.awards.wins} wins, {book.awards.nominations}{" "}
+                      nominations
+                    </p>
+                    {book.awards.awardsDetails?.length > 0 && (
+                      <ul className="list-disc pl-5 mt-2">
+                        {book.awards.awardsDetails.map((award, index) => (
+                          <li key={index}>{award}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Description</h2>
@@ -447,13 +505,25 @@ const BookDetailsPage = () => {
             </div>
 
             <div className="flex items-center gap-4 mb-6">
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <Heart className="h-4 w-4" /> Like
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <MessageCircle className="h-4 w-4" /> Comment
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-2"
+              >
                 <Share2 className="h-4 w-4" /> Share
               </Button>
             </div>
@@ -465,8 +535,13 @@ const BookDetailsPage = () => {
                 <h2 className="text-lg font-semibold mb-3">Suggested by</h2>
                 <div className="flex items-center">
                   <Avatar className="h-10 w-10 mr-3 ring-2 ring-primary/20">
-                    <AvatarImage src={book.suggestedBy.avatar} alt={book.suggestedBy.name} />
-                    <AvatarFallback>{book.suggestedBy.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src={book.suggestedBy.avatar}
+                      alt={book.suggestedBy.name}
+                    />
+                    <AvatarFallback>
+                      {book.suggestedBy.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{book.suggestedBy.name}</p>
@@ -490,10 +565,17 @@ const BookDetailsPage = () => {
                       className="flex items-center bg-accent hover:bg-accent/80 rounded-full py-1 px-3 transition-colors"
                     >
                       <Avatar className="h-6 w-6 mr-2 ring-1 ring-primary/20">
-                        <AvatarImage src={recipient.avatar} alt={recipient.name} />
-                        <AvatarFallback>{recipient.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage
+                          src={recipient.avatar}
+                          alt={recipient.name}
+                        />
+                        <AvatarFallback>
+                          {recipient.name.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">{recipient.name}</span>
+                      <span className="text-sm font-medium">
+                        {recipient.name}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -502,6 +584,7 @@ const BookDetailsPage = () => {
           </div>
         </div>
       </div>
+      <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthDialogClose} />
     </main>
   );
 };
