@@ -79,7 +79,7 @@ const RecipientSelector = ({
       }
     })
 
-    setSearchResults(filteredResults)
+    setSearchResults(filteredResults as Recipient[])
   }, [searchQuery])
   useEffect(() => {
     searchPeoples()

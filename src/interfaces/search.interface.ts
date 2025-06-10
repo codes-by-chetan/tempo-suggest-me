@@ -236,7 +236,7 @@ interface ProfileImage {
 
 export interface UserItem {
   _id: string;
-  fullName?: FullName;
+  fullName: FullName;
   email?: string;
   profile?: Profile;
   category?: string;

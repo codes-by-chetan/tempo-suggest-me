@@ -55,6 +55,9 @@ import { toast } from "@/services/toast.service";
 import { useSocket } from "@/lib/socket-context";
 import { useAuth } from "@/lib/auth-context";
 import AuthDialog from "@/components/layout/AuthDialog";
+import SuggestionFlow from "@/components/suggestions/SuggestionFlow";
+import SuggestionButton from "@/components/suggestions/SuggestionButton";
+import { suggestContent } from "@/services/suggestion.service";
 
 // Unified interface for frontend rendering
 interface DisplayContent {
@@ -157,7 +160,7 @@ const ContentDetailsPage = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState<boolean>(false);
   const [newStatus, setNewStatus] = useState<string | null>(null);
-
+  const [isSuggestionFlowOpen, setIsSuggestionFlowOpen] = useState(false);
   const getPublisher = (isBookData: any, item: any) => {
     if (isBookData) {
       if (typeof (item as BookDetails).publisher === "object") {
@@ -234,12 +237,12 @@ const ContentDetailsPage = () => {
               ].filter(Boolean)
             : ["Amazon", "Barnes & Noble", "Local Library"]
           : [
-              item.availableOn?.streaming?.map((s: any) => s.platform) || []
+              item.availableOn?.streaming?.map((s: any) => s.platform) || [],
             ].filter(Boolean).length > 0
           ? item.availableOn?.streaming?.map((s: any) => s.platform) || []
           : contentType === "music"
-            ? ["Spotify", "Apple Music", "YouTube Music"]
-            : ["Netflix", "Hulu", "Amazon Prime"],
+          ? ["Spotify", "Apple Music", "YouTube Music"]
+          : ["Netflix", "Hulu", "Amazon Prime"],
         runtime: (item as MovieDetails).runtime,
         genres: item.genres || [],
         cast: (item as MovieDetails | SeriesDetails).cast,
@@ -504,7 +507,22 @@ const ContentDetailsPage = () => {
     },
     [isAuthenticated, updateStatus]
   );
-
+  const handleSuggestionComplete = async (data: any) => {
+    setLoading(true);
+    try {
+      const res = await suggestContent(data);
+      console.log("Suggestion response:", res);
+      if (res.success) {
+        toast.success("Suggestion added successfully!");
+      } else {
+        toast.error("Failed to add suggestion!");
+      }
+    } catch (error) {
+      toast.error("Something went wrong while adding suggestion!");
+    }
+    setIsSuggestionFlowOpen(false);
+    setLoading(false);
+  };
   if (loading) {
     return (
       <main className="w-full mx-auto pb-[10vh] pt-0 px-4 sm:px-6 lg:px-8">
@@ -691,7 +709,9 @@ const ContentDetailsPage = () => {
             </div>
 
             <div className="mt-6 bg-card rounded-lg p-4 shadow-sm">
-              <h3 className="font-medium text-lg mb-3">{getWhereToConsumeLabel()}</h3>
+              <h3 className="font-medium text-lg mb-3">
+                {getWhereToConsumeLabel()}
+              </h3>
               <div className="space-y-2">
                 {content.whereToConsume?.length ? (
                   content.whereToConsume.map((place, index) => (
@@ -872,8 +892,8 @@ const ContentDetailsPage = () => {
                       Total: {content.awards.wins} wins,{" "}
                       {content.awards.nominations} nominations
                     </p>
-                    )}
-                    {content.awards.awardsDetails?.length ? (
+                  )}
+                  {content.awards.awardsDetails?.length ? (
                     <ul className="list-disc pl-5 mt-2">
                       {content.awards.awardsDetails.map((award, index) => (
                         <li key={index}>{award}</li>
@@ -1061,7 +1081,9 @@ const ContentDetailsPage = () => {
                           {recipient.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">{recipient.name}</span>
+                      <span className="text-sm font-medium">
+                        {recipient.name}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -1071,6 +1093,26 @@ const ContentDetailsPage = () => {
         </div>
       </div>
       <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthDialogClose} />
+      <SuggestionButton
+        onClick={() => setIsSuggestionFlowOpen(true)}
+        label="Suggest"
+        tooltipText="Suggest content to your friends"
+      />
+      <SuggestionFlow
+        open={isSuggestionFlowOpen}
+        onOpenChange={setIsSuggestionFlowOpen}
+        onComplete={handleSuggestionComplete}
+        preSelectedContent={{
+          id: content.id,
+          title: content.title,
+          type: content.type,
+          imageUrl: content.imageUrl || content.posterUrl || content.coverUrl,
+          year: content.year?.toString() || "",
+          creator: content.creator || content.authors || content.artists || "",
+          description: content.description,
+        }}
+        startFromRecipientSelection={true}
+      />
     </main>
   );
 };

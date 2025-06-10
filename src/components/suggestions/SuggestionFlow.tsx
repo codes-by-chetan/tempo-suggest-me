@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -38,17 +38,23 @@ interface SuggestionFlowProps {
     recipients: Recipient[];
     note?: string;
   }) => void;
+  preSelectedContent?: ContentItem;
+  startFromRecipientSelection?: boolean;
 }
 
 const SuggestionFlow = ({
   open = true,
   onOpenChange = () => {},
   onComplete = () => {},
+  preSelectedContent,
+  startFromRecipientSelection = false,
 }: SuggestionFlowProps) => {
-  const [step, setStep] = useState(1);
-  const [contentType, setContentType] = useState("");
+  const [step, setStep] = useState(startFromRecipientSelection ? 4 : 1);
+  const [contentType, setContentType] = useState(
+    preSelectedContent?.type || ""
+  );
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
-    null
+    preSelectedContent || null
   );
   const [contentDetails, setContentDetails] = useState<any>(null);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
@@ -59,9 +65,18 @@ const SuggestionFlow = ({
     setSelectedContent(null); // Reset selected content when changing type
     setStep(2);
   };
-  const onCloseHandler = (success: boolean) => {
-    
-  };
+  const onCloseHandler = (success: boolean) => {};
+
+  useEffect(() => {
+    if (preSelectedContent) {
+      setSelectedContent(preSelectedContent);
+      setContentType(preSelectedContent.type);
+      if (startFromRecipientSelection) {
+        setStep(4);
+      }
+    }
+  }, [preSelectedContent, startFromRecipientSelection]);
+
   const handleContentSelect = (content: ContentItem) => {
     setSelectedContent(content);
     // Don't automatically advance to next step
@@ -96,6 +111,11 @@ const SuggestionFlow = ({
   };
 
   const handleBack = () => {
+    if (startFromRecipientSelection && step === 4) {
+      // If we started from recipient selection, close the dialog instead of going back
+      onOpenChange(false)
+      return
+    }
     if (step > 1) {
       setStep(step - 1);
     }
@@ -119,6 +139,10 @@ const SuggestionFlow = ({
   };
 
   const renderStepIndicator = () => {
+    if (startFromRecipientSelection) {
+      // Don't show step indicator when starting from recipient selection
+      return null
+    }
     return (
       <div className="flex justify-center mb-6">
         <div className="flex items-center space-x-2">
