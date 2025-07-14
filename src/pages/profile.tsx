@@ -58,7 +58,7 @@ const Profile = () => {
 
   useEffect(() => {
     refreshDetails();
-  }, []);
+  }, [id]);
 
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
