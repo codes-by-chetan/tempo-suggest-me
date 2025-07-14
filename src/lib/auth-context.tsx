@@ -1,4 +1,5 @@
 import AuthService from "@/services/auth.service";
+import { toast } from "@/services/toast.service";
 import React, {
   createContext,
   useContext,
@@ -94,18 +95,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     console.log("Login attempt with:", { email, password });
 
-    const success = await authService.login({ email, password }).then((res) => {
-      if (res.success) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("tokenExpiry", res.data.expiryTime);
-        setUser(res.data.user);
-        setIsAuthenticated(true);
-        refreshAuthState();
-        return true;
-      } else {
+    const success = await authService
+      .login({ email, password })
+      .then((res) => {
+        if (res.success) {
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("tokenExpiry", res.data.expiryTime);
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+          refreshAuthState();
+          return true;
+        } else {
+          toast.error(res.message || "Login Failed");
+          return false;
+        }
+      })
+      .catch((err) => {
+        toast.error(err.response.data.message || "Login Failed");
         return false;
-      }
-    });
+      });
     return success;
   };
 

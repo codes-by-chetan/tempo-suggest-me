@@ -63,6 +63,7 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
       // Handle login error
+      
     } finally {
       setIsLoading(false);
     }
