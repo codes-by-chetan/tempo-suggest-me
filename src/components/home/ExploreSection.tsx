@@ -56,20 +56,20 @@ interface ExploreSectionProps {
           <span className="text-xs font-medium text-primary capitalize">
             {item.type}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-gray-400 dark:text-muted-foreground">
             {new Date(item.suggestedAt).toLocaleDateString()}
           </span>
         </div>
-        <h3 className="font-semibold text-lg mb-1 line-clamp-1 text-foreground">
+        <h3 className="font-semibold text-lg mb-1 line-clamp-1 text-gray-300 dark:text-foreground">
           {item.title}
         </h3>
-        <p className="text-sm text-muted-foreground mb-2">
+        <p className="text-sm text-gray-400 dark:text-muted-foreground  mb-2">
           {item.creator} • {item.year}
         </p>
 
         {item.suggestedBy && (
           <div className="flex items-center pt-3 border-t border-border">
-            <span className="text-xs font-medium text-foreground mr-2">
+            <span className="text-xs font-medium text-gray-400 dark:text-muted-foreground mr-2">
               {item.status === "watching"
                 ? "Currently watching:"
                 : "Suggested by:"}
@@ -84,7 +84,7 @@ interface ExploreSectionProps {
                   />
                 </div>
               )}
-              <span className="text-xs font-medium text-foreground">
+              <span className="text-xs font-medium text-gray-400 dark:text-muted-foreground">
                 {item.suggestedBy.name}
               </span>
             </div>
