@@ -4,7 +4,6 @@ import { Suspense, lazy, useState, useEffect, useRef } from "react"
 import { LoadingSpinner } from "./components/ui/spinner"
 import { Toaster } from "./components/ui/toaster"
 import { Routes, Route, useRoutes } from "react-router-dom"
-import Home from "./components/home"
 import routes from "tempo-routes"
 import ErrorPage from "./components/errorPage"
 import NotificationsPage from "./pages/NotificationsPage"
@@ -24,6 +23,7 @@ import MusicDetailsPage from "./pages/MusicDetailsPage"
 import MobileChatConversation from "./pages/chat/mobile-conversation"
 import DesktopChatConversation from "./pages/chat/desktop-conversation"
 import SearchPage from "./pages/search/search-page"
+import Home from "./components/home/home"
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"))

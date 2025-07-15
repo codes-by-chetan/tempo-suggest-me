@@ -45,6 +45,7 @@ const useOutsideClick = (
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [dismissingIds, setDismissingIds] = useState<string[]>([]);
   const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,8 +53,14 @@ const Navbar = () => {
   const [peopleResults, setPeopleResults] = useState<any>(null);
   const [isSearching, setIsSearching] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    dismiss,
+    dismissAll,
+  } = useNotifications();
   const navigate = useNavigate();
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
@@ -191,122 +198,141 @@ const Navbar = () => {
           <div className="hidden sm:flex sm:items-center sm:space-x-3">
             {/* Notification bell */}
             {isAuthenticated && (
-              <DropdownMenu
-                open={notificationsOpen}
-                onOpenChange={setNotificationsOpen}
-              >
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full relative"
-                  >
-                    <Bell className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 p-0">
-                  <div className="flex items-center justify-between p-3">
-                    <DropdownMenuLabel className="p-0">
-                      Notifications
-                    </DropdownMenuLabel>
-                    {unreadCount > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs flex items-center gap-1"
-                        onClick={markAllAsRead}
-                      >
-                        <Check className="h-3 w-3" />
-                        Mark all as read
-                      </Button>
-                    )}
-                  </div>
-                  <Separator />
-                  <ScrollArea className="h-[300px]">
-                    {notifications.length > 0 ? (
-                      notifications
-                        .slice(0, 5) // Show only the latest 5 notifications
-                        .map((notification) => (
-                          <NotificationItem
-                            key={notification._id}
-                            notification={{
-                              id: notification._id,
-                              type: notification.type,
-                              title:
-                                notification.type === "Suggestion"
-                                  ? "New Suggestion"
-                                  : notification.type === "Like"
-                                  ? "New Like"
-                                  : notification.type === "Comment"
-                                  ? "New Comment"
-                                  : notification.type === "System"
-                                  ? "System Notification"
-                                  : notification.type === "FollowRequest"
-                                  ? "Follow Request"
-                                  : notification.type === "FollowAccepted"
-                                  ? "Follow Accepted"
-                                  : notification.type === "FollowedYou"
-                                  ? "Followed You"
-                                  : notification.type === "NewContent"
-                                  ? "New Content"
-                                  : notification.type === "Mention"
-                                  ? "Mention"
-                                  : "Notification",
-                              message: notification.message,
-                              timestamp: notification.createdAt,
-                              read: notification.status === "Read",
-                              contentType:
-                                notification.relatedContent?.contentType,
-                              user: notification.sender
-                                ? {
-                                    id: notification.sender._id,
-                                    fullName: notification.sender.fullName,
-                                    fullNameString:
-                                      notification.sender.fullNameString ||
-                                      `${notification.sender.fullName.firstName} ${notification.sender.fullName.lastName}`,
-                                    avatar:
-                                      notification.sender.avatar?.url ||
-                                      notification.sender?.profile?.avatar
-                                        ?.url ||
-                                      null,
-                                    profile: notification.sender.profile || {},
-                                  }
-                                : undefined,
-                            }}
-                            onMarkAsRead={() => {
-                              markAsRead(notification._id);
-                              setNotificationsOpen(false);
-                            }}
-                            closePopup={() => setNotificationsOpen(false)}
-                          />
-                        ))
-                    ) : (
-                      <div className="p-4 text-center text-muted-foreground text-sm">
-                        No notifications yet
-                      </div>
-                    )}
-                  </ScrollArea>
-                  <Separator />
-                  <div className="p-3">
+              <>
+                <DropdownMenu
+                  open={notificationsOpen}
+                  onOpenChange={setNotificationsOpen}
+                >
+                  <DropdownMenuTrigger asChild>
                     <Button
-                      variant="default"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={() => {
-                        setNotificationsOpen(false);
-                        navigate("/notifications");
-                      }}
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full relative"
                     >
-                      View All Notifications
+                      <Bell className="h-5 w-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-primary ring-2 ring-card text-[10px] text-white font-medium flex items-center justify-center">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
                     </Button>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80 p-0">
+                    <div className="flex items-center justify-between p-3">
+                      <DropdownMenuLabel className="p-0 w-full flex  justify-between">
+                        <span>Notifications</span>
+                      </DropdownMenuLabel>
+                      {unreadCount > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 text-xs flex items-center gap-1"
+                          onClick={markAllAsRead}
+                        >
+                          <Check className="h-3 w-3" />
+                          Mark all as read
+                        </Button>
+                      )}
+                    </div>
+                    <Separator />
+                    <ScrollArea className="h-[300px]">
+                      {notifications.length > 0 ? (
+                        notifications
+                          .slice(0, 5) // Show only the latest 5 notifications
+                          .map((notification) => (
+                            <NotificationItem
+                                    dismissing={dismissingIds.includes(notification._id)} // Pass dismissing state
+                              key={notification._id}
+                              notification={{
+                                id: notification._id,
+                                type: notification.type,
+                                title:
+                                  notification.type === "Suggestion"
+                                    ? "New Suggestion"
+                                    : notification.type === "Like"
+                                    ? "New Like"
+                                    : notification.type === "Comment"
+                                    ? "New Comment"
+                                    : notification.type === "System"
+                                    ? "System Notification"
+                                    : notification.type === "FollowRequest"
+                                    ? "Follow Request"
+                                    : notification.type === "FollowAccepted"
+                                    ? "Follow Accepted"
+                                    : notification.type === "FollowedYou"
+                                    ? "Followed You"
+                                    : notification.type === "NewContent"
+                                    ? "New Content"
+                                    : notification.type === "Mention"
+                                    ? "Mention"
+                                    : "Notification",
+                                message: notification.message,
+                                timestamp: notification.createdAt,
+                                read: notification.status === "Read",
+                                contentType:
+                                  notification.relatedContent?.contentType,
+                                user: notification.sender
+                                  ? {
+                                      id: notification.sender._id,
+                                      fullName: notification.sender.fullName,
+                                      fullNameString:
+                                        notification.sender.fullNameString ||
+                                        `${notification.sender.fullName.firstName} ${notification.sender.fullName.lastName}`,
+                                      avatar:
+                                        notification.sender.avatar?.url ||
+                                        notification.sender?.profile?.avatar
+                                          ?.url ||
+                                        null,
+                                      profile:
+                                        notification.sender.profile || {},
+                                    }
+                                  : undefined,
+                              }}
+                              onMarkAsRead={() => {
+                                markAsRead(notification._id);
+                                setNotificationsOpen(false);
+                              }}
+                              closePopup={() => setNotificationsOpen(false)}
+                            />
+                          ))
+                      ) : (
+                        <div className="p-4 text-center text-muted-foreground text-sm">
+                          No notifications yet
+                        </div>
+                      )}
+                    </ScrollArea>
+                    <Separator />
+                    <div className="p-3 flex gap-2 justify-between">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="w-full text-xs"
+                        onClick={() => {
+                          setNotificationsOpen(false);
+                          navigate("/notifications");
+                        }}
+                      >
+                        View All Notifications
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          await markAllAsRead();
+                          for (const n of notifications) {
+                                  setDismissingIds((ids) => [...ids, n._id]);
+await new Promise((resolve) => setTimeout(resolve,500))
+                            await dismiss(n._id);
+                            setDismissingIds((ids) => ids.filter((id) => id !== n._id))
+                          }
+                        }}
+                      >
+                        Clear All
+                      </Button>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             )}
 
             <ThemeToggle />

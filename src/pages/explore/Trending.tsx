@@ -88,7 +88,7 @@ const Trending = () => {
     setTrendingContent(mockTrending);
   }, []);
 
-  const renderContentCard = (item: ContentItem) => (
+  const RenderContentCard = (item: ContentItem) => (
     <div
       key={item.id}
       className="bg-background rounded-lg overflow-hidden shadow-sm border border-border hover:shadow-md transition-all cursor-pointer"
@@ -160,7 +160,7 @@ const Trending = () => {
           </h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {trendingContent.map(renderContentCard)}
+            {trendingContent.map(RenderContentCard)}
           </div>
         </div>
       </main>

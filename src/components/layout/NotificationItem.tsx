@@ -31,19 +31,21 @@ interface Notification {
     };
     avatar: string;
     fullNameString: string;
-    profile: any
+    profile: any;
   };
 }
 interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
   closePopup?: () => void;
+  dismissing?: boolean;
 }
 
 const NotificationItem = ({
   notification,
   onMarkAsRead,
   closePopup,
+  dismissing
 }: NotificationItemProps) => {
   const navigate = useNavigate();
   const getIconForContentType = (type?: string, notificationType?: string) => {
@@ -100,9 +102,10 @@ const NotificationItem = ({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 p-3 hover:bg-accent/50 transition-colors cursor-pointer",
-        !notification.read && "bg-primary/5 dark:bg-primary/10"
-      )}
+  "flex items-start gap-3 p-3 cursor-pointer transition-all duration-200 ease-in-out",
+  !notification.read && "bg-primary/5 dark:bg-primary/10",
+  dismissing && "opacity-0 scale-95 translate-x-4 pointer-events-none"
+)}
       onClick={handleClick}
     >
       {notification.user ? (

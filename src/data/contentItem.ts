@@ -1,5 +1,5 @@
 export interface ContentItem {
-  id: string;
+  _id: string;
   title: string;
   type: string;
   imageUrl?: string;
@@ -20,7 +20,7 @@ export interface ContentItem {
 
 export const contentItemArray : ContentItem[] = [
     {
-      id: "1",
+      _id: "1",
       title: "The Shawshank Redemption",
       type: "movie",
       imageUrl:
@@ -39,7 +39,7 @@ export const contentItemArray : ContentItem[] = [
       whereToWatch: ["Netflix", "Amazon Prime", "HBO Max"],
     },
     {
-      id: "2",
+      _id: "2",
       title: "To Kill a Mockingbird",
       type: "book",
       imageUrl:
@@ -58,7 +58,7 @@ export const contentItemArray : ContentItem[] = [
       whereToRead: ["Amazon Kindle", "Barnes & Noble", "Local Library"],
     },
     {
-      id: "3",
+      _id: "3",
       title: "Attack on Titan",
       type: "anime",
       imageUrl:

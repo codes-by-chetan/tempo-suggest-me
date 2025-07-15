@@ -43,7 +43,7 @@ const SuggestorCard = ({
           </AvatarFallback>
         </Avatar>
         <CardTitle
-          className="text-lg text-foreground text-yellow-200"
+          className="text-lg text-foreground dark:text-yellow-200"
           onClick={() => navigate(`/profile/${suggestor.id}`)}
         >
           {suggestor.name}
@@ -92,7 +92,7 @@ const SuggestorsList = ({
   const navigate = useNavigate();
 
   return (
-    <div className={cn("w-full bg-card p-4", className)}>
+    <div className={cn("w-full", className)}>
       <h2 className="text-2xl font-bold mb-6 text-foreground">
         People who suggested to you
       </h2>

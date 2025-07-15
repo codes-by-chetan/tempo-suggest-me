@@ -202,18 +202,19 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         : "bg-blue-500 text-white hover:bg-blue-600"
                     } justify-center items-center px-4`}
                     onClick={handleFollowToggle}
+                    size="sm"
                   >
                     {isFollowing === "Accepted"
                       ? "Unfollow"
                       : isFollowing === "Pending"
-                      ? "Withdraw"
+                      ? "Requested"
                       : "Follow"}
                   </Button>
-                  {isFollowing === "Pending" && (
+                  {/* {isFollowing === "Pending" && (
                     <span className="text-green-500 text-xs w-full text-center">
                       Requested
                     </span>
-                  )}
+                  )} */}
                   {followsYou?.status === "Accepted" && (
                     <span className="text-gray-600 text-xs text-center">
                       Follows You
