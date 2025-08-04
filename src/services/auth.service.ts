@@ -6,17 +6,31 @@ import {
   registrationDetails,
   response,
 } from "../interfaces/auth.interfaces";
-// import { getToast } from "./toasts.service.ts";
-import { useAuth } from "@/lib/auth-context.tsx";
 
 export default class AuthService {
-  
   async login(credentials: credentials): Promise<response> {
     return api
       .post("auth/login", credentials)
       .then((response: any) => {
         if (response.data.data.token) {
           localStorage.setItem("token", response.data.data.token);
+          localStorage.setItem("tokenExpiry", response.data.data.expiryTime);
+        }
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err.response.data;
+      });
+  }
+
+  async verifySocialToken(provider: 'google' | 'facebook', token: string): Promise<response> {
+    return api
+      .post("auth/verify-social-token", { provider, token })
+      .then((response: any) => {
+        if (response.data.data.token) {
+          localStorage.setItem("token", response.data.data.token);
+          localStorage.setItem("tokenExpiry", response.data.data.expiryTime);
         }
         return response.data;
       })
@@ -37,8 +51,6 @@ export default class AuthService {
         return true;
       })
       .catch((_err) => {
-        // getToast("error", _err?.response?.data?.message || "failed to fetch");
-        // if(_err?.response.)
         return false;
       });
   }
@@ -54,8 +66,6 @@ export default class AuthService {
         return true;
       })
       .catch((_err) => {
-        // getToast("error", _err?.response?.data?.message || "failed to fetch");
-        // if(_err?.response.)
         return false;
       });
   }
@@ -74,6 +84,7 @@ export default class AuthService {
         return false;
       });
   }
+
   async refreshUserDetails(): Promise<response> {
     return api
       .get("/auth/refresh-user", {
@@ -84,6 +95,7 @@ export default class AuthService {
       .then((response: any) => {
         if (response.data.data.token) {
           localStorage.setItem("token", response.data.data.token);
+          localStorage.setItem("tokenExpiry", response.data.data.expiryTime);
         }
         return response.data;
       })
@@ -102,6 +114,10 @@ export default class AuthService {
     return api
       .post<response, response>("auth/register", user)
       .then((response) => {
+        if (response.data.data.token) {
+          localStorage.setItem("token", response.data.data.token);
+          localStorage.setItem("tokenExpiry", response.data.data.expiryTime);
+        }
         return response.data;
       })
       .catch((err) => {
@@ -109,7 +125,7 @@ export default class AuthService {
         return err.response.data;
       });
   }
-  
+
   async changePassword(data: {
     oldPassword: string;
     newPassword: string;

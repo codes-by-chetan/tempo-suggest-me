@@ -24,6 +24,7 @@ import MobileChatConversation from "./pages/chat/mobile-conversation"
 import DesktopChatConversation from "./pages/chat/desktop-conversation"
 import SearchPage from "./pages/search/search-page"
 import Home from "./components/home/home"
+import AuthCallback from "./components/auth/AuthCallback"
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"))
@@ -320,6 +321,7 @@ function MainContent() {
               }
             />
             <Route path="*" element={<ErrorPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             {tempoEnabled && <Route path="/tempobook/*" />}
           </Routes>
           {tempoRoutes}

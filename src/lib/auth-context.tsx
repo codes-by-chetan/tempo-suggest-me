@@ -35,10 +35,12 @@ interface FullName {
 }
 
 type AuthContextType = {
-  user: User;
+  user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (data: any) => Promise<boolean>;
+  googleLogin: (token: string) => Promise<boolean>;
+  facebookLogin: (token: string) => Promise<boolean>;
   logout: () => void;
   refreshAuthState: () => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
@@ -48,10 +50,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const authService = new AuthService();
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  // Function to refresh auth state from localStorage
   const refreshAuthState = useCallback(async () => {
     const storedAuth = localStorage.getItem("token");
     console.log("Stored auth token:", storedAuth);
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem("isAuthenticated");
           localStorage.removeItem("user");
           localStorage.removeItem("token");
+          localStorage.removeItem("tokenExpiry");
           setUser(null);
           setIsAuthenticated(false);
         }
@@ -77,19 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Initialize auth state on component mount
   useEffect(() => {
     refreshAuthState();
-
-    // Add storage event listener to sync auth state across tabs
-    // const handleStorageChange = (event: StorageEvent) => {
-    //   if (event.key === "isAuthenticated" || event.key === "user") {
-    //     refreshAuthState();
-    //   }
-    // };
-
-    // window.addEventListener("storage", handleStorageChange);
-    // return () => window.removeEventListener("storage", handleStorageChange);
   }, [refreshAuthState]);
 
   const login = async (email: string, password: string) => {
@@ -111,17 +102,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch((err) => {
-        toast.error(err.response.data.message || "Login Failed");
+        toast.error(err.response?.data?.message || "Login Failed");
         return false;
       });
     return success;
   };
 
   const signup = async (data: any) => {
-    // In a real app, this would be an API call to register the user
     console.log("Signup attempt with:", data);
 
-    // Simulate API call
     const success = await authService.register(data).then((res) => {
       if (res.success) {
         localStorage.setItem("token", res.data.token);
@@ -130,15 +119,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
         return true;
       } else {
+        toast.error(res.message || "Signup Failed");
         return false;
       }
+    }).catch((err) => {
+      toast.error(err.response?.data?.message || "Signup Failed");
+      return false;
+    });
+    return success;
+  };
+
+  const googleLogin = async (token: string) => {
+    console.log("Google login attempt with token:", token);
+
+    const success = await authService.verifySocialToken('google', token).then((res) => {
+      if (res.success) {
+        setUser(res.data.user);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        toast.error(res.message || "Google Login Failed");
+        return false;
+      }
+    }).catch((err) => {
+      toast.error(err.response?.data?.message || "Google Login Failed");
+      return false;
+    });
+    return success;
+  };
+
+  const facebookLogin = async (token: string) => {
+    console.log("Facebook login attempt with token:", token);
+
+    const success = await authService.verifySocialToken('facebook', token).then((res) => {
+      if (res.success) {
+        setUser(res.data.user);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        toast.error(res.message || "Facebook Login Failed");
+        return false;
+      }
+    }).catch((err) => {
+      toast.error(err.response?.data?.message || "Facebook Login Failed");
+      return false;
     });
     return success;
   };
 
   const logout = async () => {
-    // Update state first to ensure immediate UI update
-
     await authService.logout().then((res) => {
       if (res) {
         setUser(null);
@@ -149,7 +178,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("tokenExpiry");
       }
     });
-    // Then update localStorage
   };
 
   return (
@@ -159,6 +187,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated,
         login,
         signup,
+        googleLogin,
+        facebookLogin,
         logout,
         refreshAuthState,
         setIsAuthenticated,
