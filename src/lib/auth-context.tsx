@@ -111,59 +111,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (data: any) => {
     console.log("Signup attempt with:", data);
 
-    const success = await authService.register(data).then((res) => {
-      if (res.success) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("tokenExpiry", res.data.expiryTime);
-        setUser(res.data.user);
-        setIsAuthenticated(true);
-        return true;
-      } else {
-        toast.error(res.message || "Signup Failed");
+    const success = await authService
+      .register(data)
+      .then((res) => {
+        if (res.success) {
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("tokenExpiry", res.data.expiryTime);
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+          return true;
+        } else {
+          toast.error(res.message || "Signup Failed");
+          return false;
+        }
+      })
+      .catch((err) => {
+        toast.error(err.response?.data?.message || "Signup Failed");
         return false;
-      }
-    }).catch((err) => {
-      toast.error(err.response?.data?.message || "Signup Failed");
-      return false;
-    });
+      });
     return success;
   };
 
   const googleLogin = async (token: string) => {
     console.log("Google login attempt with token:", token);
 
-    const success = await authService.verifySocialToken('google', token).then((res) => {
-      if (res.success) {
-        setUser(res.data.user);
-        setIsAuthenticated(true);
-        return true;
-      } else {
-        toast.error(res.message || "Google Login Failed");
+    const success = await authService
+      .verifySocialToken("google", token)
+      .then((res) => {
+        if (res.success) {
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("tokenExpiry", res.data.expiryTime);
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+          refreshAuthState();
+          return true;
+        } else {
+          toast.error(res.message || "Google Login Failed");
+          return false;
+        }
+      })
+      .catch((err) => {
+        toast.error(err.response?.data?.message || "Google Login Failed");
         return false;
-      }
-    }).catch((err) => {
-      toast.error(err.response?.data?.message || "Google Login Failed");
-      return false;
-    });
+      });
     return success;
   };
 
   const facebookLogin = async (token: string) => {
     console.log("Facebook login attempt with token:", token);
 
-    const success = await authService.verifySocialToken('facebook', token).then((res) => {
-      if (res.success) {
-        setUser(res.data.user);
-        setIsAuthenticated(true);
-        return true;
-      } else {
-        toast.error(res.message || "Facebook Login Failed");
+    const success = await authService
+      .verifySocialToken("facebook", token)
+      .then((res) => {
+        if (res.success) {
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("tokenExpiry", res.data.expiryTime);
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+          refreshAuthState();
+          return true;
+        } else {
+          toast.error(res.message || "Facebook Login Failed");
+          return false;
+        }
+      })
+      .catch((err) => {
+        toast.error(err.response?.data?.message || "Facebook Login Failed");
         return false;
-      }
-    }).catch((err) => {
-      toast.error(err.response?.data?.message || "Facebook Login Failed");
-      return false;
-    });
+      });
     return success;
   };
 

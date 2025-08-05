@@ -19,6 +19,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Separator } from "../ui/separator";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import config from "@/config/env.config";
+import { Link } from "react-router-dom";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -62,7 +63,11 @@ interface AuthDialogProps {
   defaultTab?: "login" | "signup";
 }
 
-export function AuthTab({ isOpen, onClose, defaultTab = "login" }: AuthDialogProps) {
+export function AuthTab({
+  isOpen,
+  onClose,
+  defaultTab = "login",
+}: AuthDialogProps) {
   const auth = useAuth();
   const [activeTab, setActiveTab] = useState<"login" | "signup">(defaultTab);
   const [showPassword, setShowPassword] = useState(false);
@@ -151,7 +156,9 @@ export function AuthTab({ isOpen, onClose, defaultTab = "login" }: AuthDialogPro
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError(error.response?.data?.message || "An error occurred during login");
+      setError(
+        error.response?.data?.message || "An error occurred during login"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +178,9 @@ export function AuthTab({ isOpen, onClose, defaultTab = "login" }: AuthDialogPro
       }
     } catch (error) {
       console.error("Signup error:", error);
-      setError(error.response?.data?.message || "An error occurred during signup");
+      setError(
+        error.response?.data?.message || "An error occurred during signup"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -508,7 +517,20 @@ export function AuthTab({ isOpen, onClose, defaultTab = "login" }: AuthDialogPro
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-sm">
-                            I agree to the Terms of Service and Privacy Policy
+                            I agree to the{" "}
+                            <Link
+                              to="/terms-of-service"
+                              className="text-primary hover:text-primary/90"
+                            >
+                              Terms of Service
+                            </Link>{" "}
+                            and{" "}
+                            <Link
+                              to="/privacy-policy"
+                              className="text-primary hover:text-primary/90"
+                            >
+                              Privacy Policy
+                            </Link>
                           </FormLabel>
                           <FormMessage />
                         </div>

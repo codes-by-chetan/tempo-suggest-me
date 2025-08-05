@@ -1,76 +1,80 @@
-"use client"
+"use client";
 
-import { Suspense, lazy, useState, useEffect, useRef } from "react"
-import { LoadingSpinner } from "./components/ui/spinner"
-import { Toaster } from "./components/ui/toaster"
-import { Routes, Route, useRoutes } from "react-router-dom"
-import routes from "tempo-routes"
-import ErrorPage from "./components/errorPage"
-import NotificationsPage from "./pages/NotificationsPage"
-import ContentDetailsForm from "./components/suggestions/ContentDetailsForm"
-import SuggestionDetails from "./pages/SuggestionDetailsPage"
-import Navbar from "./components/layout/Navbar"
-import { ScrollArea } from "./components/ui/scroll-area"
-import { useLocation } from "react-router-dom"
-import { motion } from "framer-motion"
-import { SidebarProvider, useSidebar } from "./lib/sidebar-context"
-import { AuthDialogProvider } from "./lib/auth-dialog-context"
-import { ProtectedRoute } from "./components/auth/ProtectedRoute"
-import { GlobalAuthDialog } from "./components/auth/GlobalAuthDialog"
-import DesktopSidebar from "./components/layout/DesktopSidebar"
-import MobileTabBar from "./components/layout/MobileTabBar"
-import MusicDetailsPage from "./pages/MusicDetailsPage"
-import MobileChatConversation from "./pages/chat/mobile-conversation"
-import DesktopChatConversation from "./pages/chat/desktop-conversation"
-import SearchPage from "./pages/search/search-page"
-import Home from "./components/home/home"
-import AuthCallback from "./components/auth/AuthCallback"
+import { Suspense, lazy, useState, useEffect, useRef } from "react";
+import { LoadingSpinner } from "./components/ui/spinner";
+import { Toaster } from "./components/ui/toaster";
+import { Routes, Route, useRoutes } from "react-router-dom";
+import routes from "tempo-routes";
+import ErrorPage from "./components/errorPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import ContentDetailsForm from "./components/suggestions/ContentDetailsForm";
+import SuggestionDetails from "./pages/SuggestionDetailsPage";
+import Navbar from "./components/layout/Navbar";
+import { ScrollArea } from "./components/ui/scroll-area";
+import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { SidebarProvider, useSidebar } from "./lib/sidebar-context";
+import { AuthDialogProvider } from "./lib/auth-dialog-context";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { GlobalAuthDialog } from "./components/auth/GlobalAuthDialog";
+import DesktopSidebar from "./components/layout/DesktopSidebar";
+import MobileTabBar from "./components/layout/MobileTabBar";
+import MusicDetailsPage from "./pages/MusicDetailsPage";
+import MobileChatConversation from "./pages/chat/mobile-conversation";
+import DesktopChatConversation from "./pages/chat/desktop-conversation";
+import SearchPage from "./pages/search/search-page";
+import Home from "./components/home/home";
+import AuthCallback from "./components/auth/AuthCallback";
+import TermsOfService from "./pages/policies/terms-of-service";
+import PrivacyPolicy from "./pages/policies/privacy-policy";
 
 // Lazy load routes for better performance
-const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"))
-const MySuggestions = lazy(() => import("./pages/my-suggestions"))
-const MyWatchlist = lazy(() => import("./pages/my-watchlist"))
-const Profile = lazy(() => import("./pages/profile"))
-const EditProfile = lazy(() => import("./pages/edit-profile"))
-const Login = lazy(() => import("./pages/auth/login"))
-const Signup = lazy(() => import("./pages/auth/signup"))
-const ContentDetailsPage = lazy(() => import("./pages/ContentDetailsPage"))
-const BookDetailsPage = lazy(() => import("./pages/BookDetailsPage"))
-const ChatPage = lazy(() => import("./pages/chat"))
+const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
+const MySuggestions = lazy(() => import("./pages/my-suggestions"));
+const MyWatchlist = lazy(() => import("./pages/my-watchlist"));
+const Profile = lazy(() => import("./pages/profile"));
+const EditProfile = lazy(() => import("./pages/edit-profile"));
+const Login = lazy(() => import("./pages/auth/login"));
+const Signup = lazy(() => import("./pages/auth/signup"));
+const ContentDetailsPage = lazy(() => import("./pages/ContentDetailsPage"));
+const BookDetailsPage = lazy(() => import("./pages/BookDetailsPage"));
+const ChatPage = lazy(() => import("./pages/chat"));
 
 // Explore pages
-const ExploreTrending = lazy(() => import("./pages/explore/Trending"))
-const ExploreFriends = lazy(() => import("./pages/explore/FriendActivity"))
-const ExploreRecommended = lazy(() => import("./pages/explore/Recommended"))
+const ExploreTrending = lazy(() => import("./pages/explore/Trending"));
+const ExploreFriends = lazy(() => import("./pages/explore/FriendActivity"));
+const ExploreRecommended = lazy(() => import("./pages/explore/Recommended"));
 
 function MainContent() {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const location = useLocation()
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
-  const { collapsed } = useSidebar()
-  const tempoEnabled = import.meta.env.VITE_TEMPO === "true"
-  const tempoRoutes = useRoutes(routes)
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const { collapsed } = useSidebar();
+  const tempoEnabled = import.meta.env.VITE_TEMPO === "true";
+  const tempoRoutes = useRoutes(routes);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
+      setIsMobile(window.innerWidth < 768);
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Scroll to top when route changes
   useEffect(() => {
     if (scrollRef.current) {
-      const scrollableElement = scrollRef.current.querySelector("[data-radix-scroll-area-viewport]")
+      const scrollableElement = scrollRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      );
       if (scrollableElement) {
-        scrollableElement.scrollTo({ top: 0, behavior: "smooth" })
+        scrollableElement.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        scrollRef.current.scrollTo({ top: 0, behavior: "smooth" })
+        scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
       }
     }
-  }, [location.pathname])
+  }, [location.pathname]);
 
   if (isMobile) {
     return (
@@ -160,6 +164,8 @@ function MainContent() {
               />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/content/:id" element={<ContentDetailsPage />} />
               <Route path="/movies/:id" element={<ContentDetailsPage />} />
               <Route path="/series/:id" element={<ContentDetailsPage />} />
@@ -168,7 +174,10 @@ function MainContent() {
               <Route path="/videos/:id" element={<ContentDetailsPage />} />
               <Route path="/explore/trending" element={<ExploreTrending />} />
               <Route path="/explore/friends" element={<ExploreFriends />} />
-              <Route path="/explore/recommended" element={<ExploreRecommended />} />
+              <Route
+                path="/explore/recommended"
+                element={<ExploreRecommended />}
+              />
               <Route
                 path="/chat"
                 element={
@@ -177,7 +186,16 @@ function MainContent() {
                   </ProtectedRoute>
                 }
               >
-                <Route path=":chatId" element={isMobile ? <MobileChatConversation /> : <DesktopChatConversation />} />
+                <Route
+                  path=":chatId"
+                  element={
+                    isMobile ? (
+                      <MobileChatConversation />
+                    ) : (
+                      <DesktopChatConversation />
+                    )
+                  }
+                />
               </Route>
               <Route
                 path="/add-content/:contentType"
@@ -185,7 +203,7 @@ function MainContent() {
                   <div className="container mx-auto py-8">
                     <ContentDetailsForm
                       onSubmit={(data) => {
-                        window.history.back()
+                        window.history.back();
                       }}
                       onBack={() => window.history.back()}
                     />
@@ -199,7 +217,7 @@ function MainContent() {
           </main>
         </motion.div>
       </ScrollArea>
-    )
+    );
   }
 
   return (
@@ -288,6 +306,8 @@ function MainContent() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/content/:id" element={<ContentDetailsPage />} />
             <Route path="/movies/:id" element={<ContentDetailsPage />} />
             <Route path="/series/:id" element={<ContentDetailsPage />} />
@@ -296,7 +316,10 @@ function MainContent() {
             <Route path="/videos/:id" element={<ContentDetailsPage />} />
             <Route path="/explore/trending" element={<ExploreTrending />} />
             <Route path="/explore/friends" element={<ExploreFriends />} />
-            <Route path="/explore/recommended" element={<ExploreRecommended />} />
+            <Route
+              path="/explore/recommended"
+              element={<ExploreRecommended />}
+            />
             <Route
               path="/chat"
               element={
@@ -305,7 +328,16 @@ function MainContent() {
                 </ProtectedRoute>
               }
             >
-              <Route path=":chatId" element={isMobile ? <MobileChatConversation /> : <DesktopChatConversation />} />
+              <Route
+                path=":chatId"
+                element={
+                  isMobile ? (
+                    <MobileChatConversation />
+                  ) : (
+                    <DesktopChatConversation />
+                  )
+                }
+              />
             </Route>
             <Route
               path="/add-content/:contentType"
@@ -313,7 +345,7 @@ function MainContent() {
                 <div className="container mx-auto py-8">
                   <ContentDetailsForm
                     onSubmit={(data) => {
-                      window.history.back()
+                      window.history.back();
                     }}
                     onBack={() => window.history.back()}
                   />
@@ -321,27 +353,26 @@ function MainContent() {
               }
             />
             <Route path="*" element={<ErrorPage />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
             {tempoEnabled && <Route path="/tempobook/*" />}
           </Routes>
           {tempoRoutes}
         </main>
       </motion.div>
     </ScrollArea>
-  )
+  );
 }
 
 function App() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
+      setIsMobile(window.innerWidth < 768);
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <AuthDialogProvider>
@@ -370,7 +401,7 @@ function App() {
         </Suspense>
       </div>
     </AuthDialogProvider>
-  )
+  );
 }
 
-export default App
+export default App;

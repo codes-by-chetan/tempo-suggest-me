@@ -396,14 +396,14 @@ const Signup = () => {
                         <FormLabel>
                           I agree to the{" "}
                           <Link
-                            to="/terms"
+                            to="/terms-of-service"
                             className="text-primary hover:text-primary/90"
                           >
                             Terms of Service
                           </Link>{" "}
                           and{" "}
                           <Link
-                            to="/privacy"
+                            to="/privacy-policy"
                             className="text-primary hover:text-primary/90"
                           >
                             Privacy Policy
