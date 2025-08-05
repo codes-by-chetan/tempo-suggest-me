@@ -27,6 +27,7 @@ import Home from "./components/home/home";
 import AuthCallback from "./components/auth/AuthCallback";
 import TermsOfService from "./pages/policies/terms-of-service";
 import PrivacyPolicy from "./pages/policies/privacy-policy";
+import DeleteAccount from "./pages/help/account-deletion";
 
 // Lazy load routes for better performance
 const SuggestedToMe = lazy(() => import("./pages/suggested-to-me"));
@@ -308,6 +309,7 @@ function MainContent() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/help/account/delete-account" element={<DeleteAccount />} />
             <Route path="/content/:id" element={<ContentDetailsPage />} />
             <Route path="/movies/:id" element={<ContentDetailsPage />} />
             <Route path="/series/:id" element={<ContentDetailsPage />} />

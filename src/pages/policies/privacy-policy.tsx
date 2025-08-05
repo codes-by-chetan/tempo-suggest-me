@@ -2,15 +2,15 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import AppName from "@/components/tags/AppName";
+import { GoShieldLock } from "react-icons/go";
 
 const PrivacyPolicy: React.FC = () => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-3xl border-none">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold">
-            <AppName /> Privacy Policy
+          <CardTitle className="text-3xl font-bold flex items-center justify-center gap-3">
+             <GoShieldLock/><span>Privacy Policy</span>
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             Last updated: August 5, 2025
@@ -21,7 +21,7 @@ const PrivacyPolicy: React.FC = () => {
           <div>
             <h2 className="text-xl font-semibold mb-2">1. Introduction</h2>
             <p className="text-muted-foreground">
-              <AppName /> values your privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you access or use our services.
+              Suggest.me values your privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you access or use our services.
             </p>
           </div>
 
@@ -33,7 +33,7 @@ const PrivacyPolicy: React.FC = () => {
               <ul className="list-disc pl-5 mt-2">
                 <li><strong>Account Information</strong>: Email, name, and contact number when you sign up or log in.</li>
                 <li><strong>Social Login Data</strong>: Data from Google or Facebook, including email, name, and profile ID.</li>
-                <li><strong>Usage Data</strong>: Your interactions with <AppName /> such as pages visited and features used.</li>
+                <li><strong>Usage Data</strong>: Your interactions with Suggest.me such as pages visited and features used.</li>
                 <li><strong>Device Information</strong>: IP address, browser details, and device type for analytics and security.</li>
               </ul>
             </p>
@@ -45,7 +45,7 @@ const PrivacyPolicy: React.FC = () => {
             <p className="text-muted-foreground">
               Your data is used to:
               <ul className="list-disc pl-5 mt-2">
-                <li>Provide and enhance <AppName /> services.</li>
+                <li>Provide and enhance Suggest.me services.</li>
                 <li>Authenticate your account through email or social logins.</li>
                 <li>Communicate important updates or notifications.</li>
                 <li>Analyze usage patterns for improvements.</li>
