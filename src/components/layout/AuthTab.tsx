@@ -195,7 +195,7 @@ export function AuthTab({
     setIsLoading(true);
     setError(null);
     try {
-      const token = response.id_token; // or response.accessToken depending on your auth setup
+      const token = response.credential; // or response.accessToken depending on your auth setup
       const success = await auth.googleLogin(token);
       if (success) {
         onClose(true);
