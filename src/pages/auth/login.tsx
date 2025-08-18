@@ -85,7 +85,7 @@ const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     console.log("google Login response: ", credentialResponse);
-    
+
     setIsLoading(true);
     setError(null);
     try {
@@ -242,10 +242,11 @@ const Login = () => {
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={() => {
-                    setError("Google login failed");
-                    setIsLoading(false);
-                  }}
+                      setError("Google login failed");
+                      setIsLoading(false);
+                    }}
                     useOneTap
+                    auto_select
                   />
                 </div>
                 <div className="relative">

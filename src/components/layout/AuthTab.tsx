@@ -590,13 +590,14 @@ export function AuthTab({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row gap-1 w-full items-center">
+          <div className="relative w-[201px]">
             <Button
               variant="outline"
               type="button"
               onClick={() => handleGoogleLoginClick()}
               disabled={isLoading}
+              className="w-full"
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
@@ -619,7 +620,7 @@ export function AuthTab({
               Sign in with Google
             </Button>
           </div>
-          <div className="relative">
+          <div className="relative w-[201px]">
             <FacebookLogin
               appId={config.FACEBOOK_APP_ID}
               onSuccess={handleFacebookLogin}

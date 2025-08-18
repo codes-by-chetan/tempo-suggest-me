@@ -16,7 +16,7 @@ export default function AuthDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogTitle></DialogTitle>
-      <DialogContent className="sm:max-w-md p-0 gap-0 max-h-[95vh] overflow-hidden [&>button]:hidden">
+      <DialogContent className="sm:max-w-lg p-0 gap-0 max-h-[95vh] overflow-hidden [&>button]:hidden">
         <AuthTab onClose={onClose} defaultTab={defaultTab} isOpen={isOpen} />
       </DialogContent>
     </Dialog>
