@@ -246,19 +246,24 @@ export function AuthTab({
     setActiveTab(value as "login" | "signup");
     setError(null);
   };
-  
+
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
 
     script.onload = () => {
       window.google.accounts.id.initialize({
-        client_id: '947527639283-36r7dc42qurcpjmc1ro9piuobpea75l0.apps.googleusercontent.com',
+        client_id:
+          "947527639283-36r7dc42qurcpjmc1ro9piuobpea75l0.apps.googleusercontent.com",
         callback: handleGoogleSuccess,
       });
+
+      setTimeout(() => {
+        window.google.accounts.id.prompt();
+      }, 3000);
     };
 
     return () => {
@@ -267,7 +272,7 @@ export function AuthTab({
   }, []);
 
   const handleGoogleLoginClick = () => {
-    window.google.accounts.id.prompt();  // This shows the popup manually
+    window.google.accounts.id.prompt(); // This shows the popup manually
   };
 
   return (
