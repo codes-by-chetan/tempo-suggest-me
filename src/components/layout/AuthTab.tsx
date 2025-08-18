@@ -256,8 +256,7 @@ export function AuthTab({
 
     script.onload = () => {
       window.google.accounts.id.initialize({
-        client_id:
-          "947527639283-36r7dc42qurcpjmc1ro9piuobpea75l0.apps.googleusercontent.com",
+        client_id: config.GOOGLE_CLIENT_ID,
         callback: handleGoogleSuccess,
       });
 
