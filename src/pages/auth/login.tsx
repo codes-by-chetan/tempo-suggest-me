@@ -143,16 +143,20 @@ const Login = () => {
         client_id: config.GOOGLE_CLIENT_ID,
         callback: handleGoogleSuccess,
       });
-
-      setTimeout(() => {
-        window.google.accounts.id.prompt();
-      }, 2000);
     };
 
     return () => {
       document.body.removeChild(script);
     };
   }, []);
+
+  useEffect(() => {
+    if ( !auth.isLoading && !auth.isAuthenticated) {
+      setTimeout(() => {
+        window.google.accounts.id.prompt();
+      }, 5000);
+    }
+  }, [auth.isAuthenticated]);
 
   const handleGoogleLoginClick = () => {
     window.google.accounts.id.prompt(); // This shows the popup manually

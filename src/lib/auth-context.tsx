@@ -37,6 +37,7 @@ interface FullName {
 type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (data: any) => Promise<boolean>;
   googleLogin: (token: string) => Promise<boolean>;
@@ -52,8 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const authService = new AuthService();
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const refreshAuthState = useCallback(async () => {
+    setIsLoading(true);
     const storedAuth = localStorage.getItem("token");
     console.log("Stored auth token:", storedAuth);
 
@@ -77,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setIsAuthenticated(false);
     }
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -200,6 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isAuthenticated,
+        isLoading,
         login,
         signup,
         googleLogin,
