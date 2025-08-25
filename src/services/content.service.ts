@@ -425,3 +425,46 @@ export const getMusicDetails = async (
       return err.response.data;
     });
 };
+
+
+export const getTrendingMovies = async (): Promise<ContentDetailsResponse<MovieDetails[]>> => {
+  return api
+    .get("trending/movies", {
+      headers: {
+        Authorization: `Bearer ${getAccessToken()}`,
+      },
+    })
+    .then((response) => response.data)
+    .catch((err) => {
+      console.log(err);
+      return err.response.data;
+    });
+};
+
+export const getTrendingSeries = async (): Promise<ContentDetailsResponse<SeriesDetails[]>> => {
+  return api
+    .get("trending/series", {
+      headers: {
+        Authorization: `Bearer ${getAccessToken()}`,
+      },
+    })
+    .then((response) => response.data)
+    .catch((err) => {
+      console.log(err);
+      return err.response.data;
+    });
+};
+
+export const getTrendingMusic = async (): Promise<ContentDetailsResponse<MusicDetails[]>> => {
+  return api
+    .get("trending/music", {
+      headers: {
+        Authorization: `Bearer ${getAccessToken()}`,
+      },
+    })
+    .then((response) => response.data)
+    .catch((err) => {
+      console.log(err);
+      return err.response.data;
+    });
+};
