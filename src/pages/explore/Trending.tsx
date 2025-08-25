@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SkeletonCard from "@/components/home/SkeletonCard";
-import { getTrendingMovies, getTrendingSeries, getTrendingMusic, getBookDetails, MovieDetails, SeriesDetails, MusicDetails, BookDetails } from '@/services/content.service';
+import { getTrendingMovies, getTrendingSeries, getTrendingMusic, MovieDetails, SeriesDetails, MusicDetails, BookDetails, getTrendingBooks } from '@/services/content.service';
 
 interface ContentItem {
   _id: string;
@@ -168,7 +168,7 @@ const Trending = () => {
           getTrendingMovies(),
           getTrendingSeries(),
           getTrendingMusic(),
-          getBookDetails(""), // Note: getBookDetails requires a bookId; assuming a similar trending endpoint exists
+          getTrendingBooks(), // Note: getBookDetails requires a bookId; assuming a similar trending endpoint exists
         ]);
 
         const movies = moviesRes.success ? moviesRes.data : [];

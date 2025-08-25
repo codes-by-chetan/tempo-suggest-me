@@ -7,7 +7,7 @@ import {
   HoverCardTrigger,
 } from "../ui/hover-card";
 import SkeletonCard from "./SkeletonCard";
-import { getTrendingMovies, getTrendingSeries, getTrendingMusic, getBookDetails, MovieDetails, SeriesDetails, MusicDetails, BookDetails } from '@/services/content.service';
+import { getTrendingMovies, getTrendingSeries, getTrendingMusic, MovieDetails, SeriesDetails, MusicDetails, BookDetails, getTrendingBooks } from '@/services/content.service';
 
 interface ContentItem {
   _id: string;
@@ -219,7 +219,7 @@ const ExploreSection = ({ className = "" }: ExploreSectionProps) => {
           getTrendingMovies(),
           getTrendingSeries(),
           getTrendingMusic(),
-          getBookDetails(""), // Note: getBookDetails requires a bookId; assuming a similar trending endpoint exists
+          getTrendingBooks(), // Note: getBookDetails requires a bookId; assuming a similar trending endpoint exists
         ]);
 
         const movies = moviesRes.success ? moviesRes.data : [];

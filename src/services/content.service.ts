@@ -468,3 +468,17 @@ export const getTrendingMusic = async (): Promise<ContentDetailsResponse<MusicDe
       return err.response.data;
     });
 };
+
+export const getTrendingBooks = async (): Promise<ContentDetailsResponse<BookDetails[]>> => {
+  return api
+    .get("trending/books", {
+      headers: {
+        Authorization: `Bearer ${getAccessToken()}`,
+      },
+    })
+    .then((response) => response.data)
+    .catch((err) => {
+      console.log(err);
+      return err.response.data;
+    });
+};
