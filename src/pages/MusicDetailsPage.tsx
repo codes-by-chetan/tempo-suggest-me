@@ -240,7 +240,7 @@ const MusicDetailsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-1">
             <div className="rounded-lg overflow-hidden bg-muted shadow-lg">
-              {content.album.coverImage?.url ? (
+              {content.album?.coverImage?.url ? (
                 <img
                   src={content.album.coverImage.url}
                   alt={content.title}
@@ -256,24 +256,38 @@ const MusicDetailsPage = () => {
             <div className="mt-6 bg-card rounded-lg p-4 shadow-sm">
               <h3 className="font-medium text-lg mb-3">Where to Listen</h3>
               <div className="space-y-2">
-                {content.availableOn.spotify ? (
-                  <a
-                    href={content.availableOn.spotify.link}
-                    target="_blank"
-                    className="flex items-center justify-between p-2 hover:bg-accent rounded-md transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-primary">
-                        Spotify
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {formatPlays(content.availableOn.spotify.plays)} plays
-                      </span>
-                    </div>
-                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                  </a>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Not available</p>
+                {Object.entries(content.availableOn).map(
+                  ([platform, details]) =>
+                    details.link ? (
+                      <a
+                        key={platform}
+                        href={details.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-4 p-2 hover:bg-accent rounded-md transition-colors"
+                      >
+                        <div className="flex items-center w-full justify-between">
+                          <span className="font-semibold text-primary">
+                            {platform.charAt(0).toUpperCase() +
+                              platform.slice(1)}
+                          </span>
+                          {details.plays && (
+                            <span className="text-sm text-muted-foreground">
+                              {formatPlays(details.plays)} plays
+                            </span>
+                          )}
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      </a>
+                    ) : (
+                      <p
+                        key={platform}
+                        className="text-sm text-muted-foreground"
+                      >
+                        {platform.charAt(0).toUpperCase() + platform.slice(1)}{" "}
+                        not available
+                      </p>
+                    )
                 )}
               </div>
             </div>
@@ -354,7 +368,7 @@ const MusicDetailsPage = () => {
                 content.artist.name,
                 content.featuredArtists.map((a) => a.name).join(", "),
                 content.releaseYear,
-                content.album.title,
+                content.album?.title,
                 content.duration,
                 content.language || "Unknown",
                 content.recordLabel.name,
